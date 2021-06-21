@@ -16,6 +16,7 @@ import (
 	"google.golang.org/grpc"
 	"gorm.io/gorm"
 	"log"
+	"os"
 	"time"
 )
 
@@ -107,7 +108,7 @@ func (service *UserService) CreateUserWithAdditionalInfo(ctx context.Context, us
 
 	//create user node in graph database
 	var conn *grpc.ClientConn
-	conn, err = grpc.Dial(":8095", grpc.WithInsecure())
+	conn, err = grpc.Dial(os.Getenv("RECOMMENDATION_SERVICE"), grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %s", err)
 	}

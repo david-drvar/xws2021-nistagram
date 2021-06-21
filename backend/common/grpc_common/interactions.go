@@ -6,6 +6,7 @@ import (
 	"github.com/david-drvar/xws2021-nistagram/common/tracer"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"os"
 )
 
 func CheckFollowInteraction(ctx context.Context, requestedUserId string, requestingUserId string) (*protopb.Follower, error){
@@ -13,7 +14,7 @@ func CheckFollowInteraction(ctx context.Context, requestedUserId string, request
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
-	conn, err := CreateGrpcConnection(Recommendation_service_address)
+	conn, err := CreateGrpcConnection(os.Getenv("RECOMMENDATION_SERVICE"))
 	if err != nil{
 		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
@@ -37,7 +38,7 @@ func GetUsernameById(ctx context.Context, userId string) (string, error){
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
-	conn, err := GetClientConnection(Users_service_address)
+	conn, err := GetClientConnection(os.Getenv("USER_SERVICE"))
 	if err != nil{
 		return "", status.Errorf(codes.Unknown, err.Error())
 	}
@@ -57,7 +58,7 @@ func GetPhotoById(ctx context.Context, userId string) (string, error){
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
-	conn, err := GetClientConnection(Users_service_address)
+	conn, err := GetClientConnection(os.Getenv("USER_SERVICE"))
 	if err != nil{
 		return "", status.Errorf(codes.Unknown, err.Error())
 	}
@@ -77,7 +78,7 @@ func CheckIfPublicProfile(ctx context.Context, requestedUserId string) (bool, er
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
-	conn, err := GetClientConnection(Users_service_address)
+	conn, err := GetClientConnection(os.Getenv("USER_SERVICE"))
 	if err != nil{
 		return false, status.Errorf(codes.Unknown, err.Error())
 	}
@@ -97,7 +98,7 @@ func CheckIfBlocked(ctx context.Context, requestedUserId string, requestingUserI
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
-	conn, err := GetClientConnection(Users_service_address)
+	conn, err := GetClientConnection(os.Getenv("USER_SERVICE"))
 	if err != nil{
 		return false, status.Errorf(codes.Unknown, err.Error())
 	}
@@ -116,7 +117,7 @@ func CheckIfBlocked(ctx context.Context, requestedUserId string, requestingUserI
 }
 
 func GetHomepageUsers(ctx context.Context, userId string) ([]string, error){
-	conn, err := CreateGrpcConnection(Recommendation_service_address)
+	conn, err := CreateGrpcConnection(os.Getenv("RECOMMENDATION_SERVICE"))
 	if err != nil{
 		return []string{}, status.Errorf(codes.Unknown, err.Error())
 	}
@@ -133,7 +134,7 @@ func GetHomepageUsers(ctx context.Context, userId string) ([]string, error){
 		userIds = append(userIds, following.UserId)
 	}
 
-	privacyConn, err := CreateGrpcConnection(Users_service_address)
+	privacyConn, err := CreateGrpcConnection(os.Getenv("USER_SERVICE"))
 	if err != nil{
 		return []string{}, status.Errorf(codes.Unknown, err.Error())
 	}
@@ -161,7 +162,7 @@ func GetHomepageUsers(ctx context.Context, userId string) ([]string, error){
 }
 
 func GetCloseFriends(ctx context.Context, userId string) ([]string, error){
-	conn, err := CreateGrpcConnection(Recommendation_service_address)
+	conn, err := CreateGrpcConnection(os.Getenv("RECOMMENDATION_SERVICE"))
 	if err != nil{
 		return []string{}, status.Errorf(codes.Unknown, err.Error())
 	}
@@ -182,7 +183,7 @@ func GetCloseFriends(ctx context.Context, userId string) ([]string, error){
 }
 
 func GetPublicUsers(ctx context.Context) ([]string, error){
-	conn, err := CreateGrpcConnection(Users_service_address)
+	conn, err := CreateGrpcConnection(os.Getenv("USER_SERVICE"))
 	if err != nil{
 		return []string{}, status.Errorf(codes.Unknown, err.Error())
 	}
@@ -201,7 +202,7 @@ func GetPublicUsers(ctx context.Context) ([]string, error){
 }
 
 func CreateNotification(ctx context.Context, userId string, creatorId string, notifyType string, contentId string) error {
-	conn, err := CreateGrpcConnection(Users_service_address)
+	conn, err := CreateGrpcConnection(os.Getenv("USER_SERVICE"))
 	if err != nil{
 		return status.Errorf(codes.Unknown, err.Error())
 	}
@@ -215,7 +216,7 @@ func CreateNotification(ctx context.Context, userId string, creatorId string, no
 	return nil
 }
 func CheckUserProfilePublic(ctx context.Context, userId string) (bool, error) {
-	conn, err := CreateGrpcConnection(Users_service_address)
+	conn, err := CreateGrpcConnection(os.Getenv("USER_SERVICE"))
 	if err != nil{
 		return false, status.Errorf(codes.Unknown, err.Error())
 	}
@@ -229,7 +230,7 @@ func CheckUserProfilePublic(ctx context.Context, userId string) (bool, error) {
 }
 
 func DeleteByTypeAndCreator(ctx context.Context, notificationType string, userId string, creatorId string) (error){
-	conn, err := CreateGrpcConnection(Users_service_address)
+	conn, err := CreateGrpcConnection(os.Getenv("USER_SERVICE"))
 	if err != nil{
 		return status.Errorf(codes.Unknown, err.Error())
 	}
@@ -243,7 +244,7 @@ func DeleteByTypeAndCreator(ctx context.Context, notificationType string, userId
 }
 
 func UpdateNotification (ctx context.Context, id string, notificationType string, text string) error{
-	conn, err := CreateGrpcConnection(Users_service_address)
+	conn, err := CreateGrpcConnection(os.Getenv("USER_SERVICE"))
 	if err != nil{
 		return status.Errorf(codes.Unknown, err.Error())
 	}
@@ -257,7 +258,7 @@ func UpdateNotification (ctx context.Context, id string, notificationType string
 }
 
 func GetByTypeAndCreator(ctx context.Context, userId string, creatorId string, notificationType string) (*protopb.Notification, error) {
-	conn, err := CreateGrpcConnection(Users_service_address)
+	conn, err := CreateGrpcConnection(os.Getenv("USER_SERVICE"))
 	if err != nil{
 		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
@@ -271,7 +272,7 @@ func GetByTypeAndCreator(ctx context.Context, userId string, creatorId string, n
 }
 
 func GetUsersForNotificationEnabled(ctx context.Context,  userId string, notificationType string) (*protopb.CreateUserResponse, error) {
-	conn, err := CreateGrpcConnection(Recommendation_service_address)
+	conn, err := CreateGrpcConnection(os.Getenv("RECOMMENDATION_SERVICE"))
 	if err != nil{
 		return nil, status.Errorf(codes.Unknown, err.Error())
 	}

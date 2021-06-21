@@ -49,6 +49,8 @@ services:
       DB_HOST: bolt://neo4j:7687
       DB_NAME: neo4j
       DB_PW: root
+      USER_SERVICE: http://user_service:8091
+      CONTENT_SERVICE: http://content_service:8092
     ports: 
       - 8005:8005
       - 8095:8095
@@ -74,6 +76,8 @@ services:
       DB_NAME: xws_users_service
       DB_USER: postgres
       DB_PW: root
+      RECOMMENDATION_SERVICE: http://recommendation_service:8095
+      CONTENT_SERVICE: http://content_service:8092
     ports: 
       - 8001:8001
       - 8091:8091
@@ -89,6 +93,8 @@ services:
       DB_NAME: xws_content_service
       DB_USER: postgres
       DB_PW: root
+      RECOMMENDATION_SERVICE: http://recommendation_service:8095
+      USER_SERVICE: http://user_service:8091
     ports: 
       - 8002:8002
       - 8092:8092

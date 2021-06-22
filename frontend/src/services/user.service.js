@@ -66,10 +66,10 @@ class UserService extends RootService {
     }
 
     async getUserByUsername(data){
-        const { username,jwt} = data
-        const headers=this.setupHeaders(jwt)
+        const { username, jwt } = data
+        const headers = this.setupHeaders(jwt)
         const response = this.apiClient.get('/getUserByUsername/'+username,{
-            headers:headers
+            headers: headers
         }).then(res => {
             return res
         }).catch(err => {
@@ -136,10 +136,10 @@ class UserService extends RootService {
     }
 
     async getUsernameById(data){
-        const { id,jwt} = data
+        const { id, jwt } = data
         const headers=this.setupHeaders(jwt)
         const response = this.apiClient.get('/username/'+id,{
-            headers:headers
+            headers: headers
         }).then(res => {
             return res
         }).catch(err => {

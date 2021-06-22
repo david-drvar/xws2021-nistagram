@@ -25,8 +25,6 @@ function FollowAndUnfollow(props) {
     }, [])
 
     useEffect(() => {
-       // getFollowersConnection()
-
         setFollows(followers.some(item => item.UserId === store.user.id))
     }, [followers])
 
@@ -38,11 +36,9 @@ function FollowAndUnfollow(props) {
         })
 
         if (response.status === 200) {
-            console.log(response.data)
             setFollows(response.data.isApprovedRequest)
             setCloseFriend(response.data.isCloseFriends)
             setRequestIsPending(response.data.requestIsPending)
-            props.getFollowers(store.followers.followerId)
         } else {
             console.log("followings ne radi")
         }

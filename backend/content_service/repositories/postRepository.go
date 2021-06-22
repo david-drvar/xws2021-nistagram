@@ -113,7 +113,7 @@ func (repository *postRepository) CreatePost(ctx context.Context, post *domain.P
 
 		//bind post with hashtags
 		if len(post.Hashtags) != 0 {
-			err := repository.hashtagRepository.BindPostWithHashtags(ctx, &postToSave, finalHashtags)
+			err := repository.hashtagRepository.BindPostWithHashtags(ctx, postToSave.Id, finalHashtags)
 			if err != nil {
 				return errors.New("cannot bind post with hashtags")
 			}

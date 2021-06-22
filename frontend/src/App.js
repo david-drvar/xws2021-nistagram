@@ -28,39 +28,41 @@ import ViewAllVerificationRequests from "./components/VerificationRequest/ViewAl
 import EditProfileImage from "./components/UserData/EditProfileImage";
 import Notifications from "./components/Notifications/Notifications";
 
+import AuthenticatedRoute from './AuthenticatedRoute';
+import AdminRoute from './AdminRoute';
 
 const App = () => {
     return (
         <div className="App">
             <Router>
-                <Route path='/' exact={true} component={IndexPage}/>
+                <Route path='/' exact  component={Home}/>
+                <Route path='/login' exact={true} component={IndexPage}/>
                 <Route path='/unauthorized' exact={true} component={UnauthorizedPage}/>
                 <Route path='/forgotten' exact={true} component={ForgotPasswordPage}/>
                 <Route path='/registration' exact={true} component={RegistrationPage}/>
-                <Route path='/home' exact  component={Home}/>
                 <Route path='/search' exact={true} component={Search}/>
                 <Route path='/profile/:username' exact component={Profile}/>
                 <Route path='/info' exact component={ProfileInfo}/>
 
-                <Route path='/newpost' exact component={NewPost} />
-                <Route path='/chats' exact component={Chats} />
-                <Route path='/saved' exact component={Saved} />
-                <Route path='/story-archive' exact component={StoryArchive} />
-                <Route path='/notifications' exact component={Notifications} />
-                <Route path='/submit-verification-request' exact component={SubmitVerificationRequest} />
-                <Route path='/view-my-verification-request' exact component={ViewMyVerificationRequests} />
-                <Route path='/view-pending-verification-request' exact component={ViewPendingVerificationRequests} />
-                <Route path='/view-all-verification-request' exact component={ViewAllVerificationRequests} />
+                <AuthenticatedRoute path='/newpost' exact component={NewPost} isAdminProhibited={true} />
+                <AuthenticatedRoute path='/chats' exact component={Chats} isAdminProhibited={true} />
+                <AuthenticatedRoute path='/saved' exact component={Saved} isAdminProhibited={true} />
+                <AuthenticatedRoute path='/story-archive' exact component={StoryArchive} isAdminProhibited={true} />
+                <AuthenticatedRoute path='/notifications' exact component={Notifications} isAdminProhibited={true} />
+                <AuthenticatedRoute path='/submit-verification-request' exact component={SubmitVerificationRequest} isAdminProhibited={true} />
+                <AuthenticatedRoute path='/view-my-verification-request' exact component={ViewMyVerificationRequests} isAdminProhibited={true} />
+                <AdminRoute path='/view-pending-verification-request' exact component={ViewPendingVerificationRequests} />
+                <AdminRoute path='/view-all-verification-request' exact component={ViewAllVerificationRequests} />
 
-                <Route path='/blocked' exact component={BlockedUsers} />
-                <Route path='/close_friends' exact component={CloseFriends} />
-                <Route path='/liked' exact component={Liked} />
-                <Route path='/disliked' exact component={Disliked} />
-                <Route path='/archive' exact component={Archived} />
-                <Route path='/edit_profile' exact component={EditProfile} />
-                <Route path='/password' exact component={ChangePassword} />
-                <Route path='/privacy' exact component={EditUserPrivacy} />
-                <Route path='/edit_photo' exact component={EditProfileImage} />
+                <AuthenticatedRoute path='/blocked' exact component={BlockedUsers} />
+                <AuthenticatedRoute path='/close_friends' exact component={CloseFriends} />
+                <AuthenticatedRoute path='/liked' exact component={Liked} />
+                <AuthenticatedRoute path='/disliked' exact component={Disliked} />
+                <AuthenticatedRoute path='/archive' exact component={Archived} />
+                <AuthenticatedRoute path='/edit_profile' exact component={EditProfile} />
+                <AuthenticatedRoute path='/password' exact component={ChangePassword} />
+                <AuthenticatedRoute path='/privacy' exact component={EditUserPrivacy} />
+                <AuthenticatedRoute path='/edit_photo' exact component={EditProfileImage} />
             </Router>
         </div>
     );

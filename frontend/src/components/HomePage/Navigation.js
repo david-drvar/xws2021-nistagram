@@ -18,9 +18,8 @@ function Navigation() {
             <div className="container">
                 <font face = "Comic Sans MS" size = "5" style={{marginRight:'5em'}}>Ništagram</font>
                 <Button variant="outline-dark" style={{marginRight:'25em'}} onClick={redirectToSearch}>Search...</Button>
-                {/*<input type="text" placeholder="Search.." style={{marginRight:'25em'}} onClick={props.getUser}/>*/}
-                <Menu/>
             </div>
+            <Menu className="menu" />
         </div>
     );
 

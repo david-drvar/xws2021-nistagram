@@ -7,7 +7,7 @@ class HashtagService extends RootService {
     }
 
     async getAllHashtags(data){
-        const { id, category, postId, status, isPost, userId, jwt} = data;
+        const { jwt } = data;
         const headers = this.setupHeaders(jwt);
 
         const response = this.apiClient.get('/hashtag/get-all', { headers })

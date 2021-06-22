@@ -16,6 +16,7 @@ const Highlight = (props) => {
     const [convertedStory, setConvertedStory] = useState([])
     const [coverPhoto, setCoverPhoto] = useState("")
     const [header, setHeader] = useState({})
+    const [storyId, setStoryId] = useState(""); // temp fix for reports
 
     // Convert story with multiple media to multiple stories with single media, to comply with react-insta-stories
     useEffect(()=>{
@@ -30,7 +31,7 @@ const Highlight = (props) => {
                       highlight.stories[0].media[0].content : empty)
 
         setHeader({
-            heading: highlight.name,
+            heading: highlight.name
         })
     }, [])
 
@@ -50,9 +51,9 @@ const Highlight = (props) => {
                         renderers={[renderer]}
                         stories={convertedStory} 
                         defaultInterval={10000} 
-                        header={header}
-                        width={600} 
-                        height={800}/>
+                        header={{...header, setStoryId}}
+                        width={500}
+                        height={700}/>
                 </Modal>
             }
         </div>

@@ -1,10 +1,9 @@
 import "../../style/profileSug.css";
 import ProfileIcon from "../ProfileComponent/ProfileIcon";
-import {Button, NavLink} from "react-bootstrap";
-import {useHistory} from "react-router-dom";
+import { useHistory } from "react-router-dom";
 
 function ProfileForSug(props) {
-    const {user, username, caption,  urlText, iconSize,captionSize, storyBorder,hideAccountName,image, firstName, lastName} = props;
+    const { username, caption, iconSize,captionSize, storyBorder, hideAccountName, image, firstName, lastName} = props;
     const history = useHistory()
 
     function redirect(){
@@ -17,9 +16,8 @@ function ProfileForSug(props) {
             <ProfileIcon iconSize={iconSize} storyBorder={storyBorder} image={image} />
             {(username || caption) && !hideAccountName && (
                 <div className="textContainer">
-                        <span className="accountName">{firstName} {lastName} @{username}</span>
-                    <Button variant="link" onClick={redirect}>See profile</Button>
-                    <span className={`caption ${captionSize}`}>{caption}</span>
+                    <div className="accountName" onClick={redirect}>{firstName} {lastName} <span style={{color: "#8e8e8e"}}>@{username}</span></div>
+                    <div className={`caption ${captionSize}`}>{caption.length > 52 ? caption.substring(0, 52).trim() + "..." : caption}</div>
                 </div>
             )}
         </div>

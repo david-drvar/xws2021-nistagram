@@ -166,15 +166,15 @@ func (s *UserGrpcController) GetUserById(ctx context.Context, in *protopb.Reques
 			return &protopb.UsersDTO{}, status.Errorf(codes.Unknown, "this user is private")
 		}
 	} else if claims.UserId != in.Id {
-		isBlocked, err := grpc_common.CheckIfBlocked(ctx, in.Id, claims.UserId)
-		if err != nil {
-			return &protopb.UsersDTO{}, status.Errorf(codes.Unknown, err.Error())
-		}
-
-		// If used is blocked or his profile is private and did not approve your request
-		if isBlocked {
-			return &protopb.UsersDTO{}, status.Errorf(codes.Unknown, "cannot retrieve this user, no connection available")
-		}
+		//isBlocked, err := grpc_common.CheckIfBlocked(ctx, in.Id, claims.UserId)
+		//if err != nil {
+		//	return &protopb.UsersDTO{}, status.Errorf(codes.Unknown, err.Error())
+		//}
+		//
+		//// If used is blocked or his profile is private and did not approve your request
+		//if isBlocked {
+		//	return &protopb.UsersDTO{}, status.Errorf(codes.Unknown, "cannot retrieve this user, no connection available")
+		//}
 	}
 
 	user, err := s.service.GetUser(ctx, in.Id)

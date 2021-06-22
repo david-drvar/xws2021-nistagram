@@ -9,14 +9,10 @@ import Post from "../components/Post/Post";
 
 import '../style/hover-post.css';
 import '../style/Profile.css';
-import { AiFillHeart } from 'react-icons/all';
-import { FaComment } from 'react-icons/all';
-import { IoIosHeartDislike } from 'react-icons/all';
 import PostPreviewGrid from "../components/Post/PostPreviewGrid";
 
 
 export default function Search() {
-    const [user, setUser] =useState({});
     const [searchCategory, setSearchCategory] = useState("Search category");
     const [input, setInput] = useState("");
     const [inputErr, setInputErr] = useState("");
@@ -173,9 +169,19 @@ export default function Search() {
             <br/><br/>
 
             {searchResult.length > 0 && searchCategory === 'User' &&
-                <ul style={{marginLeft : "30px"}}>
+                <ul style={{marginLeft : "30px", width: "50%"}}>
                     {searchResult.map((user, i) =>
-                        <ProfileForSug user={user} username={user.username} firstName={user.firstName} lastName={user.lastName} caption={user.biography} urlText="Follow" iconSize="big" captionSize="small"  storyBorder={true} />
+                        <li style={{listStyle: "none"}}>
+                            <ProfileForSug user={user} 
+                            username={user.username} 
+                            firstName={user.firstName} 
+                            lastName={user.lastName} 
+                            caption={user.biography} 
+                            urlText="Follow" 
+                            iconSize="big" 
+                            captionSize="small" 
+                            image={user.profilePhoto} storyBorder={true} />
+                        </li>
                     )}
                 </ul>
             }

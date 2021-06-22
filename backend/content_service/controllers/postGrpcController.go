@@ -64,13 +64,13 @@ func (c *PostGrpcController) CreatePost(ctx context.Context, in *protopb.Post) (
 				return &protopb.EmptyResponseContent{}, status.Errorf(codes.Unknown, "cannot tag selected users")
 			}
 
-			isPublic, err := grpc_common.CheckIfPublicProfile(ctx, in.Id)
+			isPublic, err := grpc_common.CheckIfPublicProfile(ctx, in.UserId)
 			if err != nil {
 				c.logger.ToStdoutAndFile("CreatePost", "Post creation attempt failed by "+claims.UserId+", cannot tag "+tag.UserId, logger.Error)
 				return &protopb.EmptyResponseContent{}, status.Errorf(codes.Unknown, err.Error())
 			}
 
-			isBlocked, err := grpc_common.CheckIfBlocked(ctx, in.Id, claims.UserId)
+			isBlocked, err := grpc_common.CheckIfBlocked(ctx, in.UserId, claims.UserId)
 			if err != nil {
 				c.logger.ToStdoutAndFile("CreatePost", "Post creation attempt failed by "+claims.UserId+", cannot tag "+tag.UserId, logger.Error)
 				return &protopb.EmptyResponseContent{}, status.Errorf(codes.Unknown, err.Error())

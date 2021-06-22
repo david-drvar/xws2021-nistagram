@@ -261,6 +261,12 @@ service Content {
     };
   }
 
+  rpc GetAllContentComplaints (EmptyRequestContent) returns (ContentComplaintArray) {
+    option(google.api.http) = {
+      get: "/complaint/get",
+    };
+  }
+
   /* * * * * * * * * * * * */
 
 }
@@ -340,6 +346,7 @@ message Story {
   google.protobuf.Timestamp createdAt = 7;
   repeated Media media = 8;
   bool isCloseFriends = 9;
+  repeated Hashtag hashtags = 10;
 }
 
 message StoriesArray {
@@ -453,6 +460,10 @@ message ContentComplaint {
   string status = 4;
   bool isPost = 5;
   string userId = 6;
+}
+
+message ContentComplaintArray {
+  repeated ContentComplaint content_complaints = 1;
 }
 
 /* * * * * * * * * * * * */

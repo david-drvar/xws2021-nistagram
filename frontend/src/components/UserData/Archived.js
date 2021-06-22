@@ -5,10 +5,6 @@ function Archived() {
     const dispatch = useDispatch()
     const store = useSelector(state => state);
 
-    useEffect(() => {
-        if(store.user.role === 'Admin' || store.user.role === "") window.location.replace("http://localhost:3000/unauthorized");
-    }, []);
-
     return (
         <div style={{marginTop:'55%'}}>
         </div>

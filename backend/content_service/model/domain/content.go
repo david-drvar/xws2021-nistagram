@@ -14,6 +14,7 @@ type Objava struct {
 	Location    string
 	CreatedAt   time.Time
 	Media       []Media
+	Hashtags 	[]Hashtag
 }
 
 type Post struct {
@@ -21,7 +22,6 @@ type Post struct {
 	Comments []Comment
 	Likes    []Like
 	Dislikes []Like
-	Hashtags []Hashtag
 }
 
 type ReducedPost struct {

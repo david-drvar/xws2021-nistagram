@@ -11,6 +11,7 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
+// Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
 // PrivacyClient is the client API for Privacy service.
@@ -159,8 +160,8 @@ type UnsafePrivacyServer interface {
 	mustEmbedUnimplementedPrivacyServer()
 }
 
-func RegisterPrivacyServer(s *grpc.Server, srv PrivacyServer) {
-	s.RegisterService(&_Privacy_serviceDesc, srv)
+func RegisterPrivacyServer(s grpc.ServiceRegistrar, srv PrivacyServer) {
+	s.RegisterService(&Privacy_ServiceDesc, srv)
 }
 
 func _Privacy_CreatePrivacy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -307,7 +308,10 @@ func _Privacy_GetUserPrivacy_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
-var _Privacy_serviceDesc = grpc.ServiceDesc{
+// Privacy_ServiceDesc is the grpc.ServiceDesc for Privacy service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var Privacy_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "proto.Privacy",
 	HandlerType: (*PrivacyServer)(nil),
 	Methods: []grpc.MethodDesc{

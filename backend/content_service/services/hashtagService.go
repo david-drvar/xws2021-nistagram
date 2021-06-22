@@ -70,3 +70,11 @@ func (service HashtagService) GetAllHashtags(ctx context.Context) ([]domain.Hash
 
 	return hashtags, nil
 }
+
+func (service HashtagService) GetPostHashtags(ctx context.Context, postId string) ([]domain.Hashtag, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "GetPostHashtags")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.hashtagRepository.GetPostHashtags(ctx, postId)
+}

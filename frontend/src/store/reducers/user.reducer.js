@@ -30,6 +30,10 @@ export const user = (state = initialState, action) => {
                 username: action.data.username,
                 photo: action.data.photo,
         }
+        case userConstants.LOGOUT_REQUEST:
+            return {
+                ...initialState
+            };
         default: 
             return state;
     }

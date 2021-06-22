@@ -127,7 +127,6 @@ func (service *FavoritesService) GetUserFavoritesOptimized(ctx context.Context, 
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
-
 	collections, err := service.GetAllCollections(ctx, userId)
 	if err != nil {
 		return domain.Favorites{}, nil
@@ -135,14 +134,17 @@ func (service *FavoritesService) GetUserFavoritesOptimized(ctx context.Context, 
 
 	reducedCollections := []domain.Collection{}
 	for _, collection := range collections {
+		dbPosts, err := service.favoritesRepository.GetFavoritesFromCollection(ctx, collection.Id)
+		if err != nil { return domain.Favorites{}, err }
+
 		reducedPosts := []domain.Post{}
-		for _, post := range collection.Posts{
+		for _, post := range dbPosts{
 			reducedPosts = append(reducedPosts, domain.Post{
-				Objava: domain.Objava{Id: post.Id},
+				Objava: domain.Objava{Id: post.PostId},
 			})
 		}
 
-		collections = append(collections, domain.Collection{
+		reducedCollections = append(reducedCollections, domain.Collection{
 			Id:     collection.Id,
 			Name:   collection.Name,
 			UserId: collection.UserId,

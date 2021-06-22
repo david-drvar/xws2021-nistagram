@@ -1,5 +1,6 @@
 import "./../../style/PostHeader.css";
 import ProfileIcon from "../ProfileComponent/ProfileIcon";
+import { NavLink } from 'react-router-dom'
 
 const PostHeader = (props) => {
     const {
@@ -21,7 +22,7 @@ const PostHeader = (props) => {
         {(username || caption) && !hideUsername && (
           <div className="textContainer">
             {/* Make username clickable */}
-            <span className="username">{username}</span>
+            <span> <NavLink className="username" to={{pathname: `/profile/${username}`,}}>{username}</NavLink> </span>
             <span className={`caption ${captionSize}`}>{caption}</span>
           </div>
         )}

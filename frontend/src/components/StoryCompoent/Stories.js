@@ -15,6 +15,7 @@ const Stories = () => {
     useEffect(()=>{
         storyService.getHomepageStories({ jwt: store.user.jwt })
             .then(response => {
+                console.log(response)
                 if(response.status === 200) {
                     setStories(convertToComponentArray([...response.data.stories]));
                     setLoading(false);
@@ -26,7 +27,7 @@ const Stories = () => {
             })
     }, [])
     
-    const convertToComponentArray = (stories) => stories.map((story) => <Story story={story} /> )
+    const convertToComponentArray = (stories) => stories.map((story) => <Story fixMargins={true} story={story} /> )
 
     return (
         <div className={`stories ${loading ? "loading" : ""}`}>

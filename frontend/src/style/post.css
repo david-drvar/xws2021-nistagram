@@ -23,6 +23,17 @@
     margin-bottom: 0px;
 }
 
+.Post .Post-caption{
+    color: var(--font-color-primary) !important;
+}
+
+.Post .Post-caption .username{
+    color: var(--font-color-primary) !important;
+    font-weight: 500;
+    font-size: 1em;
+}
+
+
 .Post .avatar img {
     width: 100%;
     height: 100%;

@@ -16,7 +16,6 @@ function ViewMyVerificationRequests() {
     const store = useSelector(state => state);
 
     useEffect(() => {
-        if(store.user.role === 'Admin' || store.user.role === "") window.location.replace("http://localhost:3000/unauthorized");
         getVerificationRequestsByUser();
     }, [])
 

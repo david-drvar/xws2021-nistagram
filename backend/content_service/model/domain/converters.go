@@ -21,11 +21,11 @@ func (p *Post) ConvertFromGrpc(post *protopb.Post) *Post {
 			Location:    post.Location,
 			CreatedAt:   post.CreatedAt.AsTime(),
 			Media:       ConvertMultipleMediaFromGrpc(post.Media),
+			Hashtags: 	 ConvertMultipleHashtagFromGrpc(post.Hashtags),
 		},
 		Comments: ConvertMultipleCommentsFromGrpc(post.Comments),
 		Likes:    ConvertMultipleLikesFromGrpc(post.Likes),
 		Dislikes: ConvertMultipleLikesFromGrpc(post.Dislikes),
-		Hashtags: ConvertMultipleHashtagFromGrpc(post.Hashtags),
 	}
 }
 
@@ -42,6 +42,7 @@ func (p Post) ConvertToGrpc() *protopb.Post {
 		Comments:    ConvertMultipleCommentsToGrpc(p.Comments),
 		Likes:       ConvertMultipleLikesToGrpc(p.Likes),
 		Dislikes:    ConvertMultipleLikesToGrpc(p.Dislikes),
+		Hashtags: 	 ConvertMultipleHashtagToGrpc(p.Hashtags),
 	}
 }
 
@@ -65,14 +66,13 @@ func (s Story) ConvertToGrpc() *protopb.Story {
 		Location:       s.Location,
 		CreatedAt:      timestamppb.New(s.CreatedAt),
 		Media:          ConvertMultipleMediaToGrpc(s.Media),
+		Hashtags: 	 	ConvertMultipleHashtagToGrpc(s.Hashtags),
 		IsCloseFriends: s.IsCloseFriends,
 	}
 }
 
 func (s *Story) ConvertFromGrpc(story *protopb.Story) *Story {
-	if story == nil {
-		story = &protopb.Story{}
-	}
+	if story == nil {story = &protopb.Story{}}
 	return &Story{
 		Objava: Objava{
 			Id:          story.Id,
@@ -83,6 +83,7 @@ func (s *Story) ConvertFromGrpc(story *protopb.Story) *Story {
 			Location:    story.Location,
 			CreatedAt:   story.CreatedAt.AsTime(),
 			Media:       ConvertMultipleMediaFromGrpc(story.Media),
+			Hashtags: 	 ConvertMultipleHashtagFromGrpc(story.Hashtags),
 		},
 		IsCloseFriends: story.IsCloseFriends,
 	}
@@ -497,6 +498,25 @@ func ConvertMultipleHashtagFromGrpc(t []*protopb.Hashtag) []Hashtag {
 	return hashtags
 }
 
+func ConvertMultipleHashtagToGrpc(t []Hashtag) []*protopb.Hashtag {
+	hashtags := []*protopb.Hashtag{}
+	if t != nil {
+		for _, hashtag := range t {
+			hashtags = append(hashtags, hashtag.ConvertToGrpc())
+		}
+	}
+
+	return hashtags
+}
+
+func (h *Hashtag) ConvertToGrpc() *protopb.Hashtag {
+	if h == nil { h = &Hashtag{} }
+	return &protopb.Hashtag{
+		Id:   h.Id,
+		Text: h.Text,
+	}
+}
+
 func (c *ContentComplaint) ConvertFromGrpc(contentComplaint *protopb.ContentComplaint) *ContentComplaint {
 	if c == nil {
 		c = &ContentComplaint{}
@@ -508,5 +528,16 @@ func (c *ContentComplaint) ConvertFromGrpc(contentComplaint *protopb.ContentComp
 		Status:   model.RequestStatus(contentComplaint.Status),
 		IsPost:   contentComplaint.IsPost,
 		UserId:   contentComplaint.UserId,
+	}
+}
+
+func (c *ContentComplaint) ConvertToGrpc() *protopb.ContentComplaint {
+	return &protopb.ContentComplaint{
+		Id:       c.Id,
+		Category: string(c.Category),
+		PostId:   c.PostId,
+		Status:   string(c.Status),
+		IsPost:   c.IsPost,
+		UserId:   c.UserId,
 	}
 }

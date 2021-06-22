@@ -42,7 +42,7 @@ const IndexPage = () => {
                 username: response.data.username,
                 photo: response.data.photo,
             }))
-            history.push({ pathname: '/home' })
+            history.push({ pathname: '/' })
         }else{
             if (reCaptcha >= 2) {
                 setCaptcha(reCaptcha+1);
@@ -109,7 +109,7 @@ const IndexPage = () => {
                     username: response.data.username,
                     photo: response.data.photo,
                 }))
-                history.push({ pathname: '/home' })
+                history.push({ pathname: '/' })
             })
             .catch(err => {
                 if (reCaptcha >= 2) {

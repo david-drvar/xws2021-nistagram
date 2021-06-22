@@ -8,8 +8,8 @@ import {useHistory} from "react-router-dom";
 import Switch from "react-switch";
 
 function BlockMuteAndNotifications(props){
-    const {isApprovedRequest,isMuted,notifications} = props;
-    const[muted,setIsMuted]=useState({})
+    const { isApprovedRequest, isMuted, notifications } = props;
+    const [muted, setIsMuted]=useState({})
     const [showBlockModal, setBlockModal] = useState(false);
     const [showMuteModal, setMuteModal] = useState(false);
     const [showNotificationsModal, setNotificationsModal] = useState(false);
@@ -67,8 +67,7 @@ function BlockMuteAndNotifications(props){
         })
         if (response.status === 200) {
            console.log("USPEO")
-            history.push({ pathname: '/home' })
-
+            history.push({ pathname: '/' })
         } else {
             console.log("Nije uspeo")
         }

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Modal } from "react-bootstrap";
 import { useParams } from 'react-router-dom'
+import { ReactComponent as VerificationSymbol } from "../../images/icons/verification-symbol.svg";
 
 import FollowAndUnfollow from "./FollowAndUnfollow";
 import Navigation from "../HomePage/Navigation";
@@ -11,12 +12,13 @@ import BlockMuteAndNotifications from "./BlockMuteAndNotifications";
 import Highlight from './../StoryCompoent/Highlight';
 import PostPreviewGrid from './../Post/PostPreviewGrid';
 import Spinner from './../../helpers/spinner';
-
+import Story from './../StoryCompoent/Story';
 
 import userService from "../../services/user.service";
 import privacyService from "../../services/privacy.service";
 import followersService from "../../services/followers.service";
 import postService from './../../services/post.service';
+import storyService from './../../services/story.service';
 import highlightsService from './../../services/highlights.service';
 import toastService from './../../services/toast.service';
 
@@ -48,12 +50,8 @@ const Profile = () => {
         isCommentNotificationEnabled: false
     })
 
-    const [isMessageNotificationEnabled, setMessageNotifications] = useState(false);
-    const [isPostNotificationEnabled, setPostNotifications] = useState(false);
-    const [isStoryNotificationEnabled, setStoryNotifications] = useState(false);
-    const [isCommentNotificationEnabled, setCommentNotifications] = useState(false);
-
     const [posts, setPosts] = useState([]);
+    const [stories, setStories] = useState([]);
     const [highlights, setHighlights] = useState([]);
 
     const dispatch = useDispatch()
@@ -71,6 +69,7 @@ const Profile = () => {
                 getFollowers(tempUser.id);
                 getFollowing(tempUser.id);
                 getPosts(tempUser.id);
+                getStories(tempUser);
                 getHighlights(tempUser.id);
             }
         })();
@@ -91,11 +90,32 @@ const Profile = () => {
         }
     }
 
+    const getStories = async (user) => {
+        const response = await storyService.getUsersStories({
+            jwt: store.user.jwt,
+            userId: user.id
+        })
+        
+        if (response.status === 200){ 
+            setStories({
+                username: user.username,
+                userPhoto: user.profilePhoto,
+                stories: [...response.data.stories]
+            })
+        }
+        else{
+            console.log(response);
+            toastService.show("error", "Could not retrieve user's stories.")
+        }
+    }
+
     const getHighlights = async (userId) => {
         const response = await highlightsService.getUserHighlights({
             jwt: store.user.jwt,
             userId: userId
         })
+
+        console.log(response);
 
         if (response.status === 200) {
             setHighlights([...response.data.highlights])
@@ -114,6 +134,7 @@ const Profile = () => {
 
         if (response.status === 200) {
             setUser(response.data)
+            console.log(response.data)
             return response.data
         } else {
             console.log("getuserbyusername error")
@@ -192,7 +213,6 @@ const Profile = () => {
         } else {
             console.log("followers ne radi")
         }
-
     }
 
     function handleModalFollowers() {
@@ -209,14 +229,21 @@ const Profile = () => {
         <div>
             <Navigation/>
             <div className="profileGrid">
-                <div className="profileHeader">
-                    <img alt="" src={user.profilePhoto ? user.profilePhoto : ""}/>
-                    <div className="info">
-                        <div className="fullname">
-                            {user.firstName} {user.lastName}
-                            {follow && <span className="blockMute">
-                                    <BlockMuteAndNotifications isApprovedRequest={isApprovedRequest} isMuted={isMuted}
-                                                               notifications={notifications}/>
+                    <div className="profileHeader">
+                        { stories.stories && stories.stories.length > 0 && 
+                        (!follow || // Moj profil
+                        (follow && publicProfile) || // Tudji javan 
+                        (follow && !publicProfile  && isApprovedRequest)) ?
+                            <Story story={stories} iconSize={"xxl"} hideUsername={true} /> :
+                            <img style={{marginLeft: "-1em", paddingRight: "4px"}} alt="" src={user.profilePhoto}/>
+                        }
+                        <div className="info">
+                            <div className="fullname">
+                                {user.firstName} {user.lastName} 
+                                {user.role === "Verified" && <span><VerificationSymbol style={{width: "20px", height: "20px", marginLeft: "10px", display: "inline-block"}} fill="#0095f6" /></span>}
+                                {follow && <span className="blockMute">
+                                    <BlockMuteAndNotifications 
+                                        isApprovedRequest={isApprovedRequest} isMuted={isMuted} notifications={notifications} />
                                 </span>
                             }
                         </div>
@@ -238,7 +265,7 @@ const Profile = () => {
                         {user.biography && <div>{user.biography}</div>}
                         {user.website &&
                         <a className="website" target="_blank" rel="noreferrer"
-                           href={user.website.includes('http://') ? user.website : 'http://' + user.website}>
+                           href={user.website.includes('https://') ? user.website : `https://${user.website}`}>
                             {user.website}
                         </a>}
                         {follow &&
@@ -251,9 +278,9 @@ const Profile = () => {
                 </div>
 
                 <div className="content">
-                    {!follow || // Moj profil 
+                    {(!follow || // Moj profil 
                     (follow && publicProfile) || // Tudji javan 
-                    (follow && !publicProfile && isApprovedRequest) && // Tudji privatan koji ja pratim
+                    (follow && !publicProfile && isApprovedRequest)) && // Tudji privatan koji ja pratim
                     (<div className="highlights">
                         {loadingHighlights ?
                             <div style={{position: "relative", left: "45%", marginTop: "50px"}}>
@@ -267,10 +294,9 @@ const Profile = () => {
                     </div>)
                     }
 
-                    {
-                        (!follow || // Moj profil
-                            (follow && publicProfile) || // Tudji javan
-                            (follow && !publicProfile && isApprovedRequest)) && // Tudji privatan koji ja pratim
+                    {(!follow || // Moj profil
+                    (follow && publicProfile) || // Tudji javan
+                    (follow && !publicProfile && isApprovedRequest)) && // Tudji privatan koji ja pratim
                         <div className="posts">
                             {loadingPosts ?
                                 <div style={{position: "relative", left: "45%", marginTop: "50px"}}>

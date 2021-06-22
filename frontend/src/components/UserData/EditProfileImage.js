@@ -9,11 +9,6 @@ function EditProfileImage(){
     const [profilePhoto, setProfilePhoto] = useState("");
     const store = useSelector(state => state);
 
-    useEffect(() => {
-        if(store.user.role === "") window.location.replace("http://localhost:3000/unauthorized");
-    }, []);
-
-
     function handleChangeImage(evt) {
         console.log("Uploading");
         var self = this;

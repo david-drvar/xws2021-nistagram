@@ -6,6 +6,8 @@ import (
 )
 
 func FillDatabase(db *gorm.DB) error {
+	// dropTables(db)
+
 	err := db.AutoMigrate(&persistence.User{},
 		&persistence.UserAdditionalInfo{},
 		&persistence.Privacy{},
@@ -17,4 +19,17 @@ func FillDatabase(db *gorm.DB) error {
 		)
 
 	return err
+}
+
+func dropTables(db *gorm.DB) {
+	if db.Migrator().HasTable(&persistence.User{}) {
+		db.Migrator().DropTable(&persistence.User{},
+			&persistence.UserAdditionalInfo{},
+			&persistence.Privacy{},
+			&persistence.BlockedUsers{},
+			&persistence.Followers{},
+			&persistence.VerificationRequest{},
+			&persistence.APIKeys{},
+			&persistence.UserNotification{})
+	}
 }

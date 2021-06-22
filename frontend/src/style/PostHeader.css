@@ -17,6 +17,8 @@
 .post-header .textContainer .username{
     font-weight: 500;
     margin-bottom: 0px;
+    font-size: 1em;
+    color: var(--font-color-primary) !important;
 }
 
 .post-header .textContainer .username:hover{

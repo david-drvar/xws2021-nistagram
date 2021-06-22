@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (p Post) ConvertToDomain(comments []domain.Comment, likes []domain.Like, dislikes []domain.Like, media []domain.Media) domain.Post{
+func (p Post) ConvertToDomain(comments []domain.Comment, likes []domain.Like, dislikes []domain.Like, media []domain.Media, hashtags []domain.Hashtag) domain.Post{
 	return domain.Post{
 		Objava:   domain.Objava{
 			Id:          p.Id,
@@ -19,6 +19,7 @@ func (p Post) ConvertToDomain(comments []domain.Comment, likes []domain.Like, di
 			Location:    p.Location,
 			CreatedAt:   p.CreatedAt,
 			Media:       media,
+			Hashtags:    hashtags,
 		},
 		Comments: comments,
 		Likes:    likes,
@@ -71,7 +72,7 @@ func (s Story) ConvertToPersistence(story domain.Story) Story {
 	}
 }
 
-func (s Story) ConvertToDomain(media []domain.Media) domain.Story {
+func (s Story) ConvertToDomain(media []domain.Media, hashtags []domain.Hashtag) domain.Story {
 	return domain.Story{
 		Objava: domain.Objava {
 			Id:          s.Id,
@@ -81,7 +82,8 @@ func (s Story) ConvertToDomain(media []domain.Media) domain.Story {
 			Description: s.Description,
 			Location:    s.Location,
 			CreatedAt:   s.CreatedAt,
-			Media: media,
+			Media: 		 media,
+			Hashtags:    hashtags,
 		},
 		IsCloseFriends: s.IsCloseFriends,
 	}

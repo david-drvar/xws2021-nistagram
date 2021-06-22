@@ -1,3 +1,7 @@
+body{
+    overflow-y: scroll; /* Fixing page flickering when height goes over 100% */
+}
+
 .toast {
     z-index: 99999999 !important;
     font-family: "Arial";

@@ -51,7 +51,7 @@ func (c *HighlightGrpcController) GetAllHighlights (ctx context.Context, in *pro
 		if !isPublic{
 			return &protopb.HighlightsArray{}, status.Errorf(codes.Unknown, "this user is private")
 		}
-	}else  if claims.UserId != in.Id {
+	}else if claims.UserId != in.Id {
 		followConnection, err := grpc_common.CheckFollowInteraction(ctx, in.Id, claims.UserId)
 		if err != nil {
 			return &protopb.HighlightsArray{}, status.Errorf(codes.Unknown, err.Error())
@@ -72,6 +72,8 @@ func (c *HighlightGrpcController) GetAllHighlights (ctx context.Context, in *pro
 		if isBlocked || (!isPublic && !followConnection.IsApprovedRequest ) {
 			return &protopb.HighlightsArray{}, nil
 		}
+	}else if claims.UserId == in.Id {
+		isCloseFriend = true
 	}
 
 	highlights, err := c.service.GetAllHighlights(ctx, in.Id)

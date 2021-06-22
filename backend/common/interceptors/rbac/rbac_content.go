@@ -26,7 +26,7 @@ func SetupContentRBAC(db *gorm.DB) error {
 			getAllCollections, getCollection, createCollection, removeCollection, getUserFavorites, getUserFavoritesOptimized, createFavorite, removeFavorite,
 			createHashtag, getAllHashtags,
 			getAllHighlights, getHighlight, createHighlight, removeHighlight, createHighlightStory, removeHighlightStory, getUserLikedOrDislikedPosts,
-			createContentComplaint,
+			createContentComplaint, getAllContentComplaints,
 		}
 		result = db.Create(&permissions)
 		if result.Error != nil {
@@ -70,6 +70,7 @@ func SetupContentRBAC(db *gorm.DB) error {
 			basicGetAllHashtags, adminGetAllHashtags, agentGetAllHashtags, verifiedGetAllHashtags,
 			basicGetUserLikedOrDislikedPosts, verifiedGetUserLikedOrDislikedPosts,
 			basicCreateContentComplaint, verifiedCreateContentComplaint, agentCreateContentComplaint,
+			adminGetAllContentComplaints,
 		}
 		result = db.Create(&rolePermissions)
 		if result.Error != nil {
@@ -107,7 +108,7 @@ var (
 	createStory       = Permission{Id: "9bf49450-4f25-46bf-9691-428f112868b5", Name: "CreateStory"}
 	getAllStories     = Permission{Id: "7440d209-98f9-4dad-898c-8ec5daa2d71d", Name: "GetAllStories"}
 	getStoriesForUser = Permission{Id: "01c4aef8-b6fa-48cd-98d8-02af401c83e2", Name: "GetStoriesForUser"}
-	getMyStories 	  = Permission{Id: "7172c042-6d9a-4cdb-8c59-ab65427df96b", Name: "GetMyStories"}
+	getMyStories      = Permission{Id: "7172c042-6d9a-4cdb-8c59-ab65427df96b", Name: "GetMyStories"}
 	removeStory       = Permission{Id: "62e8ef56-5096-46e5-a57a-5e2025240d86", Name: "RemoveStory"}
 	getStoryById      = Permission{Id: "9e8ba8ed-f14a-4ceb-9006-90f24f487db8", Name: "GetStoryById"}
 
@@ -119,14 +120,14 @@ var (
 	getDislikesForPost          = Permission{Id: "48067fbd-f078-40d0-8dee-a7f5ece74cb3", Name: "GetDislikesForPost"}
 	getUserLikedOrDislikedPosts = Permission{Id: "94ec116c-92fe-4cad-b262-a566d88c2041", Name: "GetUserLikedOrDislikedPosts"}
 
-	getAllCollections = Permission{Id: "f7ce029b-1d08-40d6-bf16-17a2e4b26c43", Name: "GetAllCollections"}
+	getAllCollections         = Permission{Id: "f7ce029b-1d08-40d6-bf16-17a2e4b26c43", Name: "GetAllCollections"}
 	getUserFavoritesOptimized = Permission{Id: "f99726f8-f73b-49eb-806b-b0d45c0ae4f6", Name: "GetUserFavoritesOptimized"}
-	getCollection     = Permission{Id: "1c0d7507-4e50-49cf-ae3c-9d330583acdf", Name: "GetCollection"}
-	createCollection  = Permission{Id: "ebd1ebf8-07fb-4062-a5ee-cedb08a8236a", Name: "CreateCollection"}
-	removeCollection  = Permission{Id: "672eb20a-26e5-42b7-a666-708b80f983ee", Name: "RemoveCollection"}
-	getUserFavorites  = Permission{Id: "964d53bc-cde0-4274-9b2f-59795189550e", Name: "GetUserFavorites"}
-	createFavorite    = Permission{Id: "2aff2df4-9a89-4cb8-846b-8a43a3f08c27", Name: "CreateFavorite"}
-	removeFavorite    = Permission{Id: "2ff55e61-a11c-46ae-80c3-c4b5caab9da0", Name: "RemoveFavorite"}
+	getCollection             = Permission{Id: "1c0d7507-4e50-49cf-ae3c-9d330583acdf", Name: "GetCollection"}
+	createCollection          = Permission{Id: "ebd1ebf8-07fb-4062-a5ee-cedb08a8236a", Name: "CreateCollection"}
+	removeCollection          = Permission{Id: "672eb20a-26e5-42b7-a666-708b80f983ee", Name: "RemoveCollection"}
+	getUserFavorites          = Permission{Id: "964d53bc-cde0-4274-9b2f-59795189550e", Name: "GetUserFavorites"}
+	createFavorite            = Permission{Id: "2aff2df4-9a89-4cb8-846b-8a43a3f08c27", Name: "CreateFavorite"}
+	removeFavorite            = Permission{Id: "2ff55e61-a11c-46ae-80c3-c4b5caab9da0", Name: "RemoveFavorite"}
 
 	createHashtag = Permission{Id: "21202557-fcf5-43da-99f2-78f51b4d601e", Name: "CreateHashtag"}
 
@@ -137,8 +138,9 @@ var (
 	createHighlightStory = Permission{Id: "fd684575-a6ac-4aa2-b4ad-d967a65cb808", Name: "CreateHighlightStory"}
 	removeHighlightStory = Permission{Id: "46f3c5f7-1979-410c-96ed-d9957ef58bac", Name: "RemoveHighlightStory"}
 
-	getAllHashtags         = Permission{Id: "1932ca5d-24af-4dcf-8f42-4ca32c799815", Name: "GetAllHashtags"}
-	createContentComplaint = Permission{Id: "334e6ffd-a9d7-4e83-bfb5-9f5f053b0069", Name: "CreateContentComplaint"}
+	getAllHashtags          = Permission{Id: "1932ca5d-24af-4dcf-8f42-4ca32c799815", Name: "GetAllHashtags"}
+	createContentComplaint  = Permission{Id: "334e6ffd-a9d7-4e83-bfb5-9f5f053b0069", Name: "CreateContentComplaint"}
+	getAllContentComplaints = Permission{Id: "7f2315ec-909e-4856-9ccf-01c30ae76263", Name: "GetAllContentComplaints"}
 )
 
 var (
@@ -200,9 +202,9 @@ var (
 	agentGetStoriesForUser         = RolePermission{RoleId: agent.Id, PermissionId: getStoriesForUser.Id}
 	nonregisteredGetStoriesForUser = RolePermission{RoleId: nonregistered.Id, PermissionId: getStoriesForUser.Id}
 
-	basicGetMyStories         = RolePermission{RoleId: basic.Id, PermissionId: getMyStories.Id}
-	verifiedGetMyStories      = RolePermission{RoleId: verified.Id, PermissionId: getMyStories.Id}
-	agentGetMyStories         = RolePermission{RoleId: agent.Id, PermissionId: getMyStories.Id}
+	basicGetMyStories    = RolePermission{RoleId: basic.Id, PermissionId: getMyStories.Id}
+	verifiedGetMyStories = RolePermission{RoleId: verified.Id, PermissionId: getMyStories.Id}
+	agentGetMyStories    = RolePermission{RoleId: agent.Id, PermissionId: getMyStories.Id}
 
 	basicRemoveStory    = RolePermission{RoleId: basic.Id, PermissionId: removeStory.Id}
 	verifiedRemoveStory = RolePermission{RoleId: verified.Id, PermissionId: removeStory.Id}
@@ -329,6 +331,8 @@ var (
 	basicCreateContentComplaint    = RolePermission{RoleId: basic.Id, PermissionId: createContentComplaint.Id}
 	verifiedCreateContentComplaint = RolePermission{RoleId: verified.Id, PermissionId: createContentComplaint.Id}
 	agentCreateContentComplaint    = RolePermission{RoleId: agent.Id, PermissionId: createContentComplaint.Id}
+
+	adminGetAllContentComplaints = RolePermission{RoleId: admin.Id, PermissionId: getAllContentComplaints.Id}
 
 	// - - - - - - - - -
 

@@ -48,6 +48,24 @@ class StoryService extends RootService {
         return response
     }
 
+    async createStory(data){
+        const { id, userId, isAd, type, description, location, createdAt, isCloseFriends,
+            media, comments, likes, dislikes, hashtags, jwt } = data;
+        const headers = this.setupHeaders(jwt)
+
+        const response = this.apiClient.post('', {
+            id, userId, isAd, type, description, location, createdAt, isCloseFriends,
+            media, comments, likes, dislikes, hashtags
+        }, {headers})
+            .then(res => {
+                return res
+            }).catch(err => {
+                console.error(err)
+                return err
+            })
+        return response
+    }
+
     // Convert story with multiple media to multiple stories with single media, to comply with react-insta-stories
     convertStory(story){
         if(story.media.length === 1) return [{

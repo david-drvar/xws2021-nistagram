@@ -51,3 +51,21 @@ func (c *ComplaintGrpcController) CreateContentComplaint(ctx context.Context, in
 
 	return &protopb.EmptyResponseContent{}, nil
 }
+
+func (c *ComplaintGrpcController) GetAllContentComplaints(ctx context.Context, in *protopb.EmptyRequestContent) (*protopb.ContentComplaintArray, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "GetAllContentComplaints")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	complaints, err := c.service.GetAllContentComplaints(ctx)
+	if err != nil {
+		return &protopb.ContentComplaintArray{}, status.Errorf(codes.Unknown, "could not get complaints")
+	}
+
+	responseComplaints := []*protopb.ContentComplaint{}
+	for _, complaint := range complaints {
+		responseComplaints = append(responseComplaints, complaint.ConvertToGrpc())
+	}
+
+	return &protopb.ContentComplaintArray{ContentComplaints: responseComplaints}, nil
+}

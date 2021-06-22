@@ -3,6 +3,8 @@
 .stories {
     position: relative;
     display: flex;
+    flex-direction: row;
+    row-gap: 1em;
     align-content: center;
     background-color: #ffffff;
     border: 1px solid var(--border-color-grey-secondary);

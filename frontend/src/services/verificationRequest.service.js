@@ -1,5 +1,5 @@
 import RootService from './root.service'
-import {contentService, userService as getUserService} from './../backendPaths';
+import { userService as getUserService } from './../backendPaths';
 
 class VerificationRequestService extends RootService {
     constructor(){

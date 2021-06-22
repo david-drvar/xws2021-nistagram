@@ -31,3 +31,11 @@ func (service *ComplaintService) CreateContentComplaint(ctx context.Context, con
 
 	return service.complaintRepository.CreateContentComplaint(ctx, contentComplaint)
 }
+
+func (service *ComplaintService) GetAllContentComplaints(ctx context.Context) ([]domain.ContentComplaint, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "CreateContentComplaint")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.complaintRepository.GetAllContentComplaints(ctx)
+}

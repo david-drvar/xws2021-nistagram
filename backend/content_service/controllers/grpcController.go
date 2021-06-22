@@ -210,3 +210,7 @@ func (s *Server) RemoveHighlightStory(ctx context.Context, in *protopb.Highlight
 func (s *Server) CreateContentComplaint(ctx context.Context, in *protopb.ContentComplaint) (*protopb.EmptyResponseContent, error) {
 	return s.complaintController.CreateContentComplaint(ctx, in)
 }
+
+func (s *Server) GetAllContentComplaints(ctx context.Context, in *protopb.EmptyRequestContent) (*protopb.ContentComplaintArray, error) {
+	return s.complaintController.GetAllContentComplaints(ctx, in)
+}

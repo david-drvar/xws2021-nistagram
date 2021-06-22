@@ -18,11 +18,6 @@ function  ProfileInfo(){
     const dispatch = useDispatch()
     const store = useSelector(state => state);
 
-
-    useEffect(() => {
-            if(store.user.role === "") window.location.replace("http://localhost:3000/unauthorized");
-    }, []);
-
     return(
         <div  style={{display: 'grid', gridTemplateColumns: '200px auto',marginLeft: '5%', marginRight: '20%',marginTop:'4.2%'}}>
             <Navigation/>

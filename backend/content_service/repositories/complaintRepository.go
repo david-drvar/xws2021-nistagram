@@ -11,6 +11,7 @@ import (
 
 type ComplaintRepository interface {
 	CreateContentComplaint(context.Context, domain.ContentComplaint) error
+	GetAllContentComplaints(context.Context) ([]domain.ContentComplaint, error)
 }
 
 type complaintRepository struct {
@@ -43,4 +44,31 @@ func (repository *complaintRepository) CreateContentComplaint(ctx context.Contex
 
 	result := repository.DB.Create(&contentComplaintPersistence)
 	return result.Error
+}
+
+func (repository *complaintRepository) GetAllContentComplaints(ctx context.Context) ([]domain.ContentComplaint, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "GetAllContentComplaints")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	var complaintsPersistence []persistence.ContentComplaint
+	var complaintsDomain []domain.ContentComplaint
+
+	result := repository.DB.Find(&complaintsPersistence)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	for _, complaint := range complaintsPersistence {
+		complaintsDomain = append(complaintsDomain, domain.ContentComplaint{
+			Id:       complaint.Id,
+			Category: complaint.Category,
+			PostId:   complaint.PostId,
+			Status:   complaint.Status,
+			IsPost:   complaint.IsPost,
+			UserId:   complaint.UserId,
+		})
+	}
+
+	return complaintsDomain, nil
+
 }

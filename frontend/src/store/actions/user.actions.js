@@ -8,6 +8,10 @@ const loginRequest = (data) => {
     return { type: userConstants.LOGIN_REQUEST, data }
 }
 
+const logoutRequest = () => {
+    return { type: userConstants.LOGOUT_REQUEST }
+}
+
 const followRequest = (data) => {
     return { type: userConstants.FOLLOW_REQUEST, data }
 }
@@ -15,5 +19,6 @@ const followRequest = (data) => {
 export const userActions = {
     registerRequest,
     loginRequest,
+    logoutRequest,
     followRequest
 }

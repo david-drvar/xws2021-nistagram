@@ -23,7 +23,7 @@ func SetupUsersRBAC(db *gorm.DB) error {
 			updatePrivacy, blockUser, unBlockUser, checkIfBlocked, checkUserProfilePublic, getAllPublicUsers, approveAccount, getUserPrivacy,
 			createNotification, readAllNotifications, deleteByTypeAndCreator,
 			getPendingVerificationRequests, changeVerificationRequestStatus, getVerificationRequestsByUserId, getAllVerificationRequests,
-			updateUserPhoto, getUserNotifications,getBlockedUsers, deleteNotification,
+			updateUserPhoto, getUserNotifications, getBlockedUsers, deleteNotification,
 			updateNotification, getByTypeAndCreator,
 		}
 		result = db.Create(&permissions)

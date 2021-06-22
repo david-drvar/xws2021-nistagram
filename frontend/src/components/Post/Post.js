@@ -1,21 +1,23 @@
 import React, { useEffect, useState, useRef } from "react";
+import { NavLink } from "react-router-dom";
 import { useSelector } from 'react-redux';
 import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
 import "../../style/post.css";
+
 import Slider from './Slider'
 import Comment from "./Comment";
 import PostHeader from './PostHeader';
 import CollectionsModal from './CollectionsModal';
+import {Button, Dropdown, Modal} from "react-bootstrap";
 import { ReactComponent as CardButton } from './../../images/icons/cardButton.svg' 
+import PostMenu from "./PostMenu";
+
 import userService from './../../services/user.service';
 import toastService from './../../services/toast.service';
 import likeService from './../../services/like.service';
 import commentService from './../../services/comment.service';
 import favoritesService from './../../services/favorites.service';
-import PostMenu from "./PostMenu";
-import {Button, Dropdown, Modal} from "react-bootstrap";
-import axios from "axios";
 import complaintService from "../../services/complaint.service";
 
 function Post (props) {
@@ -61,7 +63,7 @@ function Post (props) {
         }
         changeLikesText();
         changeDislikesText()
-        getUserCollections()
+        if(store.user.jwt !== "") getUserCollections()
     }, [])
 
     useEffect(()=>{
@@ -80,10 +82,10 @@ function Post (props) {
     }, [newComment])
 
     useEffect(() => {
-        getUserCollections()
+        if(store.user.jwt !== "" && store.user.role !== "Admin") getUserCollections()
     }, [showSaveModal])
 
-    const getUserCollections = () => { 
+    const getUserCollections = () => {
         favoritesService.getUserFavoritesOptimized({
             userId: store.user.id,
             jwt: store.user.jwt,
@@ -94,6 +96,7 @@ function Post (props) {
                 name: "Unclassified",
                 posts: [...response.data.unclassified],
             }];
+            console.log(newCollections)
             setCollections(newCollections)
 
             // Check in which collection the post has been saved
@@ -104,7 +107,6 @@ function Post (props) {
                     setSavedInCollections([...savedInCollections, collection.id])
                 };
             })
-            console.log(response);
         }).catch(err => {
             toastService.show("error", "Could not load your collections. Please try again.")
         })
@@ -126,7 +128,7 @@ function Post (props) {
         if(postUser && postUser.id && postUser.id !== store.user.id){
             const response = await userService.getUserById({
                 id: postUser.id,
-                jwt:store.user.jwt
+                jwt: store.user.jwt
             })
             
             if(response.status === 200){
@@ -143,8 +145,8 @@ function Post (props) {
         }
     }
 
-    const handleLikeClick = async () => await _handleLikeDislikeClick(true)
-    const handleDislikeClick = async () => await _handleLikeDislikeClick(false)
+    const handleLikeClick = async () => store.user.jwt && await _handleLikeDislikeClick(true)
+    const handleDislikeClick = async () => store.user.jwt && await _handleLikeDislikeClick(false)
 
     const _handleLikeDislikeClick = async (isLike) => {
         const response = await likeService.addLike({
@@ -194,6 +196,7 @@ function Post (props) {
     }
 
     const postNewComment = async () => {
+        if(!store.user.jwt) return
         const comment = {
             userId: store.user.id,
             postId: post.id,
@@ -219,34 +222,40 @@ function Post (props) {
     }
 
     const handleSaveClick = () => {
-       store.user.id && setShowSaveModal(!showSaveModal);
+        store.user.jwt && setShowSaveModal(!showSaveModal);
     }
 
-    const handleReportModal =()=>{
-        setReportCategory("");
-        setReportCategoryErr("");
-        setReportModal(!showReportModal)
+    const handleReportModal = () => {
+        if(store.user.jwt !== ""){
+            setReportCategory("");
+            setReportCategoryErr("");
+            setReportModal(!showReportModal)
+        }
     }
 
     const handleReportCategoryChange = (event) => {
-        setReportCategory(event.target.value);
-        setReportCategoryErr("");
+        if(store.user.jwt !== ""){
+            setReportCategory(event.target.value);
+            setReportCategoryErr("");
+        }
     }
 
     const sendReport = async () => {
+        if(store.user.jwt !== "") return;
+
         if (reportCategory === "") {
             console.log(reportCategory);
             setReportCategoryErr("Select report category");
             return;
         }
         const response = await complaintService.createComplaint({
-            id : "",
-            category : reportCategory,
-            postId : post.id,
-            status : "",
-            isPost : true,
-            userId : store.user.id,
-            jwt : store.user.jwt
+            id: "",
+            category: reportCategory,
+            postId: post.id,
+            status: "",
+            isPost: true,
+            userId: store.user.id,
+            jwt: store.user.jwt
         });
         
         if(response.status === 200){
@@ -269,14 +278,16 @@ function Post (props) {
                     image={user.profilePhoto}
                     iconSize="medium"
                     />
-                    <Dropdown>
-                        <Dropdown.Toggle variant="link" id="dropdown-basic">
-                            <CardButton className="cardButton" />
-                        </Dropdown.Toggle>
-                        <Dropdown.Menu>
-                            <Dropdown.Item onClick={handleReportModal}>Report</Dropdown.Item>
-                        </Dropdown.Menu>
-                    </Dropdown>
+                    { store.user.jwt !== "" &&
+                        <Dropdown>
+                            <Dropdown.Toggle variant="link" id="dropdown-basic">
+                                <CardButton className="cardButton" />
+                            </Dropdown.Toggle>
+                            <Dropdown.Menu>
+                                <Dropdown.Item onClick={handleReportModal}>Report</Dropdown.Item>
+                            </Dropdown.Menu>
+                        </Dropdown>
+                    }
             </header>
 
             <div className="slider">
@@ -301,7 +312,7 @@ function Post (props) {
                 <span>Liked by {likesText} and disliked by {dislikesText}. </span>
             </div>
             <div className="Post-caption">
-                <strong> {user.username} </strong> {post.description} 
+                <strong> <NavLink className="username" to={{pathname: `/profile/${user.username}`}}>{user.username}</NavLink> </strong> {post.description} 
                 {post.hashtags.map(hashtag => <span className="hashtag"> #{hashtag.text}</span> )}
             </div>
             <div className="comments">
@@ -329,7 +340,7 @@ function Post (props) {
             </div>
 
             <CollectionsModal 
-                showModal={showSaveModal} 
+                showModal={store.user.jwt !== "" && showSaveModal} 
                 setShowModal={handleSaveClick}
                 collections={collections}
                 setCollections={setCollections}

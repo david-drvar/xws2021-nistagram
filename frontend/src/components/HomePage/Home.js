@@ -20,7 +20,7 @@ const Home = () => {
     const store = useSelector(state => state);
 
     useEffect(() => {
-        checkProfile();
+        // checkProfile();
     },[]);
 
 

@@ -2,8 +2,6 @@ import React, {useEffect, useState} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import PasswordStrengthBar from 'react-password-strength-bar';
 import {Alert, Button, FormControl} from "react-bootstrap";
-import axios from "axios";
-import { userActions } from './../store/actions/user.actions';
 import userService from "../services/user.service";
 
 const RegistrationPage = () => {
@@ -19,18 +17,15 @@ const RegistrationPage = () => {
     const [usernameErr, setUsernameErr] = useState("Enter username");
     const [phoneNumber, setPhoneNumber] = useState("");
     const [phoneNumberErr, setPhoneNumberErr] = useState("Enter phone number in pattern +38160123456");
-    const [id, setId] = useState("");
     const [email, setEmail] = useState("");
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [rePassword, setRePassword] = useState("");
     const [emailErr, setEmailErr] = useState("Enter email");
     const [passwordErr, setPasswordErr] = useState("Enter password");
-    const [blacklistedPassword, setBlacklistedPassword] = useState("Password you entered is too common");
     const [firstNameErr, setFirstNameErr] = useState("Enter first name");
     const [lastNameErr, setLastNameErr] = useState ("Enter last name");
     const [rePasswordErr, setRePasswordErr] = useState("Repeat password");
-    const [validForm, setValidForm] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [successfullyReg, setSuccessfullyReg] = useState(false);
     const [disabled, setDisabled] = useState(false);
@@ -38,9 +33,6 @@ const RegistrationPage = () => {
     const [blacklistedPasswords, setBlacklistedPasswords] = useState([]);
     const [website, setWebsite] = useState("");
     const [profilePhoto, setProfilePhoto] = useState("");
-
-    const dispatch = useDispatch();
-    const store = useSelector(state => state)
 
 
     useEffect(() => {
@@ -96,7 +88,7 @@ const RegistrationPage = () => {
     }
 
     function validationErrorMessage(event) {
-        const { name, value } = event.target;
+        const { name } = event.target;
 
         switch (name) {
             case 'firstName':
@@ -201,23 +193,22 @@ const RegistrationPage = () => {
     async function sendParams() {
         //setBirthDate(new Date(birthDate));
         const jsonDate = birthDate + 'T' + '01:30:15.01Z';
-        console.log(profilePhoto)
 
         const response = await userService.createUser({
             id:'1',
-            firstName : firstName,
-            lastName : lastName,
-            email : email,
-            username : username,
-            password : password,
-            role : 'Basic',
-            birthdate : jsonDate,
-            profilePhoto : profilePhoto,
-            phoneNumber : phoneNumber,
-            sex : 'MAN',
-            isActive : true,
-            biography : biography,
-            website : website,
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            username: username,
+            password: password,
+            role: 'Basic',
+            birthdate: jsonDate,
+            profilePhoto: profilePhoto,
+            phoneNumber: phoneNumber,
+            sex: 'MAN',
+            isActive: true,
+            biography: biography,
+            website: website,
         })
         if (response.status === 200) {
                 console.log(response.data)

@@ -8,6 +8,7 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"log"
+	"os"
 )
 
 type redisServer struct {
@@ -21,10 +22,10 @@ func NewRedisServer(driver neo4j.Driver) *redisServer {
 	}
 }
 
-func (os *redisServer) RedisConnection() {
+func (rs *redisServer) RedisConnection() {
 	// create client and ping redis
 	var err error
-	client := redis.NewClient(&redis.Options{Addr: "localhost:6379", Password: "", DB: 0})
+	client := redis.NewClient(&redis.Options{Addr: os.Getenv("REDIS_HOST"), Password: os.Getenv("REDIS_PW"), DB: 0})
 	if _, err = client.Ping().Result(); err != nil {
 		log.Fatalf("error creating redis client %s", err)
 	}
@@ -55,7 +56,7 @@ func (os *redisServer) RedisConnection() {
 				if m.Action == ActionStart {
 					//todo upisi u bazu novog usera
 					print("AAA from RECOMMENDATION SERVER")
-					_, err := os.followersService.CreateUser(context.Background(), model.User{UserId: m.UserId})
+					_, err := rs.followersService.CreateUser(context.Background(), model.User{UserId: m.UserId})
 					if err != nil {
 						sendToReplyChannel(client, m, ActionError, ServiceUser, ServiceRecommendation)
 					}

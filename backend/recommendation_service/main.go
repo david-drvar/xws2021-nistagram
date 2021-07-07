@@ -42,7 +42,9 @@ func SetupEnvVariables() {
 	os.Setenv("USER_SERVICE", grpc_common.Users_service_address)
 	os.Setenv("CONTENT_SERVICE", grpc_common.Content_service_address)
 	os.Setenv("CHAT_SERVICE", grpc_common.Chat_service_address)
-	os.Setenv("AGENT_SERVICE", grpc_common.Agent_service_address)
+	os.Setenv("AGENT_APPLICATION", grpc_common.Agent_service_address)
+	os.Setenv("REDIS_HOST", "localhost:6379")
+	os.Setenv("REDIS_PW", "")
 }
 
 func CreateUniqueConstraint(driver neo4j.Driver) error {

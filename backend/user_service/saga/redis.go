@@ -6,6 +6,7 @@ import (
 	"github.com/go-redis/redis"
 	"gorm.io/gorm"
 	"log"
+	"os"
 )
 
 type RedisServer struct {
@@ -23,7 +24,7 @@ func NewRedisServer(db *gorm.DB) *RedisServer {
 func (rs *RedisServer) RedisConnection() {
 	// create client and ping redis
 	var err error
-	client := redis.NewClient(&redis.Options{Addr: "localhost:6379", Password: "", DB: 0})
+	client := redis.NewClient(&redis.Options{Addr: os.Getenv("REDIS_HOST"), Password: os.Getenv("REDIS_PW"), DB: 0})
 	if _, err = client.Ping().Result(); err != nil {
 		log.Fatalf("error creating redis client %s", err)
 	}

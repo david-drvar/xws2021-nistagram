@@ -28,6 +28,21 @@ services:
     depends_on: 
       - gateway
       
+  frontend-agent:
+    image: frontend-agent
+    container_name: frontend-agent
+    ports:
+        - 4000:4000
+    environment: 
+      REACT_APP_CHECK: docker-compose
+      REACT_APP_USER_SERVICE: http://localhost:8080/api/users
+      REACT_APP_CONTENT_SERVICE: http://localhost:8080/api/content
+      REACT_APP_CHAT_SERVICE: http://localhost:8080/api/chat
+      REACT_APP_AGENT_SERVICE: http://localhost:8080/api/agent
+      REACT_APP_RECOMMENDATION_SERVICE: http://localhost:8080/api/followers
+    depends_on: 
+      - gateway  
+
   neo4j:
     image: neo4j
     container_name: neo4j
@@ -51,6 +66,10 @@ services:
       DB_PW: root
       USER_SERVICE: http://user_service:8091
       CONTENT_SERVICE: http://content_service:8092
+      CHAT_SERVICE: http://chat_service:8003
+      AGENT_APPLICATION: http://agent_application:8094
+      REDIS_HOST: redis:6379
+      REDIS_PW: ""
     ports: 
       - 8005:8005
       - 8095:8095
@@ -65,7 +84,54 @@ services:
     environment:
       POSTGRES_PASSWORD: root
       POSTGRES_USER: postgres
-      POSTGRES_MULTIPLE_DATABASES: xws_users_service, xws_content_service
+      POSTGRES_MULTIPLE_DATABASES: xws_users_service, xws_content_service, xws_chat_service, xws_agent_application
+
+  redis:
+    image: redis:6.2.4
+    container_name: redis
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+
+
+  chat_service:
+    image: chat_service
+    container_name: chat_service
+    restart: always
+    environment: 
+      Docker_env: env 
+      DB_HOST: postgres
+      DB_NAME: xws_chat_service
+      DB_USER: postgres
+      DB_PW: root
+      RECOMMENDATION_SERVICE: http://recommendation_service:8095
+      CONTENT_SERVICE: http://content_service:8092
+      USER_SERVICE: http://user_service:8091
+      AGENT_APPLICATION: http://agent_application:8094
+    ports: 
+      - 8003:8003
+      - 8093:8093
+    depends_on: 
+      - postgres
+  
+  agent_application:
+    image: agent_application
+    container_name: agent_application
+    restart: always
+    environment: 
+      Docker_env: env 
+      DB_HOST: postgres
+      DB_NAME: xws_agent_application
+      DB_USER: postgres
+      DB_PW: root
+      RECOMMENDATION_SERVICE: http://recommendation_service:8095
+      CONTENT_SERVICE: http://content_service:8092
+      USER_SERVICE: http://user_service:8091
+      CHAT_SERVICE: http://chat_service:8003
+    ports: 
+      - 8004:8004
+      - 8094:8094
+    depends_on: 
+      - postgres
 
   user_service:
     image: user_service
@@ -78,6 +144,10 @@ services:
       DB_PW: root
       RECOMMENDATION_SERVICE: http://recommendation_service:8095
       CONTENT_SERVICE: http://content_service:8092
+      CHAT_SERVICE: http://chat_service:8003
+      AGENT_APPLICATION: http://agent_application:8094
+      REDIS_HOST: redis:6379
+      REDIS_PW: ""
     ports: 
       - 8001:8001
       - 8091:8091
@@ -95,6 +165,8 @@ services:
       DB_PW: root
       RECOMMENDATION_SERVICE: http://recommendation_service:8095
       USER_SERVICE: http://user_service:8091
+      CHAT_SERVICE: http://chat_service:8003
+      AGENT_APPLICATION: http://agent_application:8094
     ports: 
       - 8002:8002
       - 8092:8092

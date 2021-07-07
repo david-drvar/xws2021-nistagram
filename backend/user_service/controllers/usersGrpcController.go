@@ -9,7 +9,9 @@ import (
 	"github.com/david-drvar/xws2021-nistagram/common/tracer"
 	"github.com/david-drvar/xws2021-nistagram/user_service/model/domain"
 	"github.com/david-drvar/xws2021-nistagram/user_service/model/persistence"
+	"github.com/david-drvar/xws2021-nistagram/user_service/saga"
 	"github.com/david-drvar/xws2021-nistagram/user_service/services"
+	//"github.com/david-drvar/xws2021-nistagram/user_service/util/setup"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
@@ -17,21 +19,42 @@ import (
 
 type UserGrpcController struct {
 	service    *services.UserService
+	requestService *services.RegistrationRequestService
 	jwtManager *common.JWTManager
 	logger     *logger.Logger
 }
 
-func NewUserController(db *gorm.DB, jwtManager *common.JWTManager, logger *logger.Logger) (*UserGrpcController, error) {
-	service, err := services.NewUserService(db)
+func NewUserController(db *gorm.DB, jwtManager *common.JWTManager, logger *logger.Logger, redis *saga.RedisServer) (*UserGrpcController, error) {
+	service, err := services.NewUserService(db, redis)
 	if err != nil {
 		return nil, err
 	}
-
+	requestService, err := services.NewRegistrationRequestService(db, redis)
 	return &UserGrpcController{
 		service,
+		requestService,
 		jwtManager,
 		logger,
 	}, nil
+}
+
+func (s *UserGrpcController) CreateAgentUser(ctx context.Context, in *protopb.CreateUserRequest) (*protopb.UsersDTO, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "CreateAdminUser")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	in.User.Role = "Agent"
+	user, err := s.CreateUser(ctx, in)
+	if err != nil {
+		return user, err
+	}
+
+	err = s.requestService.CreateRegistrationRequest(ctx, user.Id)
+	if err != nil {
+		return user, err
+	}
+
+	return user, nil
+
 }
 
 func (s *UserGrpcController) CreateUser(ctx context.Context, in *protopb.CreateUserRequest) (*protopb.UsersDTO, error) {
@@ -210,7 +233,7 @@ func (s *UserGrpcController) GetPhotoById(ctx context.Context, in *protopb.Reque
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	photo, err := s.service.GetUserPhoto(ctx, in.Id)
-	if err != nil{
+	if err != nil {
 		return &protopb.UserPhoto{}, err
 	}
 
@@ -249,7 +272,7 @@ func (s *UserGrpcController) LoginUser(ctx context.Context, in *protopb.LoginReq
 		return &protopb.LoginResponse{}, err
 	}
 
-	s.logger.ToStdoutAndFile("LoginUser", "Successful login by " + in.Email, logger.Info)
+	s.logger.ToStdoutAndFile("LoginUser", "Successful login by "+in.Email, logger.Info)
 
 	return &protopb.LoginResponse{
 		AccessToken: token,
@@ -257,7 +280,7 @@ func (s *UserGrpcController) LoginUser(ctx context.Context, in *protopb.LoginReq
 		Username:    user.Username,
 		Role:        user.Role.String(),
 		IsSSO:       false,
-		Photo:		 photo,
+		Photo:       photo,
 	}, nil
 }
 
@@ -409,4 +432,32 @@ func (s *UserGrpcController) GetUserByUsername(ctx context.Context, in *protopb.
 	userResponse := user.ConvertToGrpc()
 
 	return userResponse, nil
+}
+
+func (s *UserGrpcController) CheckIsActive(ctx context.Context, in *protopb.RequestIdUsers) (*protopb.BooleanResponseUsers, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "CheckIsActive")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	retVal, err := s.service.CheckIsActive(ctx, in.Id)
+
+	if err != nil {
+		return &protopb.BooleanResponseUsers{}, err
+	}
+
+	return &protopb.BooleanResponseUsers{Response: retVal}, nil
+}
+
+func (s *UserGrpcController) ChangeUserActiveStatus(ctx context.Context, in *protopb.RequestIdUsers) (*protopb.EmptyResponse ,error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "CheckIsActive")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	err := s.service.ChangeUserActiveStatus(ctx, in.Id)
+	if err != nil {
+		return  nil, err
+	}
+
+	_, err = grpc_common.DeleteComplaintByUserId(ctx, in.Id)
+	return &protopb.EmptyResponse{}, err
 }

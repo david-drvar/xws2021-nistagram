@@ -122,7 +122,7 @@ func (service *PostService) CreatePost(ctx context.Context, post *domain.Post) e
 		return errors.New("cannot create empty post")
 	}
 
-	err :=  service.postRepository.CreatePost(ctx, post)
+	err := service.postRepository.CreatePost(ctx, post)
 	if err != nil {
 		return err
 	}
@@ -131,7 +131,7 @@ func (service *PostService) CreatePost(ctx context.Context, post *domain.Post) e
 		return errors.New("Could not create notification")
 	}
 	for _, u := range users.Users {
-			grpc_common.CreateNotification(ctx, u.UserId, post.UserId, "Post", post.Id)
+		grpc_common.CreateNotification(ctx, u.UserId, post.UserId, "Post", post.Id)
 	}
 	return nil
 }
@@ -157,6 +157,19 @@ func (service *PostService) GetPostById(ctx context.Context, id string) (domain.
 	dbComments, err := service.commentRepository.GetCommentsForPost(ctx, dbPost.Id)
 	if err != nil {
 		return domain.Post{}, err
+	}
+
+	dbHashtags, err := service.hashtagRepository.GetPostHashtags(ctx, dbPost.Id)
+	if err != nil {
+		return domain.Post{}, err
+	}
+
+	hashtags := []domain.Hashtag{}
+	for _, hashtag := range dbHashtags {
+		hashtags = append(hashtags, domain.Hashtag{
+			Id:   hashtag.Id,
+			Text: hashtag.Text,
+		})
 	}
 
 	comments := []domain.Comment{}
@@ -191,8 +204,10 @@ func (service *PostService) GetPostById(ctx context.Context, id string) (domain.
 		}
 	}
 
-	hashtags, err := service.hashtagRepository.GetPostHashtags(ctx, dbPost.Id)
-	if err != nil { return domain.Post{}, err }
+	hashtags, err = service.hashtagRepository.GetPostHashtags(ctx, dbPost.Id)
+	if err != nil {
+		return domain.Post{}, err
+	}
 
 	dbMedia, err := service.mediaRepository.GetMediaForPost(ctx, dbPost.Id)
 	if err != nil {
@@ -222,7 +237,12 @@ func (service *PostService) GetPostById(ctx context.Context, id string) (domain.
 	}
 
 	post := dbPost.ConvertToDomain(comments, likes, dislikes, media, hashtags)
-
+	res, err := grpc_common.CheckIsActive(ctx, post.UserId)
+	if err != nil {
+		return domain.Post{}, err
+	}else if res == false {
+		return domain.Post{}, errors.New("User is not active!")
+	}
 	return post, nil
 }
 
@@ -329,7 +349,11 @@ func (service *PostService) SearchContentByLocation(ctx context.Context, locatio
 			log.Fatalf("Error when calling CheckUserProfilePublic: %s", err)
 		}
 		if response.Response {
-			finalPosts = append(finalPosts, post)
+			res, _ := grpc_common.CheckIsActive(ctx, post.UserId)
+			if res {
+				finalPosts = append(finalPosts, post)
+			}
+
 		}
 	}
 
@@ -391,7 +415,10 @@ func (service *PostService) GetPostsByHashtag(ctx context.Context, text string) 
 			log.Fatalf("Error when calling CheckUserProfilePublic: %s", err)
 		}
 		if response.Response {
-			postsWithPublicAccess = append(postsWithPublicAccess, post)
+			res, _ := grpc_common.CheckIsActive(ctx, post.UserId)
+			if res {
+				postsWithPublicAccess = append(postsWithPublicAccess, post)
+			}
 		}
 	}
 
@@ -404,6 +431,13 @@ func (service *PostService) GetPostsForUser(ctx context.Context, id string) ([]d
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	posts := []domain.Post{}
+
+	res, err := grpc_common.CheckIsActive(ctx, id)
+	if err != nil {
+		return nil, err
+	}else if res == false {
+		return nil, errors.New("User is not active!")
+	}
 
 	dbPosts, err := service.postRepository.GetPostsForUser(ctx, id)
 	if err != nil {

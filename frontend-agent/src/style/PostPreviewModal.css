@@ -1,0 +1,29 @@
+@keyframes modalFade {
+    from { 
+        transform: translateY(12%); 
+        opacity: 0; 
+    }
+    to { 
+        transform: translateY(0); 
+        opacity: 1; 
+    }
+  }
+
+.PostPreviewModal__Wrapper{
+    animation-name: modalFade;
+    animation-duration: .3s;
+}
+  
+.PostPreviewModal__Wrapper .content {
+    position: relative;
+    border: none;
+    justify-content: center;
+    align-items: center;
+    width: 440px;
+}
+
+.PostPreviewModal__Wrapper .Post{
+    border: none;
+    min-width: 440px;
+    margin: 0;
+}

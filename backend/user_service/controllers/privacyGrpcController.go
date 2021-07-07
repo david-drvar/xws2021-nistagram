@@ -6,6 +6,7 @@ import (
 	protopb "github.com/david-drvar/xws2021-nistagram/common/proto"
 	"github.com/david-drvar/xws2021-nistagram/common/tracer"
 	"github.com/david-drvar/xws2021-nistagram/user_service/model/persistence"
+	"github.com/david-drvar/xws2021-nistagram/user_service/saga"
 	"github.com/david-drvar/xws2021-nistagram/user_service/services"
 	"gorm.io/gorm"
 )
@@ -14,8 +15,8 @@ type PrivacyGrpcController struct {
 	service *services.PrivacyService
 }
 
-func NewPrivacyController(db *gorm.DB) (*PrivacyGrpcController, error) {
-	service, err := services.NewPrivacyService(db)
+func NewPrivacyController(db *gorm.DB, redis *saga.RedisServer) (*PrivacyGrpcController, error) {
+	service, err := services.NewPrivacyService(db, redis)
 	if err != nil {
 		return nil, err
 	}

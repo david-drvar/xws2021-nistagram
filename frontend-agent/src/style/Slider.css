@@ -1,0 +1,112 @@
+@import url("./variables.css");
+
+.Slide {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+.Slide img{
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+}
+
+.Arrow-next, .Arrow-back{
+    width: 25px;
+    margin: 0px 12px;
+    color: var(--background-grey);
+    position: absolute;
+    opacity: 90%;
+}
+
+.Arrow-back{
+    left: 0%;
+}
+
+.Arrow-next{
+    right: 0%;
+}
+
+.Arrow-back:hover, .Arrow-next:hover {
+    cursor: pointer;
+}
+
+.CircleWrapper{
+    position: absolute;
+    display: flex;
+    justify-content: space-evenly;
+    bottom: 0%;
+}
+
+.Circle{
+    color: var(--font-color-secondary);
+    width: 7px;
+    margin: 0px 3px -40px;
+}
+
+.active{
+    color: var(--link-color);
+}
+
+.tags-caption{
+    position: absolute;
+    bottom: 0%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+}
+
+.Slide .tagWrapper{
+    float: left;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+}
+
+.Slide .tagIcon{
+    width: 25px;
+    margin: 6px;
+    color: var(--font-color-primary);
+}
+
+.Slide .tagIcon:hover{
+    cursor: pointer;
+}
+
+.Slide .tags{
+    position: relative;
+}
+
+.Slide .tag{
+    display: inline-block;
+    background-color: var(--font-color-primary);
+    padding: 5px;
+    border-radius: 5px;
+    align-items: center;
+    margin-left: 5px;
+}
+
+.Slide .tagText {
+    color: white;
+    font-size: 0.9rem;
+}
+
+.Slide .storyCaptionWrapepr {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(8, 8, 8, 0.8);
+    padding: 5px;
+    width: 100%;
+    margin-top: 5px;
+}
+
+.Slide .storyCaptionText {
+    position: relative;
+    color: white;
+    font-size: 1rem;
+}

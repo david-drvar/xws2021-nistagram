@@ -1,0 +1,14 @@
+.commentContainer{
+    display: flex;
+    padding-left: 1.15em;
+    font-size: 0.9em;
+    margin-bottom: 0.4em;
+}
+
+.commentContainer .username{
+    font-weight: 600;
+}
+
+.commentContainer .comment {
+    margin-left: 0.5em;
+}

@@ -137,6 +137,14 @@ type APIKeys struct {
 	APIKey string
 }
 
+type RegistrationRequest struct {
+	Id        string `gorm:"primaryKey"`
+	UserId    string
+	CreatedAt time.Time
+	Status    model.RequestStatus
+}
+
+
 type UserNotification struct {
 	NotificationId string `gorm:"primaryKey"`
 	UserId string

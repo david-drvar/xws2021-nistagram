@@ -1,0 +1,110 @@
+/* his image - my thumbnail */
+.postPreviewThumbnail__Wrapper {
+    position: relative;
+    width: 22em;
+    height: fit-content;
+}
+
+.postPreviewThumbnail__Wrapper .thumbnail{
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.postPreviewThumbnail__Wrapper .hover-overlay{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.postPreviewThumbnail__Wrapper .hover-overlay:hover{
+    opacity: 1;
+}
+
+/* Targeting every direct child */
+.postPreviewThumbnail__Wrapper .hover-overlay > * {
+    transform: translateY(10px);
+    transition: transform 0.2s;
+}
+
+.postPreviewThumbnail__Wrapper .hover-overlay:hover > * {
+    transform: translateY(0);
+}
+
+.postPreviewThumbnail__Wrapper .hover-overlay--blur{
+    backdrop-filter: blur(2px);
+}
+
+.postPreviewThumbnail__Wrapper .hover-overlay .single-statistic{
+    display: flex;
+    width: 11%;
+    justify-content: space-between;
+}
+
+
+/* 1 .postPreviewThumbnail__Wrapper:before {
+    content: '';
+    background: rgba(0, 0, 0, 0);
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    transition: opacity .5s;
+}
+
+.postPreviewThumbnail__Wrapper:hover:before {
+    opacity: 0.5;
+  }
+
+.postPreviewThumbnail__Wrapper .thumbnail {
+    width: 50%;
+    height: 100%;
+} */
+
+/* 2 .postPreviewThumbnail__Wrapper .hover-overlay{
+    position: absolute;
+    width: 50%;
+}
+
+.postPreviewThumbnail__Wrapper .hover-overlay:before {
+    content: "";
+    transition: 0.3s;
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.postPreviewThumbnail__Wrapper .hover-overlay:hover::before{
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.postPreviewThumbnail__Wrapper .hover-overlay .statistics{
+    position: absolute;
+    top: 45%;
+    overflow: hidden;
+    opacity: 1;
+    transition: 0.2s;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    width: 50%;
+    display: none;
+} 
+
+.postPreviewThumbnail__Wrapper .hover-overlay:hover .statistics{
+    display: flex;
+    opacity: 1;
+}
+*/

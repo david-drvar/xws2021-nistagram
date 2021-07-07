@@ -7,6 +7,7 @@ import (
 	"github.com/david-drvar/xws2021-nistagram/user_service/model/domain"
 	"github.com/david-drvar/xws2021-nistagram/user_service/model/persistence"
 	"github.com/david-drvar/xws2021-nistagram/user_service/repositories"
+	"github.com/david-drvar/xws2021-nistagram/user_service/saga"
 	"gorm.io/gorm"
 )
 
@@ -15,15 +16,14 @@ type NotificationService struct {
 	userService *UserService
 }
 
-func NewNotificationService(db *gorm.DB) (*NotificationService, error) {
+func NewNotificationService(db *gorm.DB, redis *saga.RedisServer) (*NotificationService, error) {
 	repository, err := repositories.NewNotificationRepo(db)
-	service, err := NewUserService(db)
+	service, err := NewUserService(db, redis)
 	return &NotificationService{
 		repository:  repository,
 		userService: service,
 	}, err
 }
-
 
 func (s NotificationService) CreateNotification(ctx context.Context, domainNotification *domain.UserNotification) error {
 	span := tracer.StartSpanFromContextMetadata(ctx, "CreateNotification")
@@ -31,30 +31,30 @@ func (s NotificationService) CreateNotification(ctx context.Context, domainNotif
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	userNotification := &persistence.UserNotification{}
-	if domainNotification.NotificationType == "Message" {
-		userNotification.Text = " send you a message."
-	}else if domainNotification.NotificationType == "FollowPublic" {
+	if domainNotification.NotificationType == "MessageRequest" {
+		userNotification.Text = " wants to send you a message."
+	} else if domainNotification.NotificationType == "FollowPublic" {
 		userNotification.Text = " started following you."
-	}else if domainNotification.NotificationType == "FollowPrivate" {
-			userNotification.Text = " wants to follow you."
-	}else if domainNotification.NotificationType == "Like" {
+	} else if domainNotification.NotificationType == "FollowPrivate" {
+		userNotification.Text = " wants to follow you."
+	} else if domainNotification.NotificationType == "Like" {
 		userNotification.Text = " liked your post."
-	}else if domainNotification.NotificationType == "Dislike" {
+	} else if domainNotification.NotificationType == "Dislike" {
 		userNotification.Text = " disliked your post."
-	}else if domainNotification.NotificationType == "Comment" {
+	} else if domainNotification.NotificationType == "Comment" {
 		userNotification.Text = " commented on your post."
-	}else if domainNotification.NotificationType == "Post" {
+	} else if domainNotification.NotificationType == "Post" {
 		userNotification.Text = " shared a post."
-	}else if domainNotification.NotificationType == "Story" {
+	} else if domainNotification.NotificationType == "Story" {
 		userNotification.Text = " shared a story."
-	}else {
+	} else {
 		return errors.New("Bad notification type")
 	}
 
 	userNotification.UserId = domainNotification.UserId
 	userNotification.CreatorId = domainNotification.CreatorId
 	userNotification.Type = domainNotification.NotificationType
-	userNotification.IsRead=false
+	userNotification.IsRead = false
 	userNotification.ContentId = domainNotification.ContentId
 
 	err := s.repository.CreateNotification(ctx, userNotification)
@@ -65,7 +65,7 @@ func (s NotificationService) CreateNotification(ctx context.Context, domainNotif
 	return nil
 }
 
-func (s NotificationService) GetUserNotifications(ctx context.Context, userId string) ([]persistence.UserNotification, error){
+func (s NotificationService) GetUserNotifications(ctx context.Context, userId string) ([]persistence.UserNotification, error) {
 	span := tracer.StartSpanFromContextMetadata(ctx, "GetUserNotifications")
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)
@@ -92,10 +92,9 @@ func (s *NotificationService) ReadAllNotifications(ctx context.Context, userId s
 
 	return s.repository.ReadAllNotifications(ctx, userId)
 
-
 }
 
-func (s NotificationService) DeleteNotification(ctx context.Context,  id string) (bool, error){
+func (s NotificationService) DeleteNotification(ctx context.Context, id string) (bool, error) {
 	span := tracer.StartSpanFromContextMetadata(ctx, "UnBlockUser")
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)

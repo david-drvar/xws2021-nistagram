@@ -1,0 +1,5 @@
+.postPreviewGrid__Wrapper{
+    display: grid;
+    grid-template-columns: repeat(3, 24em);
+    grid-auto-rows: 500px;
+}

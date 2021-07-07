@@ -4,6 +4,7 @@ import (
 	"context"
 	protopb "github.com/david-drvar/xws2021-nistagram/common/proto"
 	"github.com/david-drvar/xws2021-nistagram/common/tracer"
+	"github.com/david-drvar/xws2021-nistagram/user_service/saga"
 	"github.com/david-drvar/xws2021-nistagram/user_service/services"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -14,8 +15,8 @@ type EmailGrpcController struct {
 	service *services.EmailService
 }
 
-func NewEmailController(db *gorm.DB) (*EmailGrpcController, error) {
-	service, err := services.NewEmailService(db)
+func NewEmailController(db *gorm.DB, redis *saga.RedisServer) (*EmailGrpcController, error) {
+	service, err := services.NewEmailService(db, redis)
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +31,7 @@ func (s *EmailGrpcController) SendEmail(ctx context.Context, in *protopb.SendEma
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
-	_, err := s.service.SendEmail(ctx,in.To)
+	_, err := s.service.SendEmail(ctx, in.To)
 
 	if err != nil {
 		return &protopb.EmptyResponse{}, status.Errorf(codes.Unknown, "Could not send mail")

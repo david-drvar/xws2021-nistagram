@@ -1,0 +1,21 @@
+.postMenu{
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1em;
+    margin-bottom: 0.8em;
+}
+
+.postMenu .interactions{
+    display: flex;
+    padding-left: 1em;
+}
+
+.postMenu .icon {
+    margin-right: 1em;
+    width: 25px;
+    height: 25px;
+}
+
+.postMenu .icon:hover {
+    cursor: pointer;
+}

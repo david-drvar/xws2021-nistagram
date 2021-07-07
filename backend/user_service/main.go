@@ -16,10 +16,14 @@ func main() {
 	db := common.InitDatabase(common.UserDatabase)
 
 	err := setup.FillDatabase(db)
-	if err != nil { panic("Cannot setup database tables. Error message: " + err.Error()) }
+	if err != nil {
+		panic("Cannot setup database tables. Error message: " + err.Error())
+	}
 
 	err = rbac.SetupUsersRBAC(db)
-	if err != nil { panic("Cannot setup rbac tables. Error message: " + err.Error()) }
+	if err != nil {
+		panic("Cannot setup rbac tables. Error message: " + err.Error())
+	}
 
 	setup.GRPCServer(db)
 }
@@ -31,5 +35,6 @@ func SetupEnvVariables() {
 	os.Setenv("DB_PW", "root")
 	os.Setenv("RECOMMENDATION_SERVICE", grpc_common.Recommendation_service_address)
 	os.Setenv("CONTENT_SERVICE", grpc_common.Content_service_address)
+	os.Setenv("CHAT_SERVICE", grpc_common.Chat_service_address)
+	os.Setenv("AGENT_SERVICE", grpc_common.Agent_service_address)
 }
-

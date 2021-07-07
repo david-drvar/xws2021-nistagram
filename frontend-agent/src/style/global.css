@@ -1,0 +1,37 @@
+body{
+    overflow-y: scroll; /* Fixing page flickering when height goes over 100% */
+}
+
+.toast {
+    z-index: 99999999 !important;
+    font-family: "Arial";
+    margin-right: 10px;
+    opacity: 1 !important;
+    background-color: transparent !important;
+    border: 1px solid transparent !important;
+    box-shadow: 0 0 0 transparent !important;
+}
+
+.toast-wrapper{
+    border-radius: 6px;
+    padding-left: 13px;
+    font-family: "Arial";
+    font-size: medium;
+}
+
+.Toastify__toast-container{
+    z-index: 99999999 !important;
+    background-color: transparent;
+}
+
+.Toastify__progress-bar{
+    height: 2px;
+}
+
+.Toastify__toast--success{
+    background: green;
+}
+
+.Toastify__toast--error{
+    background: red;
+}

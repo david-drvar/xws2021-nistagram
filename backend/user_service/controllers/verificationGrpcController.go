@@ -7,6 +7,7 @@ import (
 	protopb "github.com/david-drvar/xws2021-nistagram/common/proto"
 	"github.com/david-drvar/xws2021-nistagram/common/tracer"
 	"github.com/david-drvar/xws2021-nistagram/user_service/model/domain"
+	"github.com/david-drvar/xws2021-nistagram/user_service/saga"
 	"github.com/david-drvar/xws2021-nistagram/user_service/services"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -19,8 +20,8 @@ type VerificationGrpcController struct {
 	logger     *logger.Logger
 }
 
-func NewVerificationController(db *gorm.DB, jwtManager *common.JWTManager, logger *logger.Logger) (*VerificationGrpcController, error) {
-	service, err := services.NewVerificationService(db)
+func NewVerificationController(db *gorm.DB, jwtManager *common.JWTManager, logger *logger.Logger, redis *saga.RedisServer) (*VerificationGrpcController, error) {
+	service, err := services.NewVerificationService(db, redis)
 	if err != nil {
 		return nil, err
 	}

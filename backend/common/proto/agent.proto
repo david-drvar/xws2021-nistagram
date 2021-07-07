@@ -1,0 +1,172 @@
+syntax = "proto3";
+
+package proto;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/xws2021-nistagram/common/proto";
+
+service Agent {
+  /*    Products    */
+  rpc CreateProduct (Product) returns (EmptyResponseAgent) {
+    option(google.api.http) = {
+      post: "/product/create-product",
+      body: "*"
+    };
+  }
+
+  rpc GetAllProductsByAgentId (UserAgentApp) returns (ProductsArray) {
+    option(google.api.http) = {
+      post: "/product/get-by-agent",
+      body: "*"
+    };
+  }
+
+  rpc GetProductById (Product) returns (Product) {
+    option(google.api.http) = {
+      post: "/product/get-by-id",
+      body: "*"
+    };
+  }
+
+  rpc GetAllProducts (EmptyRequestAgent) returns (ProductsArray) {
+    option(google.api.http) = {
+      get: "/product/get-all",
+    };
+  }
+
+  rpc DeleteProduct (Product) returns (EmptyResponseAgent) {
+    option(google.api.http) = {
+      post: "/product/delete",
+      body : "*"
+    };
+  }
+
+  rpc UpdateProduct (Product) returns (EmptyResponseAgent) {
+    option(google.api.http) = {
+      post: "/product/update",
+      body : "*"
+    };
+  }
+
+  /*    Orders    */
+  rpc OrderProduct (Order) returns (EmptyResponseAgent) {
+    option(google.api.http) = {
+      post: "/product/order",
+      body : "*"
+    };
+  }
+
+  rpc GetOrdersByUser (UserAgentApp) returns (OrdersArray) {
+    option(google.api.http) = {
+      post: "/product/order/get-by-user",
+      body : "*"
+    };
+  }
+
+  rpc GetOrdersByAgent (UserAgentApp) returns (OrdersArray) {
+    option(google.api.http) = {
+      post: "/product/order/get-by-agent",
+      body : "*"
+    };
+  }
+
+
+
+  /*    Users    */
+  rpc LoginUserInAgentApp (LoginRequestAgentApp) returns (LoginResponseAgentApp) {
+    option(google.api.http) = {
+      post: "/login",
+      body: "*"
+    };
+  }
+
+  rpc CreateUserInAgentApp (CreateUserRequestAgentApp) returns (EmptyResponseAgent) {
+    option(google.api.http) = {
+      post: "/create-user",
+      body: "user"
+    };
+  }
+
+  rpc GetUserByUsername (RequestUsernameAgent) returns (UserAgentApp) {
+    option(google.api.http) = {
+      get: "/getUserByUsername/{username}"
+    };
+  }
+
+}
+
+/*    Posts    */
+message Product {
+  string id = 1;
+  string name = 2;
+  double price = 3;
+  bool isActive = 4;
+  int32 quantity = 5;
+  string photo = 6;
+  string agentId = 7;
+}
+
+message ProductsArray {
+  repeated Product products = 1;
+}
+
+message EmptyRequestAgent {}
+message EmptyResponseAgent {}
+
+message UserAgentApp {
+  string id = 1;
+  string firstName = 2;
+  string lastName = 3;
+  string email = 4;
+  string username = 5;
+  string password = 6;
+  string role = 7;
+  google.protobuf.Timestamp birthdate = 8;
+  string profilePhoto = 9;
+  string phoneNumber = 10;
+  string sex = 11;
+  string address = 12;
+  bool isActive = 13;
+  google.protobuf.Timestamp tokenEnd=14;
+}
+
+message CreateUserRequestAgentApp {
+  UserAgentApp user = 1;
+}
+
+message LoginRequestAgentApp {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponseAgentApp {
+  string accessToken = 1;
+  string userId = 2;
+  string role = 3;
+  string username = 4;
+  bool   isSSO = 5;
+  string photo = 6;
+}
+
+message RequestUsernameAgent {
+  string username = 1;
+}
+
+message Order {
+  string id = 1;
+  string userId = 2;
+  string productId = 3;
+  int32 quantity = 4;
+  int32 referral = 5;
+  google.protobuf.Timestamp dateCreated = 6;
+  float totalPrice = 7;
+  string username = 8; //it will contain basic or agent username depending on who views order
+  string productName = 9;
+}
+
+message OrdersArray {
+  repeated Order orders = 1;
+}
+

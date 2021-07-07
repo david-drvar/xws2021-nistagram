@@ -8,6 +8,7 @@ import (
 	"github.com/david-drvar/xws2021-nistagram/user_service/model"
 	"github.com/david-drvar/xws2021-nistagram/user_service/model/domain"
 	"github.com/david-drvar/xws2021-nistagram/user_service/model/persistence"
+	"github.com/david-drvar/xws2021-nistagram/user_service/saga"
 	"github.com/david-drvar/xws2021-nistagram/user_service/util"
 	"github.com/david-drvar/xws2021-nistagram/user_service/util/images"
 	"github.com/google/uuid"
@@ -29,11 +30,11 @@ type verificationRepository struct {
 	userRepository UserRepository
 }
 
-func NewVerificationRepo(db *gorm.DB) (*verificationRepository, error) {
+func NewVerificationRepo(db *gorm.DB, redis *saga.RedisServer) (*verificationRepository, error) {
 	if db == nil {
 		panic("UserRepository not created, gorm.DB is nil")
 	}
-	userRepository, _ := NewUserRepo(db)
+	userRepository, _ := NewUserRepo(db, redis)
 
 	return &verificationRepository{DB: db, userRepository: userRepository}, nil
 }

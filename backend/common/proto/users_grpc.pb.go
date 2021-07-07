@@ -11,13 +11,16 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-// Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
 // UsersClient is the client API for Users service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UsersClient interface {
+	//registration requests!
+	CreateAgentUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*UsersDTO, error)
+	GetAllPendingRequests(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*ResponseRequests, error)
+	UpdateRequest(ctx context.Context, in *RegistrationRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
 	LoginUser(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*UsersDTO, error)
 	GetUserById(ctx context.Context, in *RequestIdUsers, opts ...grpc.CallOption) (*UsersDTO, error)
@@ -36,6 +39,8 @@ type UsersClient interface {
 	ValidateResetCode(ctx context.Context, in *RequestResetCode, opts ...grpc.CallOption) (*EmptyResponse, error)
 	ChangeForgottenPass(ctx context.Context, in *CreatePasswordRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
 	CheckIsApproved(ctx context.Context, in *RequestIdUsers, opts ...grpc.CallOption) (*BooleanResponseUsers, error)
+	CheckIsActive(ctx context.Context, in *RequestIdUsers, opts ...grpc.CallOption) (*BooleanResponseUsers, error)
+	ChangeUserActiveStatus(ctx context.Context, in *RequestIdUsers, opts ...grpc.CallOption) (*EmptyResponse, error)
 	ApproveAccount(ctx context.Context, in *CreatePasswordRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
 	GoogleAuth(ctx context.Context, in *GoogleAuthRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	CreateNotification(ctx context.Context, in *CreateNotificationRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
@@ -58,6 +63,33 @@ type usersClient struct {
 
 func NewUsersClient(cc grpc.ClientConnInterface) UsersClient {
 	return &usersClient{cc}
+}
+
+func (c *usersClient) CreateAgentUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*UsersDTO, error) {
+	out := new(UsersDTO)
+	err := c.cc.Invoke(ctx, "/proto.Users/CreateAgentUser", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *usersClient) GetAllPendingRequests(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*ResponseRequests, error) {
+	out := new(ResponseRequests)
+	err := c.cc.Invoke(ctx, "/proto.Users/GetAllPendingRequests", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *usersClient) UpdateRequest(ctx context.Context, in *RegistrationRequest, opts ...grpc.CallOption) (*EmptyResponse, error) {
+	out := new(EmptyResponse)
+	err := c.cc.Invoke(ctx, "/proto.Users/UpdateRequest", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *usersClient) LoginUser(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
@@ -222,6 +254,24 @@ func (c *usersClient) CheckIsApproved(ctx context.Context, in *RequestIdUsers, o
 	return out, nil
 }
 
+func (c *usersClient) CheckIsActive(ctx context.Context, in *RequestIdUsers, opts ...grpc.CallOption) (*BooleanResponseUsers, error) {
+	out := new(BooleanResponseUsers)
+	err := c.cc.Invoke(ctx, "/proto.Users/CheckIsActive", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *usersClient) ChangeUserActiveStatus(ctx context.Context, in *RequestIdUsers, opts ...grpc.CallOption) (*EmptyResponse, error) {
+	out := new(EmptyResponse)
+	err := c.cc.Invoke(ctx, "/proto.Users/ChangeUserActiveStatus", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *usersClient) ApproveAccount(ctx context.Context, in *CreatePasswordRequest, opts ...grpc.CallOption) (*EmptyResponse, error) {
 	out := new(EmptyResponse)
 	err := c.cc.Invoke(ctx, "/proto.Users/ApproveAccount", in, out, opts...)
@@ -343,6 +393,10 @@ func (c *usersClient) GetAllVerificationRequests(ctx context.Context, in *EmptyR
 // All implementations must embed UnimplementedUsersServer
 // for forward compatibility
 type UsersServer interface {
+	//registration requests!
+	CreateAgentUser(context.Context, *CreateUserRequest) (*UsersDTO, error)
+	GetAllPendingRequests(context.Context, *EmptyRequest) (*ResponseRequests, error)
+	UpdateRequest(context.Context, *RegistrationRequest) (*EmptyResponse, error)
 	LoginUser(context.Context, *LoginRequest) (*LoginResponse, error)
 	CreateUser(context.Context, *CreateUserRequest) (*UsersDTO, error)
 	GetUserById(context.Context, *RequestIdUsers) (*UsersDTO, error)
@@ -361,6 +415,8 @@ type UsersServer interface {
 	ValidateResetCode(context.Context, *RequestResetCode) (*EmptyResponse, error)
 	ChangeForgottenPass(context.Context, *CreatePasswordRequest) (*EmptyResponse, error)
 	CheckIsApproved(context.Context, *RequestIdUsers) (*BooleanResponseUsers, error)
+	CheckIsActive(context.Context, *RequestIdUsers) (*BooleanResponseUsers, error)
+	ChangeUserActiveStatus(context.Context, *RequestIdUsers) (*EmptyResponse, error)
 	ApproveAccount(context.Context, *CreatePasswordRequest) (*EmptyResponse, error)
 	GoogleAuth(context.Context, *GoogleAuthRequest) (*LoginResponse, error)
 	CreateNotification(context.Context, *CreateNotificationRequest) (*EmptyResponse, error)
@@ -382,6 +438,15 @@ type UsersServer interface {
 type UnimplementedUsersServer struct {
 }
 
+func (UnimplementedUsersServer) CreateAgentUser(context.Context, *CreateUserRequest) (*UsersDTO, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateAgentUser not implemented")
+}
+func (UnimplementedUsersServer) GetAllPendingRequests(context.Context, *EmptyRequest) (*ResponseRequests, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllPendingRequests not implemented")
+}
+func (UnimplementedUsersServer) UpdateRequest(context.Context, *RegistrationRequest) (*EmptyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateRequest not implemented")
+}
 func (UnimplementedUsersServer) LoginUser(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LoginUser not implemented")
 }
@@ -436,6 +501,12 @@ func (UnimplementedUsersServer) ChangeForgottenPass(context.Context, *CreatePass
 func (UnimplementedUsersServer) CheckIsApproved(context.Context, *RequestIdUsers) (*BooleanResponseUsers, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckIsApproved not implemented")
 }
+func (UnimplementedUsersServer) CheckIsActive(context.Context, *RequestIdUsers) (*BooleanResponseUsers, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckIsActive not implemented")
+}
+func (UnimplementedUsersServer) ChangeUserActiveStatus(context.Context, *RequestIdUsers) (*EmptyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChangeUserActiveStatus not implemented")
+}
 func (UnimplementedUsersServer) ApproveAccount(context.Context, *CreatePasswordRequest) (*EmptyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ApproveAccount not implemented")
 }
@@ -484,8 +555,62 @@ type UnsafeUsersServer interface {
 	mustEmbedUnimplementedUsersServer()
 }
 
-func RegisterUsersServer(s grpc.ServiceRegistrar, srv UsersServer) {
-	s.RegisterService(&Users_ServiceDesc, srv)
+func RegisterUsersServer(s *grpc.Server, srv UsersServer) {
+	s.RegisterService(&_Users_serviceDesc, srv)
+}
+
+func _Users_CreateAgentUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServer).CreateAgentUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Users/CreateAgentUser",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServer).CreateAgentUser(ctx, req.(*CreateUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Users_GetAllPendingRequests_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EmptyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServer).GetAllPendingRequests(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Users/GetAllPendingRequests",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServer).GetAllPendingRequests(ctx, req.(*EmptyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Users_UpdateRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegistrationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServer).UpdateRequest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Users/UpdateRequest",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServer).UpdateRequest(ctx, req.(*RegistrationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Users_LoginUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -812,6 +937,42 @@ func _Users_CheckIsApproved_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Users_CheckIsActive_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestIdUsers)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServer).CheckIsActive(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Users/CheckIsActive",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServer).CheckIsActive(ctx, req.(*RequestIdUsers))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Users_ChangeUserActiveStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestIdUsers)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServer).ChangeUserActiveStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Users/ChangeUserActiveStatus",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServer).ChangeUserActiveStatus(ctx, req.(*RequestIdUsers))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Users_ApproveAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreatePasswordRequest)
 	if err := dec(in); err != nil {
@@ -1046,13 +1207,22 @@ func _Users_GetAllVerificationRequests_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
-// Users_ServiceDesc is the grpc.ServiceDesc for Users service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var Users_ServiceDesc = grpc.ServiceDesc{
+var _Users_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "proto.Users",
 	HandlerType: (*UsersServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "CreateAgentUser",
+			Handler:    _Users_CreateAgentUser_Handler,
+		},
+		{
+			MethodName: "GetAllPendingRequests",
+			Handler:    _Users_GetAllPendingRequests_Handler,
+		},
+		{
+			MethodName: "UpdateRequest",
+			Handler:    _Users_UpdateRequest_Handler,
+		},
 		{
 			MethodName: "LoginUser",
 			Handler:    _Users_LoginUser_Handler,
@@ -1124,6 +1294,14 @@ var Users_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CheckIsApproved",
 			Handler:    _Users_CheckIsApproved_Handler,
+		},
+		{
+			MethodName: "CheckIsActive",
+			Handler:    _Users_CheckIsActive_Handler,
+		},
+		{
+			MethodName: "ChangeUserActiveStatus",
+			Handler:    _Users_ChangeUserActiveStatus_Handler,
 		},
 		{
 			MethodName: "ApproveAccount",

@@ -2,6 +2,8 @@ package services
 
 import (
 	"context"
+	"errors"
+	"github.com/david-drvar/xws2021-nistagram/common/grpc_common"
 	"github.com/david-drvar/xws2021-nistagram/common/tracer"
 	"github.com/david-drvar/xws2021-nistagram/content_service/model/domain"
 	"github.com/david-drvar/xws2021-nistagram/content_service/repositories"
@@ -34,6 +36,13 @@ func (service *FavoritesService) GetAllCollections(ctx context.Context, userId s
 	span := tracer.StartSpanFromContextMetadata(ctx, "GetAllCollections")
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	res, err := grpc_common.CheckIsActive(ctx, userId)
+	if err != nil {
+		return nil, err
+	}else if res == false {
+		return nil, errors.New("User is not active")
+	}
 
 	dbCollections, err := service.favoritesRepository.GetAllCollections(ctx, userId)
 	if err != nil {

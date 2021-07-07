@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"errors"
 	"github.com/david-drvar/xws2021-nistagram/common/tracer"
 	"github.com/david-drvar/xws2021-nistagram/content_service/model/domain"
 	"github.com/david-drvar/xws2021-nistagram/content_service/model/persistence"
@@ -12,6 +13,9 @@ import (
 type ComplaintRepository interface {
 	CreateContentComplaint(context.Context, domain.ContentComplaint) error
 	GetAllContentComplaints(context.Context) ([]domain.ContentComplaint, error)
+	DeleteByPostId (context.Context, string) error
+	RejectById (context.Context, string) error
+	DeleteComplaintByUserId( context.Context,  string) error
 }
 
 type complaintRepository struct {
@@ -27,6 +31,23 @@ func NewComplaintRepo(db *gorm.DB) (*complaintRepository, error) {
 		DB: db,
 	}, nil
 }
+
+func (repo *complaintRepository) DeleteComplaintByUserId(ctx context.Context,id string) error {
+	span := tracer.StartSpanFromContextMetadata(ctx, "DeleteComplaintByUserId")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	result := repo.DB.Where("user_id = ?", id).Delete(&persistence.ContentComplaint{})
+	if result.Error != nil {
+		return errors.New("Could not delete all user complaints!")
+	}else if result.RowsAffected == 0 {
+		return errors.New("Could not delete all user complaints!")
+
+	}
+	return nil
+
+}
+
 
 func (repository *complaintRepository) CreateContentComplaint(ctx context.Context, contentComplaint domain.ContentComplaint) error {
 	span := tracer.StartSpanFromContextMetadata(ctx, "CreateContentComplaint")
@@ -71,4 +92,34 @@ func (repository *complaintRepository) GetAllContentComplaints(ctx context.Conte
 
 	return complaintsDomain, nil
 
+}
+
+func (repository *complaintRepository) DeleteByPostId (ctx context.Context, postId string) error{
+	span := tracer.StartSpanFromContextMetadata(ctx, "DeleteByPostId")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	result := repository.DB.Where("post_id = ?", postId).Delete(&persistence.ContentComplaint{})
+	if result.Error != nil {
+		return result.Error
+	}else if result.RowsAffected == 0 {
+		return errors.New("Did not delete complaint")
+	}
+
+	return nil
+}
+
+func (repository *complaintRepository) RejectById (ctx context.Context,id string) error {
+	span := tracer.StartSpanFromContextMetadata(ctx, "RejectById")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	result := repository.DB.Where("id = ?", id).Updates(&persistence.ContentComplaint{Status: "Rejected"})
+
+	if result.Error != nil{
+		return result.Error
+	}else if result.RowsAffected == 0 {
+		return errors.New("Could not update complaint!")
+	}
+	return nil
 }

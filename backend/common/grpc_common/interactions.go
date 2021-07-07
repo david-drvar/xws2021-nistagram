@@ -229,6 +229,31 @@ func CheckUserProfilePublic(ctx context.Context, userId string) (bool, error) {
 	return res.Response, nil
 }
 
+func GetUserPrivacy(ctx context.Context, userId string) (*protopb.PrivacyMessage, error){
+	conn, err := CreateGrpcConnection(os.Getenv("USER_SERVICE"))
+	if err != nil{
+		return nil, status.Errorf(codes.Unknown, err.Error())
+	}
+	defer conn.Close()
+	privacyClient := GetPrivacyClient(conn)
+	res, err := privacyClient.GetUserPrivacy(ctx, &protopb.RequestIdPrivacy{Id: userId})
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func CheckIsActive(ctx context.Context, userId string) (bool, error) {
+	conn, err := CreateGrpcConnection(os.Getenv("USER_SERVICE"))
+	if err != nil{
+		return false, status.Errorf(codes.Unknown, err.Error())
+	}
+	defer conn.Close()
+	userClient := GetUsersClient(conn)
+	res, err := userClient.CheckIsActive(ctx, &protopb.RequestIdUsers{Id: userId})
+	return res.Response, err
+}
+
 func DeleteByTypeAndCreator(ctx context.Context, notificationType string, userId string, creatorId string) (error){
 	conn, err := CreateGrpcConnection(os.Getenv("USER_SERVICE"))
 	if err != nil{
@@ -285,4 +310,19 @@ func GetUsersForNotificationEnabled(ctx context.Context,  userId string, notific
 	}
 
 	return result, nil
+}
+
+func DeleteComplaintByUserId(ctx context.Context, userId string) (*protopb.EmptyResponseContent, error){
+	conn, err := CreateGrpcConnection(os.Getenv("CONTENT_SERVICE"))
+	if err != nil{
+		return nil, status.Errorf(codes.Unknown, err.Error())
+	}
+	defer conn.Close()
+
+	contetnClient := GetContentClient(conn)
+	result, err := contetnClient.DeleteComplaintByUserId(ctx, &protopb.RequestId{Id: userId})
+	if err != nil {
+		return nil, err
+	}
+	return result, err
 }

@@ -1,28 +1,33 @@
 package main
 
 import (
-	"github.com/david-drvar/xws2021-nistagram/backend"
+	"github.com/david-drvar/xws2021-nistagram/chat_service/controllers"
 	"github.com/david-drvar/xws2021-nistagram/chat_service/util/setup"
 	"github.com/david-drvar/xws2021-nistagram/common"
-	"github.com/gorilla/mux"
-	"net/http"
+	"github.com/david-drvar/xws2021-nistagram/common/grpc_common"
+	"os"
 )
 
 func main(){
-	db := backend.InitDatabase("")
+	if os.Getenv("Docker_env") == "" {
+		SetupEnvVariables()
+	}
+	db := common.InitDatabase(common.ChatDatabase)
 	err := setup.FillDatabase(db)
 	if err != nil {
 		panic("Cannot setup database tables. Error message: " + err.Error())
 	}
+	controller , _:= controllers.NewMessageController(db)
+	setup.ServerSetup(controller)
+}
 
-	r := mux.NewRouter()
-
-	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello from chat service!"))
-	}).Methods("GET")
-
-	c := common.SetupCors()
-
-	http.Handle("/", c.Handler(r))
-	http.ListenAndServe(":8003", c.Handler(r))
+func SetupEnvVariables() {
+	os.Setenv("DB_HOST", "localhost")
+	os.Setenv("DB_NAME", common.ChatDatabaseName)
+	os.Setenv("DB_USER", "postgres")
+	os.Setenv("DB_PW", "root")
+	os.Setenv("RECOMMENDATION_SERVICE", grpc_common.Recommendation_service_address)
+	os.Setenv("USER_SERVICE", grpc_common.Users_service_address)
+	os.Setenv("CONTENT_SERVICE", grpc_common.Content_service_address)
+	os.Setenv("AGENT_SERVICE", grpc_common.Agent_service_address)
 }

@@ -241,7 +241,7 @@ function Post (props) {
     }
 
     const sendReport = async () => {
-        if(store.user.jwt !== "") return;
+        if(store.user.jwt === "") return;
 
         if (reportCategory === "") {
             console.log(reportCategory);
@@ -375,7 +375,7 @@ function Post (props) {
                     </div>
                     <p >Are you sure you want to report this post? </p>
                 <div style={{display:'flex',float:'right'}}>
-                    <Button variant="info" style={{marginRight:'10px'}} onClick={sendReport} >Confirm</Button>
+                    <Button variant="info" style={{marginRight:'10px'}} onClick={(e) => sendReport()} >Confirm</Button>
                     <Button variant="secondary" onClick={handleReportModal} >Cancel</Button>
                 </div>
                 </Modal.Body>

@@ -7,6 +7,7 @@ import (
 	"github.com/david-drvar/xws2021-nistagram/common/tracer"
 	"github.com/david-drvar/xws2021-nistagram/user_service/model/persistence"
 	"github.com/david-drvar/xws2021-nistagram/user_service/repositories"
+	"github.com/david-drvar/xws2021-nistagram/user_service/saga"
 	"google.golang.org/grpc"
 	"gorm.io/gorm"
 	"log"
@@ -17,9 +18,9 @@ type PrivacyService struct {
 	userService *UserService
 }
 
-func NewPrivacyService(db *gorm.DB) (*PrivacyService, error) {
+func NewPrivacyService(db *gorm.DB, redis *saga.RedisServer) (*PrivacyService, error) {
 	repository, err := repositories.NewPrivacyRepo(db)
-	service, err := NewUserService(db)
+	service, err := NewUserService(db, redis)
 	return &PrivacyService{
 		repository:  repository,
 		userService: service,
@@ -63,8 +64,8 @@ func (service *PrivacyService) BlockUser(ctx context.Context, block *persistence
 	c := protopb.NewFollowersClient(conn)
 
 	createFollowerRequest := protopb.CreateFollowerRequest{
-		Follower : &protopb.Follower{
-			UserId: block.UserId,
+		Follower: &protopb.Follower{
+			UserId:     block.UserId,
 			FollowerId: block.BlockedUserId,
 		},
 	}

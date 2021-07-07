@@ -1,0 +1,151 @@
+@import url("./variables.css");
+
+.profileGrid{
+    display: flex;
+    margin: 100px;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.profileGrid .profileHeader{
+    display: grid;
+    column-gap: 5em;
+    grid-template-columns: 10em auto;
+    grid-template-rows: repeat(3, auto);
+    margin-left: 28em;
+    margin-top: 3em;
+}
+
+.profileGrid .profileHeader img{
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 150px;
+    grid-column: 1;
+    grid-row: 1/4;
+}
+
+.profileHeader .info{
+    grid-column: 2;
+    grid-row: 1/4;
+}
+
+.info .fullname{
+    font-weight: 600;
+    font-size: 2em;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.info .fullname .blockMute{
+    display: flex;
+    justify-content: center;
+    height: 45px;
+    width: 45px;
+    margin-left: 0.5em;
+}
+
+.info .username{
+    font-size: 1.2em;
+    font-weight: 400;
+    color: var(--font-color-secondary);
+}
+
+.info .website{
+    font-size: 1em;
+
+}
+
+.info .stats{
+    display: flex;
+    width: 30%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 1em;
+    color: var(--font-color-primary) !important;
+}
+
+.info .stats .postsNum{
+    margin-right: 5px;
+}
+
+.info .followUnfollow{
+    grid-row: 4;
+    grid-column: 2;
+    margin-top: 10px !important;
+}
+
+.profileGrid .content{
+    margin-top: 2em;
+    margin-left: 18em;
+    display: flex;
+    flex-direction: column;
+}
+
+.content .highlights{
+    margin-left: 6em;
+    margin-top: -1em;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+.content .posts{
+
+}
+
+/**/
+.brand-logo,h2{
+    font-family: 'Grand Hotel', cursive;
+}
+
+.mycard{
+    margin-top: 30px;
+}
+.auth-card{
+    padding: 20px;
+    text-align: center;
+    max-width: 400px;
+    margin: 10px auto;
+}
+
+.input-field input[type=text]:focus {
+    border-bottom: 1px solid rgb(8, 93, 252) !important;
+    box-shadow: 0 1px 0 0 rgb(8, 93, 252)  !important;
+}
+.input-field input[type=password]:focus {
+    border-bottom: 1px solid rgb(8, 93, 252) !important;
+    box-shadow: 0 1px 0 0 rgb(8, 93, 252)  !important;
+}
+
+.gallery{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+.item{
+    width: 30%;
+}
+
+.home-card{
+    max-width: 500px;
+    height: max-content;
+    margin: 26px auto;
+
+}
+.collection-item{
+    width: 100%;
+}
+
+
+#toast-container{
+    top:30px !important;
+    right: 20px !important;
+    left: auto !important;
+}
+
+.material-icons:hover{
+    cursor: pointer;
+}

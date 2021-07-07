@@ -1,0 +1,43 @@
+.storyBorder {
+    padding: 2px;
+    background: linear-gradient(
+    200deg,
+    #da3394 25%,
+    #e03c67 50%,
+    #f3753b 75%,
+    #f99b4a 100%
+    );
+    border-radius: 50%;
+}
+
+.profileIcon {
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ffffff;
+    display: block;
+}
+.small {
+     width: 25px;
+     height: 25px;
+ }
+
+.medium {
+     width: 35px;
+     height: 35px;
+ }
+
+.big {
+     width: 60px;
+     height: 60px;
+ }
+
+ /* Same as profile picture */
+.xxl{
+    width: 200px;
+    height: 200px;
+    border-radius: 150px;
+}
+
+.hover {
+    cursor: pointer;
+}

@@ -2,27 +2,39 @@ package main
 
 import (
 	"github.com/david-drvar/xws2021-nistagram/agent_application/util/setup"
-	"github.com/david-drvar/xws2021-nistagram/backend"
 	"github.com/david-drvar/xws2021-nistagram/common"
-	"github.com/gorilla/mux"
-	"net/http"
+	"github.com/david-drvar/xws2021-nistagram/common/grpc_common"
+	"github.com/david-drvar/xws2021-nistagram/common/interceptors/rbac"
+	"os"
 )
 
-func main(){
-	db := backend.InitDatabase(backend.AgentDatabase)
+func main() {
+	if os.Getenv("Docker_env") == "" {
+		SetupEnvVariables()
+	}
+
+	db := common.InitDatabase(common.AgentDatabase)
+
 	err := setup.FillDatabase(db)
 	if err != nil {
 		panic("Cannot setup database tables. Error message: " + err.Error())
 	}
 
-	r := mux.NewRouter()
+	err = rbac.SetupAgentsRBAC(db)
+	if err != nil {
+		panic("Cannot setup rbac tables. Error message: " + err.Error())
+	}
 
-	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello from agent application!"))
-	}).Methods("GET")
+	setup.GRPCServer(db)
+}
 
-	c := common.SetupCors()
-
-	http.Handle("/", c.Handler(r))
-	http.ListenAndServe(":8004", c.Handler(r))
+func SetupEnvVariables() {
+	os.Setenv("DB_HOST", "localhost")
+	os.Setenv("DB_NAME", common.AgentDatabaseName)
+	os.Setenv("DB_USER", "postgres")
+	os.Setenv("DB_PW", "root")
+	os.Setenv("RECOMMENDATION_SERVICE", grpc_common.Recommendation_service_address)
+	os.Setenv("USER_SERVICE", grpc_common.Users_service_address)
+	os.Setenv("CONTENT_SERVICE", grpc_common.Content_service_address)
+	os.Setenv("CHAT_SERVICE", grpc_common.Chat_service_address)
 }

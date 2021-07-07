@@ -1,0 +1,20 @@
+FROM golang:1.16.3 as builder
+WORKDIR /build/myapp
+
+# Fetch dependencies
+COPY ["agent_application", "github.com/david-drvar/xws2021-nistagram/agent_application/"]
+COPY ["common", "github.com/david-drvar/xws2021-nistagram/common/"]
+WORKDIR /build/myapp/github.com/david-drvar/xws2021-nistagram/agent_application
+RUN GOPROXY=https://proxy.golang.org/ GO111MODULE=on go mod download
+
+# Build
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
+
+# Create final image
+FROM alpine
+RUN apk --no-cache add ca-certificates git
+WORKDIR /root
+COPY --from=builder /build/myapp/github.com/david-drvar/xws2021-nistagram/agent_application .
+EXPOSE 8004
+EXPOSE 8094
+CMD ["./main"]

@@ -1,0 +1,84 @@
+.StoryArchive__Wrapper{
+    display: flex;
+    flex-direction: row;
+    padding-top: 75px;
+    border: 0;
+    row-gap: 0;
+}
+
+.StoryArchive__Wrapper .stories{
+    display: flex;
+    flex-direction: column;
+    border: 0;
+    margin: 0;
+    margin-left: 6em;
+    margin-bottom: 3em;
+}
+
+.StoryArchive__Wrapper .stories .title{
+    font-size: 2em;
+    font-weight: 500;
+}
+
+.StoryArchive__Wrapper .stories .content{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    row-gap: 1em;
+    column-gap: 1em;
+}
+
+.StoryArchive__Wrapper .stories .content .archivedStory:hover {
+    cursor: pointer;
+}
+
+.StoryArchive__Wrapper .highlights {
+    width: 15em;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+.highlights .list{
+    margin-top: 2.5em;
+}
+
+.highlights .list .title{
+    font-size: 1.5em;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.highlights .list .highlightCard{
+    width: 100%;
+    padding: 5px;
+    margin: 0;
+    height: 50px;
+    width: 13em;
+    max-width: 15em;
+}
+
+.highlights .list .newHighlight{
+    display: flex;
+    flex-direction: row;
+    margin-top: 1em;
+    height: 2.5em;
+}
+
+.highlights .list .newHighlight .newHighlightLabel{
+    width: 8em;
+    margin-top: 0.5em;
+}
+
+.highlights .list .newHighlight .newHighlightInput{
+    height: 35px;
+    border: none;
+    border-bottom: 1px solid var(--font-color-secondary);
+    color: var(--font-color-primary);
+    margin-right: 1.2em;
+}
+
+.highlights .list .newHighlight .newHighlightInput:active{
+    border: none;
+}

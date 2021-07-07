@@ -261,9 +261,22 @@ service Content {
     };
   }
 
+  rpc DeleteComplaintByUserId(RequestId) returns (EmptyResponseContent) {
+    option(google.api.http) = {
+      delete: "/complaint/{id}"
+    };
+  }
+
   rpc GetAllContentComplaints (EmptyRequestContent) returns (ContentComplaintArray) {
     option(google.api.http) = {
       get: "/complaint/get",
+    };
+  }
+
+  rpc RejectById(RequestId) returns (EmptyResponseContent) {
+    option(google.api.http) = {
+      post: "/complaint/reject",
+      body: "*"
     };
   }
 

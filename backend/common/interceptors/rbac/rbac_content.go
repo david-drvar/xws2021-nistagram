@@ -26,7 +26,8 @@ func SetupContentRBAC(db *gorm.DB) error {
 			getAllCollections, getCollection, createCollection, removeCollection, getUserFavorites, getUserFavoritesOptimized, createFavorite, removeFavorite,
 			createHashtag, getAllHashtags,
 			getAllHighlights, getHighlight, createHighlight, removeHighlight, createHighlightStory, removeHighlightStory, getUserLikedOrDislikedPosts,
-			createContentComplaint, getAllContentComplaints,
+			createContentComplaint, getAllContentComplaints, rejectById, deleteComplaintByUserId,
+
 		}
 		result = db.Create(&permissions)
 		if result.Error != nil {
@@ -71,6 +72,8 @@ func SetupContentRBAC(db *gorm.DB) error {
 			basicGetUserLikedOrDislikedPosts, verifiedGetUserLikedOrDislikedPosts,
 			basicCreateContentComplaint, verifiedCreateContentComplaint, agentCreateContentComplaint,
 			adminGetAllContentComplaints,
+			adminRejectById,
+			adminDeleteComplaintByUserId,
 		}
 		result = db.Create(&rolePermissions)
 		if result.Error != nil {
@@ -141,7 +144,9 @@ var (
 	getAllHashtags          = Permission{Id: "1932ca5d-24af-4dcf-8f42-4ca32c799815", Name: "GetAllHashtags"}
 	createContentComplaint  = Permission{Id: "334e6ffd-a9d7-4e83-bfb5-9f5f053b0069", Name: "CreateContentComplaint"}
 	getAllContentComplaints = Permission{Id: "7f2315ec-909e-4856-9ccf-01c30ae76263", Name: "GetAllContentComplaints"}
-)
+	rejectById 				= Permission{Id: "fe5fecc4-dc44-11eb-ba80-0242ac130004", Name: "RejectById"}
+	deleteComplaintByUserId = Permission{Id: "3dc694f6-dcf1-11eb-ba80-0242ac130004", Name: "DeleteComplaintByUserId"}
+	)
 
 var (
 	// Posts
@@ -333,7 +338,8 @@ var (
 	agentCreateContentComplaint    = RolePermission{RoleId: agent.Id, PermissionId: createContentComplaint.Id}
 
 	adminGetAllContentComplaints = RolePermission{RoleId: admin.Id, PermissionId: getAllContentComplaints.Id}
-
+	adminRejectById 			 = RolePermission{RoleId: admin.Id, PermissionId: rejectById.Id}
+	adminDeleteComplaintByUserId = RolePermission{RoleId: admin.Id, PermissionId: deleteComplaintByUserId.Id}
 	// - - - - - - - - -
 
 )

@@ -6,6 +6,7 @@ import (
 	"github.com/david-drvar/xws2021-nistagram/common/tracer"
 	"github.com/david-drvar/xws2021-nistagram/user_service/model/domain"
 	"github.com/david-drvar/xws2021-nistagram/user_service/model/persistence"
+	"github.com/david-drvar/xws2021-nistagram/user_service/saga"
 	"github.com/david-drvar/xws2021-nistagram/user_service/services"
 	"gorm.io/gorm"
 )
@@ -14,8 +15,8 @@ type NotificationGrpcController struct {
 	service *services.NotificationService
 }
 
-func NewNotificationController(db *gorm.DB) (*NotificationGrpcController, error) {
-	service, err := services.NewNotificationService(db)
+func NewNotificationController(db *gorm.DB, redis *saga.RedisServer) (*NotificationGrpcController, error) {
+	service, err := services.NewNotificationService(db, redis)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +65,7 @@ func (c *NotificationGrpcController) DeleteNotification(ctx context.Context, in 
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
-	_, err := c.service.DeleteNotification(ctx,  in.Id)
+	_, err := c.service.DeleteNotification(ctx, in.Id)
 	if err != nil {
 		return &protopb.EmptyResponse{}, err
 	}
@@ -72,7 +73,7 @@ func (c *NotificationGrpcController) DeleteNotification(ctx context.Context, in 
 	return &protopb.EmptyResponse{}, nil
 }
 
-func (c *NotificationGrpcController) ReadAllNotifications(ctx context.Context, in *protopb.RequestIdUsers) (*protopb.EmptyResponse,error) {
+func (c *NotificationGrpcController) ReadAllNotifications(ctx context.Context, in *protopb.RequestIdUsers) (*protopb.EmptyResponse, error) {
 	span := tracer.StartSpanFromContextMetadata(ctx, "ReadAllNotifications")
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)
@@ -85,7 +86,7 @@ func (c *NotificationGrpcController) ReadAllNotifications(ctx context.Context, i
 	return &protopb.EmptyResponse{}, nil
 }
 
-func (c *NotificationGrpcController) DeleteByTypeAndCreator(ctx context.Context, in *protopb.Notification) (*protopb.EmptyResponse, error){
+func (c *NotificationGrpcController) DeleteByTypeAndCreator(ctx context.Context, in *protopb.Notification) (*protopb.EmptyResponse, error) {
 	span := tracer.StartSpanFromContextMetadata(ctx, "DeleteByTypeAndCreator")
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)
@@ -110,7 +111,7 @@ func (c *NotificationGrpcController) UpdateNotification(ctx context.Context, in 
 	return &protopb.EmptyResponse{}, nil
 }
 
-func (c *NotificationGrpcController) GetByTypeAndCreator(ctx context.Context,in *protopb.Notification) (*protopb.Notification, error) {
+func (c *NotificationGrpcController) GetByTypeAndCreator(ctx context.Context, in *protopb.Notification) (*protopb.Notification, error) {
 	span := tracer.StartSpanFromContextMetadata(ctx, "GetByTypeAndCreator")
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)

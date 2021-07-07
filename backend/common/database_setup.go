@@ -13,6 +13,7 @@ type dbConfig struct {
 	ContentDatabaseURL string `json:"content_database_url"`
 	AgentDatabaseURL string `json:"agent_database_url"`
 	RecommendationDatabaseURL string `json:"recommendation_database_url"`
+	ChatDatabaseURL string `json:"chat_database_url"`
 }
 
 const (
@@ -20,10 +21,12 @@ const (
 	ContentDatabase 	   = "ContentDatabase"
 	AgentDatabase 		   = "AgentDatabase"
 	RecommendationDatabase = "RecommendationDatabase"
+	ChatDatabase = "ChatDatabase"
 
 	UsersDatabaseName 	   		   = "xws_users"
 	ContentDatabaseName 	   	   = "xws_content"
 	AgentDatabaseName 	   		   = "xws_agent"
+	ChatDatabaseName 			   = "xws_chat"
 	RecommendationDatabaseName 	   = "neo4j"
 )
 
@@ -40,16 +43,23 @@ func InitDatabase(dbname string) *gorm.DB {
 											" password=" +os.Getenv("DB_PW")+
 											" host=" + os.Getenv("DB_HOST"))
 
-	}else if dbname == ContentDatabase{
-		dsn = fmt.Sprintf("%s", "user=" + os.Getenv("DB_USER") +
-										" dbname=" + os.Getenv("DB_NAME") +
-										" password=" +os.Getenv("DB_PW")+
-										" host=" + os.Getenv("DB_HOST"))
-	}else if dbname == AgentDatabase{
-
-		dsn = fmt.Sprintf("%s", dbConf.AgentDatabaseURL)
-	}else if dbname == RecommendationDatabase {
+	} else if dbname == ContentDatabase {
+		dsn = fmt.Sprintf("%s", "user="+os.Getenv("DB_USER")+
+			" dbname="+os.Getenv("DB_NAME")+
+			" password="+os.Getenv("DB_PW")+
+			" host="+os.Getenv("DB_HOST"))
+	} else if dbname == AgentDatabase {
+		dsn = fmt.Sprintf("%s", "user="+os.Getenv("DB_USER")+
+			" dbname="+os.Getenv("DB_NAME")+
+			" password="+os.Getenv("DB_PW")+
+			" host="+os.Getenv("DB_HOST"))
+	} else if dbname == RecommendationDatabase {
 		dsn = fmt.Sprintf("%s", dbConf.RecommendationDatabaseURL)
+	}else if dbname == ChatDatabase {
+		dsn = fmt.Sprintf("%s", "user=" + os.Getenv("DB_USER") +
+							" dbname=" + os.Getenv("DB_NAME") +
+							" password=" +os.Getenv("DB_PW")+
+							" host=" + os.Getenv("DB_HOST"))
 	}
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{

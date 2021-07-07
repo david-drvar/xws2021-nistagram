@@ -10,6 +10,7 @@ import (
 	protopb "github.com/david-drvar/xws2021-nistagram/common/proto"
 	"github.com/david-drvar/xws2021-nistagram/common/tracer"
 	"github.com/david-drvar/xws2021-nistagram/user_service/controllers"
+	"github.com/david-drvar/xws2021-nistagram/user_service/saga"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"gorm.io/gorm"
@@ -24,21 +25,25 @@ func GRPCServer(db *gorm.DB) {
 
 	lis, err := net.Listen("tcp", grpc_common.Users_service_address)
 	if err != nil {
-		customLogger.ToStdoutAndFile("Users GRPC Server", "Couldn't listen to " + grpc_common.Users_service_address, logger.Fatal)
+		customLogger.ToStdoutAndFile("Users GRPC Server", "Couldn't listen to "+grpc_common.Users_service_address, logger.Fatal)
 		return
 	}
 
-	jwtManager := common.NewJWTManager("somesecretkey", 60 * time.Minute)
+	jwtManager := common.NewJWTManager("somesecretkey", 60*time.Minute)
 	rbacInterceptor := interceptors.NewRBACInterceptor(db, jwtManager, customLogger)
+
+	redisServer := saga.NewRedisServer(db)
+	go redisServer.Orchestrator.Start()
+	go redisServer.RedisConnection()
 
 	// Create a gRPC server object
 	s := grpc.NewServer(
 		grpc.UnaryInterceptor(rbacInterceptor.Authorize()),
-		grpc.MaxSendMsgSize(4 << 30), // Default: 1024 * 1024 * 4 = 4MB -> Override to 4GBs
-		grpc.MaxRecvMsgSize(4 << 30), // Default: 1024 * 1024 * 4 = 4MB -> Override to 4GBs
+		grpc.MaxSendMsgSize(4<<30), // Default: 1024 * 1024 * 4 = 4MB -> Override to 4GBs
+		grpc.MaxRecvMsgSize(4<<30), // Default: 1024 * 1024 * 4 = 4MB -> Override to 4GBs
 	)
 
-	server, err := controllers.NewServer(db, jwtManager, customLogger)
+	server, err := controllers.NewServer(db, jwtManager, customLogger, redisServer)
 	if err != nil {
 		customLogger.ToStdoutAndFile("Users GRPC Server", "Couldn't create server", logger.Fatal)
 		return
@@ -47,14 +52,14 @@ func GRPCServer(db *gorm.DB) {
 	protopb.RegisterUsersServer(s, server)
 	protopb.RegisterPrivacyServer(s, server)
 
-	customLogger.ToStdoutAndFile("Users GRPC Server", "Serving gRPC on " + grpc_common.Users_service_address, logger.Info)
+	customLogger.ToStdoutAndFile("Users GRPC Server", "Serving gRPC on "+grpc_common.Users_service_address, logger.Info)
 	go func() {
 		log.Fatalln(s.Serve(lis))
 	}()
 
 	conn, err := grpc_common.CreateGrpcConnection(grpc_common.Users_service_address)
 	if err != nil {
-		customLogger.ToStdoutAndFile("Users GRPC Server", "Couldn't connect to " + grpc_common.Users_service_address, logger.Fatal)
+		customLogger.ToStdoutAndFile("Users GRPC Server", "Couldn't connect to "+grpc_common.Users_service_address, logger.Fatal)
 		return
 	}
 
@@ -75,7 +80,7 @@ func GRPCServer(db *gorm.DB) {
 		Handler: tracer.TracingWrapper(c.Handler(gatewayMux)),
 	}
 
-	customLogger.ToStdoutAndFile("Users GRPC Server", "Serving gRPC-Gateway on " + grpc_common.Users_gateway_address, logger.Info)
+	customLogger.ToStdoutAndFile("Users GRPC Server", "Serving gRPC-Gateway on "+grpc_common.Users_gateway_address, logger.Info)
 	// log.Fatalln(gwServer.ListenAndServeTLS("./../common/sslFile/gateway.crt", "./../common/sslFile/gateway.key"))
 	log.Fatalln(gwServer.ListenAndServe())
 }

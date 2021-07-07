@@ -25,6 +25,7 @@ type storyRepository struct {
 	mediaRepository   MediaRepository
 	tagRepository     TagRepository
 	hashtagRepository HashtagRepository
+	complaintRepository ComplaintRepository
 }
 
 func NewStoryRepo(db *gorm.DB) (*storyRepository, error) {
@@ -35,12 +36,14 @@ func NewStoryRepo(db *gorm.DB) (*storyRepository, error) {
 	mediaRepository, _ := NewMediaRepo(db)
 	tagRepository, _ := NewTagRepo(db)
 	hashtagRepository, _ := NewHashtagRepo(db)
+	complaintRepository, _ := NewComplaintRepo(db)
 
 	return &storyRepository{
 		DB: db,
 		mediaRepository: mediaRepository,
 		tagRepository: tagRepository,
 		hashtagRepository: hashtagRepository,
+		complaintRepository: complaintRepository,
 	}, nil
 }
 
@@ -187,6 +190,10 @@ func (repository *storyRepository) RemoveStory(ctx context.Context, storyId stri
 			return errors.New("cannot remove story")
 		}
 
+		err := repository.complaintRepository.DeleteByPostId(ctx, storyId)
+		if err != nil {
+			return err
+		}
 		storyMedia, err := repository.mediaRepository.GetMediaForPost(ctx, story.Id)
 		if err != nil {
 			return errors.New("cannot retrieve story's media")

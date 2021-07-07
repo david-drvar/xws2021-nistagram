@@ -8,6 +8,28 @@ import "google/protobuf/timestamp.proto";
 option go_package = "github.com/xws2021-nistagram/common/proto";
 
 service Users {
+
+  //registration requests!
+  rpc CreateAgentUser(CreateUserRequest) returns (UsersDTO){
+    option(google.api.http) = {
+      post: "/api/users/agentRegistration",
+      body: "user"
+    };
+  }
+
+  rpc GetAllPendingRequests(EmptyRequest) returns (ResponseRequests) {
+    option(google.api.http) = {
+      get: "/api/users/get_requests"
+    };
+  }
+
+  rpc UpdateRequest(RegistrationRequest) returns (EmptyResponse) {
+    option(google.api.http) = {
+      post: "/api/users/updateRequest",
+      body: "*"
+    };
+  }
+
   rpc LoginUser (LoginRequest) returns (LoginResponse) {
     option(google.api.http) = {
       post: "/api/users/login",
@@ -122,6 +144,20 @@ service Users {
   rpc CheckIsApproved (RequestIdUsers) returns (BooleanResponseUsers) {
     option(google.api.http) = {
       post: "/api/users/checkIsApproved"
+      body: "*"
+    };
+  }
+
+  rpc CheckIsActive (RequestIdUsers) returns (BooleanResponseUsers) {
+    option(google.api.http) = {
+      post: "/api/users/checkIsActive"
+      body: "*"
+    };
+  }
+
+  rpc ChangeUserActiveStatus(RequestIdUsers)returns (EmptyResponse) {
+    option(google.api.http) = {
+      post: "/api/users/change_active_status"
       body: "*"
     };
   }
@@ -374,6 +410,26 @@ message BooleanResponseUsers {
 
 message VerificationRequestsArray {
   repeated VerificationRequest verificationRequests = 1;
+}
+
+message RegistrationRequest {
+  string id = 1;
+  string userId = 2;
+  google.protobuf.Timestamp createdAt = 3;
+  string firstName = 4;
+  string lastName = 5;
+  string website = 6;
+  string username = 7;
+  string email = 8;
+  string status = 9;
+}
+
+message ApiTokenResponse {
+  string token = 1;
+}
+
+message ResponseRequests {
+ repeated RegistrationRequest registrationRequests = 1;
 }
 
 message VerificationRequest {

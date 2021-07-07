@@ -11,6 +11,7 @@ import (
 	protopb "github.com/david-drvar/xws2021-nistagram/common/proto"
 	"github.com/david-drvar/xws2021-nistagram/common/tracer"
 	"github.com/david-drvar/xws2021-nistagram/recommendation_service/controllers"
+	"github.com/david-drvar/xws2021-nistagram/recommendation_service/saga"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"google.golang.org/grpc"
@@ -26,12 +27,14 @@ func GRPCServer(driver neo4j.Driver) {
 	// Create a listener on TCP port
 	lis, err := net.Listen("tcp", grpc_common.Recommendation_service_address)
 	if err != nil {
-		customLogger.ToStdoutAndFile("Recommendation GRPC Server", "Couldn't listen to " + grpc_common.Recommendation_service_address, logger.Fatal)
+		customLogger.ToStdoutAndFile("Recommendation GRPC Server", "Couldn't listen to "+grpc_common.Recommendation_service_address, logger.Fatal)
 		return
 	}
 
 	// Create a gRPC server object
 	s := grpc.NewServer()
+	redisServer := saga.NewRedisServer(driver)
+	go redisServer.RedisConnection()
 
 	server, err := controllers.NewServer(driver, customLogger)
 	if err != nil {
@@ -41,14 +44,14 @@ func GRPCServer(driver neo4j.Driver) {
 
 	protopb.RegisterFollowersServer(s, server)
 
-	customLogger.ToStdoutAndFile("Recommendation GRPC Server", "Serving gRPC on " + grpc_common.Recommendation_service_address, logger.Info)
+	customLogger.ToStdoutAndFile("Recommendation GRPC Server", "Serving gRPC on "+grpc_common.Recommendation_service_address, logger.Info)
 	go func() {
 		log.Fatalln(s.Serve(lis))
 	}()
 
 	conn, err := grpc_common.CreateGrpcConnection(grpc_common.Recommendation_service_address)
 	if err != nil {
-		customLogger.ToStdoutAndFile("Recommendation GRPC Server", "Couldn't connect to " + grpc_common.Recommendation_service_address, logger.Fatal)
+		customLogger.ToStdoutAndFile("Recommendation GRPC Server", "Couldn't connect to "+grpc_common.Recommendation_service_address, logger.Fatal)
 		return
 	}
 
@@ -63,7 +66,7 @@ func GRPCServer(driver neo4j.Driver) {
 	pool := x509.NewCertPool()
 
 	// Here is the certificate provided by the loading client, preferably the root certificate provided by the client.
-	addTrust(pool,"./../common/sslFile/gateway.p12")
+	addTrust(pool, "./../common/sslFile/gateway.p12")
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
 	gwServer := &http.Server{
@@ -75,15 +78,15 @@ func GRPCServer(driver neo4j.Driver) {
 		},*/
 	}
 
-	customLogger.ToStdoutAndFile("Recommendation GRPC Server", "Serving gRPC-Gateway on " + grpc_common.Recommendation_gateway_address, logger.Info)
+	customLogger.ToStdoutAndFile("Recommendation GRPC Server", "Serving gRPC-Gateway on "+grpc_common.Recommendation_gateway_address, logger.Info)
 	//log.Fatalln(gwServer.ListenAndServeTLS("./../common/sslFile/gateway.crt", "./../common/sslFile/gateway.key"))
 	log.Fatalln(gwServer.ListenAndServe())
 }
 
 func addTrust(pool *x509.CertPool, path string) {
 	aCrt, err := ioutil.ReadFile(path)
-	if err!= nil {
-		fmt.Println("ReadFile err:",err)
+	if err != nil {
+		fmt.Println("ReadFile err:", err)
 		return
 	}
 	pool.AppendCertsFromPEM(aCrt)

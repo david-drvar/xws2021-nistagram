@@ -1,0 +1,41 @@
+@import url("./variables.css");
+
+.saveModal .newCollection{
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+    width: 80%;
+    margin-top: 15px;
+}
+
+.saveModal .newCollectionInput {
+    width: 65%;
+    height: 35px;
+    border: none;
+    border-bottom: 1px solid var(--font-color-secondary);
+    color: var(--font-color-primary);
+}
+
+.saveModal .newCollectionInput:active{
+    border: none;
+}
+
+.saveModal .newCollectionButton{
+
+}
+
+.saveModal .savedInCollection{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.saveModal .savedInCollection .savedCheck{
+    width: 15px;
+}
+
+.collectionsList{
+    margin-top: 5px;
+    width: 60%;
+}

@@ -52,7 +52,12 @@ func (service *StoryService) GetStoriesForUser(ctx context.Context, userId strin
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
-
+	res, err := grpc_common.CheckIsActive(ctx, userId)
+	if err != nil {
+		return nil, err
+	}else if res == false {
+		return nil, errors.New("User is not active!")
+	}
 	dbStories, err := service.storyRepository.GetUsersStories(ctx, userId, false)
 	if err != nil { return []domain.Story{}, err }
 
@@ -81,6 +86,12 @@ func (service *StoryService) GetMyStories(ctx context.Context, userId string) ([
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
+	res, err := grpc_common.CheckIsActive(ctx, userId)
+	if err != nil {
+		return nil, err
+	}else if res == false {
+		return nil, errors.New("User is not active!")
+	}
 
 	dbStories, err := service.storyRepository.GetMyStories(ctx, userId)
 	if err != nil { return []domain.Story{}, err }
@@ -101,11 +112,21 @@ func (service *StoryService) GetAllHomeStories(ctx context.Context, userIds []st
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
-	dbStories, err := service.storyRepository.GetAllHomeStories(ctx, userIds, false)
+	var userIdsActive []string
+	for _, id := range userIds {
+		res, err := grpc_common.CheckIsActive(ctx, id)
+		if err != nil {
+			continue
+		}else if res {
+			userIdsActive = append(userIdsActive, id)
+		}
+	}
+
+	dbStories, err := service.storyRepository.GetAllHomeStories(ctx, userIdsActive, false)
 	if err != nil { return domain.StoriesHome{}, err }
 
 	if isCloseFriends {
-		closeFriendsStories, err := service.storyRepository.GetAllHomeStories(ctx, userIds, true)
+		closeFriendsStories, err := service.storyRepository.GetAllHomeStories(ctx, userIdsActive, true)
 		if err != nil { return domain.StoriesHome{}, err }
 
 		for _, closeFriendStory := range closeFriendsStories {

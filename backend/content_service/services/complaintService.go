@@ -39,3 +39,21 @@ func (service *ComplaintService) GetAllContentComplaints(ctx context.Context) ([
 
 	return service.complaintRepository.GetAllContentComplaints(ctx)
 }
+
+func (service *ComplaintService) RejectById (ctx context.Context, id string) error {
+	span := tracer.StartSpanFromContextMetadata(ctx, "RejectById")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.complaintRepository.RejectById(ctx, id)
+
+}
+
+func (service *ComplaintService) DeleteComplaintByUserId(ctx context.Context, id string) error {
+	span := tracer.StartSpanFromContextMetadata(ctx, "DeleteComplaintByUserId")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.complaintRepository.DeleteComplaintByUserId(ctx, id)
+
+}

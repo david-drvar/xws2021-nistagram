@@ -55,3 +55,7 @@ func GetUsersClient(conn *grpc.ClientConn) protopb.UsersClient{
 func GetPrivacyClient(conn *grpc.ClientConn) protopb.PrivacyClient{
 	return protopb.NewPrivacyClient(conn)
 }
+
+func GetContentClient(conn *grpc.ClientConn) protopb.ContentClient {
+	return protopb.NewContentClient(conn)
+}

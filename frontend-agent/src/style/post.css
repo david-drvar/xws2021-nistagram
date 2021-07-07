@@ -1,0 +1,137 @@
+@import url("./variables.css");
+
+.Post {
+    border-radius: 3px;
+    border: 1px solid var(--border-color-grey-secondary);
+    background-color: var(--background-white);
+    margin-bottom: 2em;
+    padding-bottom: 1em;
+    border-radius: 3px;
+    /* max-width: 800px; */
+    width: 66%;
+    max-width: 75%;
+}
+
+.Post header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75em;
+}
+
+.Post header .avatar {
+    margin-bottom: 0px;
+}
+
+.Post .Post-caption{
+    color: var(--font-color-primary) !important;
+}
+
+.Post .Post-caption .username{
+    color: var(--font-color-primary) !important;
+    font-weight: 500;
+    font-size: 1em;
+}
+
+
+.Post .avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
+
+.Post .cardButton {
+    height: 30px;
+    margin-right: 5px;
+}
+
+.Post .cardButton:hover{
+    cursor: pointer;
+}
+
+.Post .likes-dislikes{
+    display: flex;
+    padding-left: 1em;
+    align-content: center;
+    padding-top: 0.6em;
+}
+
+.Post .likes-dislikes span{
+    font-size: 0.9em;
+    margin-left: 0.5em;
+}
+
+.Post .comments{
+    margin-bottom: 1.5em;
+}
+
+.Post .noComments{
+    font-size: 0.9em;
+    color: var(--font-color-secondary);
+    margin-left: 1.1em;
+}
+
+.Post .timePosted{
+    font-size: 0.75em;
+    padding-left: 1.4em;
+    padding-bottom: 1.2em;
+    color: var(--font-color-secondary);
+    border-bottom: 1px solid var(--border-color-grey-secondary);
+}
+
+.Post .addComment{
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85em;
+    padding: 1em 1.25em 0em;
+}
+
+.Post .addComment .commentInput {
+    width: 80%;
+    height: 40px;
+    border: none;
+    color: var(--font-color-primary);
+}
+
+.Post .addComment .commentInput:active {
+    border: none;
+}
+
+.Post .addComment .commentInput::placeholder {
+    color: var(--font-color-secondary);
+}
+
+.Post .addComment .postText{
+    color: var(--link-color);
+    font-size: 1.1em;
+    margin-top: 0.1em;
+    border: 0;
+    background: none;
+    box-shadow: none;
+}
+
+.Post .addComment .postText:disabled{
+    color: var(--link-color-secondary);
+}
+
+.Post .hashtag {
+    color: var(--link-color);
+}
+
+
+.Post .hashtag:hover {
+    cursor: pointer;
+}
+
+.Post .slider {
+    display: block;
+    width: 100%;
+}
+
+.Post-caption {
+    padding: 12px 16px;
+}
+
+.Post-caption strong {
+    font-weight: 700;
+}

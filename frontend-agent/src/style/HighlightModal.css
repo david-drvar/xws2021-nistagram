@@ -1,0 +1,26 @@
+.saveModal .newHighlight{
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+    width: 80%;
+    margin-top: 15px;
+}
+
+.saveModal .newHighlightInput{
+    width: 65%;
+    height: 35px;
+    border: none;
+    border-bottom: 1px solid var(--font-color-secondary);
+    color: var(--font-color-primary);
+}
+
+.saveModal .savedInHighlight{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.saveModal .savedInHighlight .savedCheck{
+    width: 15px;
+}

@@ -14,6 +14,7 @@ func FillDatabase(db *gorm.DB) error {
 		&persistence.BlockedUsers{},
 		&persistence.Followers{},
 		&persistence.VerificationRequest{},
+		&persistence.RegistrationRequest{},
 		&persistence.APIKeys{},
 		&persistence.UserNotification{},
 		)
@@ -30,6 +31,7 @@ func dropTables(db *gorm.DB) {
 			&persistence.Followers{},
 			&persistence.VerificationRequest{},
 			&persistence.APIKeys{},
+			&persistence.RegistrationRequest{},
 			&persistence.UserNotification{})
 	}
 }

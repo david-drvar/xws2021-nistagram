@@ -31,5 +31,7 @@ func SetupEnvVariables() {
 	os.Setenv("DB_PW", "root")
 	os.Setenv("RECOMMENDATION_SERVICE", grpc_common.Recommendation_service_address)
 	os.Setenv("USER_SERVICE", grpc_common.Users_service_address)
+	os.Setenv("CHAT_SERVICE", grpc_common.Chat_service_address)
+	os.Setenv("AGENT_SERVICE", grpc_common.Agent_service_address)
 }
 

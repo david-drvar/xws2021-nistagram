@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from "react-redux";
 import Navigation from "../HomePage/Navigation";
 import { Button, Modal, Dropdown } from "react-bootstrap";
-import UserAutocomplete from "../Post/UserAutocomplete";
-import ProfileForAutocomplete from "../Post/ProfileForAutocomplete";
-import AutocompleteHashtags from "../Post/AutocompleteHashtags";
+import UserAutocomplete from "./UserAutocomplete";
+import ProfileForAutocomplete from "./ProfileForAutocomplete";
+import AutocompleteHashtags from "./AutocompleteHashtags";
 import userService from "../../services/user.service";
 import postService from "../../services/post.service";
 import toastService from "../../services/toast.service";
@@ -88,10 +88,6 @@ function NewPost(props) {
             toastService.show("warning", "Please add media for post")
             return;
         }
-        let date = new Date();
-        let month = date.getMonth() + 1;
-        if (month < 10) month = "0" + month;
-        const jsonDate = date.getFullYear() + "-" + month + "-" + date.getDate() + "T01:30:15.01Z";
 
         const contentRequest = {
             id: "1",
@@ -100,7 +96,6 @@ function NewPost(props) {
             type: isStory ? "Story" : "Post",
             description: description,
             location: location,
-            createdAt: jsonDate,
             media: mediaList,
             hashtags: hashtagList,
             jwt: store.user.jwt

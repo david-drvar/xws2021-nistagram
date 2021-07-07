@@ -5,6 +5,7 @@ import (
 	"github.com/david-drvar/xws2021-nistagram/common/tracer"
 	"github.com/david-drvar/xws2021-nistagram/user_service/model/domain"
 	"github.com/david-drvar/xws2021-nistagram/user_service/repositories"
+	"github.com/david-drvar/xws2021-nistagram/user_service/saga"
 	"gorm.io/gorm"
 )
 
@@ -13,9 +14,9 @@ type VerificationService struct {
 	verificationRepository repositories.VerificationRepository
 }
 
-func NewVerificationService(db *gorm.DB) (*VerificationService, error) {
-	userRepository, err := repositories.NewUserRepo(db)
-	verificationRepository, err := repositories.NewVerificationRepo(db)
+func NewVerificationService(db *gorm.DB, redis *saga.RedisServer) (*VerificationService, error) {
+	userRepository, err := repositories.NewUserRepo(db, redis)
+	verificationRepository, err := repositories.NewVerificationRepo(db, redis)
 
 	return &VerificationService{
 		userRepository,

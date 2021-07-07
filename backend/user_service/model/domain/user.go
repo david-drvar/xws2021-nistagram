@@ -38,6 +38,18 @@ type LoginRequest struct {
 	Password string
 }
 
+type RegistrationRequest struct {
+	Id        string
+	UserId    string
+	CreatedAt time.Time
+	Status    model.RequestStatus
+	Username string
+	Email string
+	Website string
+	FirstName string
+	LastName string
+}
+
 type UserNotification struct {
 	UserId            string
 	CreatorId 		  string

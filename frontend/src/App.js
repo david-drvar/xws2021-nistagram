@@ -9,7 +9,7 @@ import Saved from "./components/HomePageComponents/Saved";
 import StoryArchive from "./components/HomePageComponents/StoryArchive";
 import Search from "./pages/Search";
 import Profile from "./components/ProfileComponent/Profile";
-import NewPost from "./components/HomePageComponents/NewPost";
+import NewPost from "./components/Post/NewPost";
 import Home from "./components/HomePage/Home";
 import UnauthorizedPage from "./helpers/UnauthorizedPage";
 import BlockedUsers from "./components/UserData/BlockedUsers";

@@ -7,31 +7,33 @@ import (
 	"github.com/david-drvar/xws2021-nistagram/common/tracer"
 	"github.com/david-drvar/xws2021-nistagram/user_service/model/domain"
 	"github.com/david-drvar/xws2021-nistagram/user_service/repositories"
+	"github.com/david-drvar/xws2021-nistagram/user_service/saga"
 	"gorm.io/gorm"
 	"math/rand"
 	"net/smtp"
 	"time"
 )
+
 type EmailService struct {
 	repository repositories.UserRepository
-
 }
 
-func NewEmailService(db *gorm.DB) (*EmailService, error) {
-	repository, err := repositories.NewUserRepo(db)
+func NewEmailService(db *gorm.DB, redis *saga.RedisServer) (*EmailService, error) {
+	repository, err := repositories.NewUserRepo(db, redis)
 
 	return &EmailService{
 		repository: repository,
-	}, err}
+	}, err
+}
 
-func  (service *EmailService)  SendEmail(ctx context.Context, in string) (bool, error) {
+func (service *EmailService) SendEmail(ctx context.Context, in string) (bool, error) {
 	span := tracer.StartSpanFromContextMetadata(ctx, "UpdateUserProfile")
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	var userDomain domain.User
 	userDomain, _ = service.repository.GetUserByEmail(in)
-	if userDomain.Id=="" {
+	if userDomain.Id == "" {
 		return false, errors.New("email not exist")
 	}
 
@@ -42,9 +44,9 @@ func  (service *EmailService)  SendEmail(ctx context.Context, in string) (bool, 
 	}
 	fmt.Println(string(s))
 
-	userDomain.ResetCode=string(s)
-	userDomain.TokenEnd=time.Now().AddDate(0,0,1)
-	service.repository.UpdateUserProfile(ctx,userDomain)
+	userDomain.ResetCode = string(s)
+	userDomain.TokenEnd = time.Now().AddDate(0, 0, 1)
+	service.repository.UpdateUserProfile(ctx, userDomain)
 
 	from := "bsep2021@gmail.com"
 	password := "BSEP2021"
@@ -54,16 +56,15 @@ func  (service *EmailService)  SendEmail(ctx context.Context, in string) (bool, 
 	smtpHost := "smtp.gmail.com"
 	smtpPort := "587"
 
-	message := []byte("Hi,\nwe received a request to reset your password.Your old password has been locked for security reasons.\nTo unlock your profile you must verify your identity.\n\nYour password reset code is:"+string(s));
+	message := []byte("Hi,\nwe received a request to reset your password.Your old password has been locked for security reasons.\nTo unlock your profile you must verify your identity.\n\nYour password reset code is:" + string(s))
 	auth := smtp.PlainAuth("", from, password, smtpHost)
 
 	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, message)
 	if err != nil {
 		fmt.Println(err)
-		return false,err
+		return false, err
 	}
 	fmt.Println("Email Sent Successfully!")
 
 	return true, nil
 }
-

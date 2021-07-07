@@ -11,7 +11,6 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-// Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
 // ContentClient is the client API for Content service.
@@ -64,7 +63,9 @@ type ContentClient interface {
 	RemoveHighlightStory(ctx context.Context, in *HighlightRequest, opts ...grpc.CallOption) (*EmptyResponseContent, error)
 	//   Content complaints
 	CreateContentComplaint(ctx context.Context, in *ContentComplaint, opts ...grpc.CallOption) (*EmptyResponseContent, error)
+	DeleteComplaintByUserId(ctx context.Context, in *RequestId, opts ...grpc.CallOption) (*EmptyResponseContent, error)
 	GetAllContentComplaints(ctx context.Context, in *EmptyRequestContent, opts ...grpc.CallOption) (*ContentComplaintArray, error)
+	RejectById(ctx context.Context, in *RequestId, opts ...grpc.CallOption) (*EmptyResponseContent, error)
 }
 
 type contentClient struct {
@@ -408,9 +409,27 @@ func (c *contentClient) CreateContentComplaint(ctx context.Context, in *ContentC
 	return out, nil
 }
 
+func (c *contentClient) DeleteComplaintByUserId(ctx context.Context, in *RequestId, opts ...grpc.CallOption) (*EmptyResponseContent, error) {
+	out := new(EmptyResponseContent)
+	err := c.cc.Invoke(ctx, "/proto.Content/DeleteComplaintByUserId", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *contentClient) GetAllContentComplaints(ctx context.Context, in *EmptyRequestContent, opts ...grpc.CallOption) (*ContentComplaintArray, error) {
 	out := new(ContentComplaintArray)
 	err := c.cc.Invoke(ctx, "/proto.Content/GetAllContentComplaints", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *contentClient) RejectById(ctx context.Context, in *RequestId, opts ...grpc.CallOption) (*EmptyResponseContent, error) {
+	out := new(EmptyResponseContent)
+	err := c.cc.Invoke(ctx, "/proto.Content/RejectById", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -467,7 +486,9 @@ type ContentServer interface {
 	RemoveHighlightStory(context.Context, *HighlightRequest) (*EmptyResponseContent, error)
 	//   Content complaints
 	CreateContentComplaint(context.Context, *ContentComplaint) (*EmptyResponseContent, error)
+	DeleteComplaintByUserId(context.Context, *RequestId) (*EmptyResponseContent, error)
 	GetAllContentComplaints(context.Context, *EmptyRequestContent) (*ContentComplaintArray, error)
+	RejectById(context.Context, *RequestId) (*EmptyResponseContent, error)
 	mustEmbedUnimplementedContentServer()
 }
 
@@ -586,8 +607,14 @@ func (UnimplementedContentServer) RemoveHighlightStory(context.Context, *Highlig
 func (UnimplementedContentServer) CreateContentComplaint(context.Context, *ContentComplaint) (*EmptyResponseContent, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateContentComplaint not implemented")
 }
+func (UnimplementedContentServer) DeleteComplaintByUserId(context.Context, *RequestId) (*EmptyResponseContent, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteComplaintByUserId not implemented")
+}
 func (UnimplementedContentServer) GetAllContentComplaints(context.Context, *EmptyRequestContent) (*ContentComplaintArray, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllContentComplaints not implemented")
+}
+func (UnimplementedContentServer) RejectById(context.Context, *RequestId) (*EmptyResponseContent, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RejectById not implemented")
 }
 func (UnimplementedContentServer) mustEmbedUnimplementedContentServer() {}
 
@@ -598,8 +625,8 @@ type UnsafeContentServer interface {
 	mustEmbedUnimplementedContentServer()
 }
 
-func RegisterContentServer(s grpc.ServiceRegistrar, srv ContentServer) {
-	s.RegisterService(&Content_ServiceDesc, srv)
+func RegisterContentServer(s *grpc.Server, srv ContentServer) {
+	s.RegisterService(&_Content_serviceDesc, srv)
 }
 
 func _Content_CreatePost_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -1268,6 +1295,24 @@ func _Content_CreateContentComplaint_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Content_DeleteComplaintByUserId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestId)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContentServer).DeleteComplaintByUserId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Content/DeleteComplaintByUserId",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContentServer).DeleteComplaintByUserId(ctx, req.(*RequestId))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Content_GetAllContentComplaints_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(EmptyRequestContent)
 	if err := dec(in); err != nil {
@@ -1286,10 +1331,25 @@ func _Content_GetAllContentComplaints_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
-// Content_ServiceDesc is the grpc.ServiceDesc for Content service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var Content_ServiceDesc = grpc.ServiceDesc{
+func _Content_RejectById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestId)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContentServer).RejectById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Content/RejectById",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContentServer).RejectById(ctx, req.(*RequestId))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _Content_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "proto.Content",
 	HandlerType: (*ContentServer)(nil),
 	Methods: []grpc.MethodDesc{
@@ -1442,8 +1502,16 @@ var Content_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Content_CreateContentComplaint_Handler,
 		},
 		{
+			MethodName: "DeleteComplaintByUserId",
+			Handler:    _Content_DeleteComplaintByUserId_Handler,
+		},
+		{
 			MethodName: "GetAllContentComplaints",
 			Handler:    _Content_GetAllContentComplaints_Handler,
+		},
+		{
+			MethodName: "RejectById",
+			Handler:    _Content_RejectById_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

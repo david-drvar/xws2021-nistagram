@@ -52,6 +52,19 @@ func (u User) ConvertToGrpc() *protopb.UsersDTO {
 	}
 }
 
+func (req *RegistrationRequest) ConvertToGrpc() *protopb.RegistrationRequest{
+	return &protopb.RegistrationRequest{
+		CreatedAt: timestamppb.New(req.CreatedAt),
+		LastName: req.LastName,
+		Email: req.Email,
+		Username: req.Username,
+		FirstName: req.FirstName,
+		Id: req.Id,
+		UserId: req.UserId,
+		Website: req.Website,
+	}
+}
+
 func (u User) ConvertFromGrpc(user *protopb.UsersDTO) User {
 	newUser := User{
 		Id:              user.Id,

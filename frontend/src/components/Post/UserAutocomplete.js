@@ -10,12 +10,15 @@ function UserAutocomplete(props) {
     const [userInput, setUserInput] = useState("");
 
     function onClick(suggestion) {
-        setActiveSuggestion(0);
-        setShowSuggestions(false);
-        setUserInput("");
-        setFilteredSuggestions([]);
+        props.setSelectedUser && props.setSelectedUser(suggestion);
+        props.setSelectedUser && setUserInput(suggestion.username);
+        props.setSelectedUser && setShowSuggestions(false);
 
-        props.addToTaglist(suggestion);
+        props.addToTaglist &&setActiveSuggestion(0);
+        props.addToTaglist && setShowSuggestions(false);
+        props.addToTaglist && setUserInput("");
+        props.addToTaglist && setFilteredSuggestions([]);
+        props.addToTaglist && props.addToTaglist(suggestion);
     }
 
     function onChange(e) {

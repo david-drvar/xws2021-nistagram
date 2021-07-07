@@ -8,6 +8,7 @@ import (
 	"github.com/david-drvar/xws2021-nistagram/user_service/model"
 	"github.com/david-drvar/xws2021-nistagram/user_service/model/domain"
 	"github.com/david-drvar/xws2021-nistagram/user_service/model/persistence"
+	"github.com/david-drvar/xws2021-nistagram/user_service/saga"
 	"github.com/david-drvar/xws2021-nistagram/user_service/util"
 	"github.com/david-drvar/xws2021-nistagram/user_service/util/encryption"
 	"github.com/david-drvar/xws2021-nistagram/user_service/util/images"
@@ -36,20 +37,23 @@ type UserRepository interface {
 	CheckIsApproved(ctx context.Context, id string) (bool, error)
 	GetUserByUsername(username string) (domain.User, error)
 	GetUserPhoto(context.Context, string) (string, error)
+	CheckIsActive(context.Context, string) (bool, error)
+	ChangeUserActiveStatus(context.Context, string) error
 }
 
 type userRepository struct {
 	DB                *gorm.DB
 	privacyRepository PrivacyRepository
+	redisServer       saga.RedisServer
 }
 
-func NewUserRepo(db *gorm.DB) (*userRepository, error) {
+func NewUserRepo(db *gorm.DB, redisServer *saga.RedisServer) (*userRepository, error) {
 	if db == nil {
 		panic("UserRepository not created, gorm.DB is nil")
 	}
 	privacyRepository, _ := NewPrivacyRepo(db)
 
-	return &userRepository{DB: db, privacyRepository: privacyRepository}, nil
+	return &userRepository{DB: db, privacyRepository: privacyRepository, redisServer: *redisServer}, nil
 }
 
 func (repository *userRepository) UpdateUserPassword(ctx context.Context, password domain.Password) (bool, error) {
@@ -124,7 +128,7 @@ func (repository *userRepository) GetUserByUsername(username string) (domain.Use
 	var dbUser persistence.User
 	var dbUserAdditionalInfo persistence.UserAdditionalInfo
 
-	db := repository.DB.Where("username = ?", username).Find(&dbUser)
+	db := repository.DB.Where("is_active = ?", true).Where("username = ?", username).Find(&dbUser)
 	if db.Error != nil {
 		return domain.User{}, db.Error
 	}
@@ -152,7 +156,7 @@ func (repository *userRepository) GetUserByEmail(email string) (domain.User, err
 	var dbUser persistence.User
 	var dbUserAdditionalInfo persistence.UserAdditionalInfo
 
-	db := repository.DB.Where("email = ?", email).Find(&dbUser)
+	db := repository.DB.Where("email = ?", email).Where("is_active = ?", true).Find(&dbUser)
 	if db.Error != nil {
 		return domain.User{}, db.Error
 	}
@@ -185,7 +189,7 @@ func (repository *userRepository) GetAllUsers(ctx context.Context) ([]domain.Use
 	var dbUserAdditionalInfo persistence.UserAdditionalInfo
 	var usersDomain []domain.User
 
-	result := repository.DB.Find(&users)
+	result := repository.DB.Where("is_active = ?", true).Find(&users)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -216,9 +220,17 @@ func (repository *userRepository) LoginUser(ctx context.Context, request domain.
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	var dbUser persistence.User
-	result := repository.DB.Where("email = ?", request.Email).First(&dbUser)
+	result := repository.DB.Where("email = ?", request.Email).Where("is_active = ?", true).First(&dbUser)
 	if result.Error != nil || result.RowsAffected != 1 {
 		return persistence.User{}, result.Error
+	}
+
+	if dbUser.Role == "Agent" {
+		var request *persistence.RegistrationRequest
+		repository.DB.Where("user_id = ?", dbUser.Id).Find(&request)
+		if request.Status != "Accepted" {
+			return persistence.User{}, errors.New("Request is not Accepted!")
+		}
 	}
 
 	err := encryption.CompareHashAndPassword([]byte(dbUser.Password), []byte(request.Password))
@@ -324,6 +336,10 @@ func (repository *userRepository) CreateUserWithAdditionalInfo(ctx context.Conte
 	var userReturn *domain.User
 	userReturn = userReturn.GenerateUserDTO(*user, *userAdditionalInfo)
 
+	//todo SAGA
+	m := saga.Message{Service: saga.ServiceRecommendation, SenderService: saga.ServiceUser, Action: saga.ActionStart, UserId: user.Id}
+	repository.redisServer.Orchestrator.Next(saga.RecommendationChannel, saga.ServiceRecommendation, m)
+
 	return userReturn, nil
 }
 
@@ -348,19 +364,19 @@ func (repository *userRepository) SearchUsersByUsernameAndName(ctx context.Conte
 	var users []persistence.User
 
 	if user.Username != "" && user.FirstName != "" && user.LastName != "" {
-		repository.DB.Where("username ILIKE ? AND first_name ILIKE ? AND last_name ILIKE ? AND role != 'Admin'", "%"+user.Username+"%", "%"+user.FirstName+"%", "%"+user.LastName+"%").Find(&users)
+		repository.DB.Where("is_active = ?", true).Where("username ILIKE ? AND first_name ILIKE ? AND last_name ILIKE ? AND role != 'Admin'", "%"+user.Username+"%", "%"+user.FirstName+"%", "%"+user.LastName+"%").Find(&users)
 	} else if user.Username != "" && user.FirstName != "" && user.LastName == "" {
-		repository.DB.Where("username ILIKE ? AND first_name ILIKE ? AND role != 'Admin'", "%"+user.Username+"%", "%"+user.FirstName+"%").Find(&users)
+		repository.DB.Where("is_active = ?", true).Where("username ILIKE ? AND first_name ILIKE ? AND role != 'Admin'", "%"+user.Username+"%", "%"+user.FirstName+"%").Find(&users)
 	} else if user.Username != "" && user.FirstName == "" && user.LastName != "" {
-		repository.DB.Where("username ILIKE ? AND last_name ILIKE ? AND role != 'Admin'", "%"+user.Username+"%", "%"+user.LastName+"%").Find(&users)
+		repository.DB.Where("is_active = ?", true).Where("username ILIKE ? AND last_name ILIKE ? AND role != 'Admin'", "%"+user.Username+"%", "%"+user.LastName+"%").Find(&users)
 	} else if user.Username == "" && user.FirstName != "" && user.LastName != "" {
-		repository.DB.Where("first_name ILIKE ? AND last_name ILIKE ? AND role != 'Admin'", "%"+user.FirstName+"%", "%"+user.LastName+"%").Find(&users)
+		repository.DB.Where("is_active = ?", true).Where("first_name ILIKE ? AND last_name ILIKE ? AND role != 'Admin'", "%"+user.FirstName+"%", "%"+user.LastName+"%").Find(&users)
 	} else if user.Username != "" && user.FirstName == "" && user.LastName == "" {
-		repository.DB.Where("username ILIKE ? AND role != 'Admin'", "%"+user.Username+"%").Find(&users)
+		repository.DB.Where("is_active = ?", true).Where("username ILIKE ? AND role != 'Admin'", "%"+user.Username+"%").Find(&users)
 	} else if user.Username == "" && user.FirstName != "" && user.LastName == "" {
-		repository.DB.Where("first_name ILIKE ? AND role != 'Admin'", "%"+user.FirstName+"%").Find(&users)
+		repository.DB.Where("is_active = ?", true).Where("first_name ILIKE ? AND role != 'Admin'", "%"+user.FirstName+"%").Find(&users)
 	} else if user.Username == "" && user.FirstName == "" && user.LastName != "" {
-		repository.DB.Where("last_name ILIKE ? AND role != 'Admin'", "%"+user.LastName+"%").Find(&users)
+		repository.DB.Where("is_active = ?", true).Where("last_name ILIKE ? AND role != 'Admin'", "%"+user.LastName+"%").Find(&users)
 	}
 
 	var usersDomain []domain.User
@@ -527,3 +543,36 @@ func (repository *userRepository) GetUserPhoto(ctx context.Context, userId strin
 
 	return "", nil
 }
+
+func (repository *userRepository) CheckIsActive(ctx context.Context, id string) (bool, error){
+	span := tracer.StartSpanFromContextMetadata(ctx, "CheckIsActive")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	user, err := repository.GetUserById(ctx, id)
+	if err != nil {
+		return false, err
+	}
+	return user.IsActive, nil
+
+}
+
+func (repository userRepository) ChangeUserActiveStatus(ctx context.Context, id string) (error){
+	span := tracer.StartSpanFromContextMetadata(ctx, "CheckIsActive")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	var user persistence.User
+	user, _ = repository.GetUserById(ctx, id)
+	user.IsActive = !user.IsActive
+	_, err := repository.SaveUserProfilePhoto(ctx, &user)
+	if err != nil {
+		return err
+
+	}
+
+	return nil
+
+}
+
+

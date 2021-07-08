@@ -1,0 +1,17 @@
+{
+	"ulid": "01FA3VCC24BZWF282ARYDDYSYD",
+	"minTime": 1625763696850,
+	"maxTime": 1625767200000,
+	"stats": {
+		"numSamples": 455,
+		"numSeries": 55,
+		"numChunks": 55
+	},
+	"compaction": {
+		"level": 1,
+		"sources": [
+			"01FA3VCC24BZWF282ARYDDYSYD"
+		]
+	},
+	"version": 1
+}

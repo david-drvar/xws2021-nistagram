@@ -6,22 +6,73 @@ services:
     image: gateway
     container_name: gateway
     restart: always
+    networks: 
+      - demo
     ports: 
       - 8080:8080
     environment: 
       USER_SERVICE : http://user_service:8001
       CONTENT_SERVICE : http://content_service:8002
       RECOMMENDATION_SERVICE : http://recommendation_service:8005
+      CHAT_SERVICE: http://chat_service:8003
+      AGENT_SERVICE: http://agent_application:8004
+
   
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: monitoring_prometheus
+    restart: unless-stopped
+    networks: 
+      - demo
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./data/prometheus/config:/etc/prometheus/
+      - ./data/prometheus/data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    expose:
+      - 9090
+    ports:
+      - 9090:9090
+    links:
+      - chat_service:chat_service
+    depends_on: 
+      - chat_service
+    
+  grafana:
+    image: grafana/grafana:7.4.5-ubuntu
+    container_name: monitoring_grafana
+    restart: unless-stopped
+    networks: 
+      - demo
+    ports: 
+    - 4001:3000
+    links:
+      - prometheus
+    volumes:
+      - ./data/grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yaml
+      - ./data/prometheus/data:/prometheus
+      - ./data/grafana/grafana.ini:/etc/grafana/grafana.ini
+    command:
+      - '-config=/etc/grafana/grafana.ini'
+    environment: 
+      - GF_USERS_ALLOW_SIGN_UP=true
+      - AUTO_ASSIGN_ORG_ROLE=Admin
+      - PUBLIC_MODE=true
+      - ORG_ROLE=Admin
+
+
   frontend:
     image: frontend
     container_name: frontend
+    networks: 
+      - demo
     ports:
       - 3000:3000
     environment: 
       REACT_APP_CHECK: docker-compose
       REACT_APP_USER_SERVICE: http://localhost:8080/api/users
-      REACT_APP_CONTENT_SERVICE: http://localhost:8080/api/content
+      REACT_APP_CONTENT_SERVICE: http://localhost:8003
       REACT_APP_CHAT_SERVICE: http://localhost:8080/api/chat
       REACT_APP_AGENT_SERVICE: http://localhost:8080/api/agent
       REACT_APP_RECOMMENDATION_SERVICE: http://localhost:8080/api/followers
@@ -31,6 +82,8 @@ services:
   frontend-agent:
     image: frontend-agent
     container_name: frontend-agent
+    networks: 
+      - demo
     ports:
         - 4000:4000
     environment: 
@@ -47,6 +100,8 @@ services:
     image: neo4j
     container_name: neo4j
     restart: always
+    networks: 
+      - demo
     ports:
       - 7474:7474
       - 7687:7687
@@ -59,7 +114,15 @@ services:
     image: recommendation_service
     container_name: recommendation_service
     restart: always
+    networks: 
+      - demo
     environment:
+      JAEGER_SERVICE_NAME: recommendation_service
+      JAEGER_AGENT_HOST: tracing
+      JAEGER_AGENT_PORT: 6831
+      JAEGER_SAMPLER_MANAGER_HOST_PORT: jaeger:5778
+      JAEGER_SAMPLER_TYPE: const
+      JAEGER_SAMPLER_PARAM: 1
       Docker_env: env 
       DB_HOST: bolt://neo4j:7687
       DB_NAME: neo4j
@@ -76,9 +139,12 @@ services:
     depends_on: 
       - neo4j
 
+
   postgres:
     image: postgres
     container_name: postgres
+    networks: 
+      - demo
     volumes: 
       -  ./pg-init-scripts:/docker-entrypoint-initdb.d
     environment:
@@ -89,15 +155,36 @@ services:
   redis:
     image: redis:6.2.4
     container_name: redis
+    networks: 
+      - demo
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
 
+  tracing:
+    image: jaegertracing/all-in-one
+    container_name: jaeger
+    networks: 
+      - demo
+    ports: 
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "16686:16686"
+      - "14268:14268"
+      - "14250:14250"
 
   chat_service:
     image: chat_service
     container_name: chat_service
     restart: always
+    networks: 
+      - demo
     environment: 
+      JAEGER_SERVICE_NAME: chat_service
+      JAEGER_AGENT_HOST: tracing
+      JAEGER_AGENT_PORT: 6831
+      JAEGER_SAMPLER_MANAGER_HOST_PORT: jaeger:5778
+      JAEGER_SAMPLER_TYPE: const
+      JAEGER_SAMPLER_PARAM: 1
       Docker_env: env 
       DB_HOST: postgres
       DB_NAME: xws_chat_service
@@ -112,12 +199,20 @@ services:
       - 8093:8093
     depends_on: 
       - postgres
-  
+
   agent_application:
     image: agent_application
     container_name: agent_application
     restart: always
+    networks: 
+      - demo
     environment: 
+      JAEGER_SERVICE_NAME: agent_application
+      JAEGER_AGENT_HOST: tracing
+      JAEGER_AGENT_PORT: 6831
+      JAEGER_SAMPLER_MANAGER_HOST_PORT: jaeger:5778
+      JAEGER_SAMPLER_TYPE: const
+      JAEGER_SAMPLER_PARAM: 1
       Docker_env: env 
       DB_HOST: postgres
       DB_NAME: xws_agent_application
@@ -136,7 +231,15 @@ services:
   user_service:
     image: user_service
     container_name: user_service
+    networks: 
+      - demo
     environment:
+      JAEGER_SERVICE_NAME: user_service
+      JAEGER_AGENT_HOST: tracing
+      JAEGER_AGENT_PORT: 6831
+      JAEGER_SAMPLER_MANAGER_HOST_PORT: jaeger:5778
+      JAEGER_SAMPLER_TYPE: const
+      JAEGER_SAMPLER_PARAM: 1
       Docker_env: env 
       DB_HOST: postgres
       DB_NAME: xws_users_service
@@ -157,7 +260,15 @@ services:
   content_service:
     image: content_service
     container_name: content_service
+    networks: 
+      - demo
     environment:
+      JAEGER_SERVICE_NAME: content_service
+      JAEGER_AGENT_HOST: tracing
+      JAEGER_AGENT_PORT: 6831
+      JAEGER_SAMPLER_MANAGER_HOST_PORT: jaeger:5778
+      JAEGER_SAMPLER_TYPE: const
+      JAEGER_SAMPLER_PARAM: 1
       Docker_env: env 
       DB_HOST: postgres
       DB_NAME: xws_content_service
@@ -171,5 +282,10 @@ services:
       - 8002:8002
       - 8092:8092
     depends_on: 
-      - user_service
-
+      - user_service  
+ 
+networks:
+  demo:
+    name: demo
+    driver: bridge
+    external: false

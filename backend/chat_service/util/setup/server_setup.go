@@ -4,6 +4,7 @@ import (
 	"github.com/david-drvar/xws2021-nistagram/chat_service/controllers"
 	"github.com/david-drvar/xws2021-nistagram/common"
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"net/http"
 )
 
@@ -20,6 +21,8 @@ func ServerSetup(controller *controllers.MessageController) {
 		roomId := mux.Vars(r)["roomId"]
 		serveWs(w, r, roomId, controller.Service)
 	})
+
+	router.Handle("/metrics", promhttp.Handler())
 
 	router.HandleFunc("/delete/{id}", controller.DeleteMessage).Methods("DELETE")
 	router.HandleFunc("/room/{roomId}/messages", controller.GetMessagesForChatRoom).Methods("GET")

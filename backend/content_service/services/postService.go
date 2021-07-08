@@ -122,7 +122,7 @@ func (service *PostService) CreatePost(ctx context.Context, post *domain.Post) e
 		return errors.New("cannot create empty post")
 	}
 
-	err := service.postRepository.CreatePost(ctx, post)
+	_, err :=  service.postRepository.CreatePost(ctx, post)
 	if err != nil {
 		return err
 	}
@@ -209,6 +209,7 @@ func (service *PostService) GetPostById(ctx context.Context, id string) (domain.
 		return domain.Post{}, err
 	}
 
+
 	dbMedia, err := service.mediaRepository.GetMediaForPost(ctx, dbPost.Id)
 	if err != nil {
 		return domain.Post{}, err
@@ -237,15 +238,9 @@ func (service *PostService) GetPostById(ctx context.Context, id string) (domain.
 	}
 
 	post := dbPost.ConvertToDomain(comments, likes, dislikes, media, hashtags)
-	res, err := grpc_common.CheckIsActive(ctx, post.UserId)
-	if err != nil {
-		return domain.Post{}, err
-	}else if res == false {
-		return domain.Post{}, errors.New("User is not active!")
-	}
+
 	return post, nil
 }
-
 func (service *PostService) GetReducedPostData(ctx context.Context, postId string) (domain.ReducedPost, error) {
 	span := tracer.StartSpanFromContextMetadata(ctx, "GetReducedPostData")
 	defer span.Finish()

@@ -30,6 +30,17 @@ func (p Password) ConvertFromGrpc(pass *protopb.Password) Password {
 	return newPass
 }
 
+func (result InfluencerSearchResult) ConvertToGrpc() *protopb.InfluencerSearch {
+	return &protopb.InfluencerSearch{
+		Id:              result.Id,
+		FirstName:       result.FirstName,
+		LastName:        result.LastName,
+		Username:        result.Username,
+		ProfilePhoto:    result.ProfilePhoto,
+		IsProfilePublic: result.IsProfilePublic,
+	}
+}
+
 func (u User) ConvertToGrpc() *protopb.UsersDTO {
 	return &protopb.UsersDTO{
 		Id:              u.Id,
@@ -52,16 +63,17 @@ func (u User) ConvertToGrpc() *protopb.UsersDTO {
 	}
 }
 
-func (req *RegistrationRequest) ConvertToGrpc() *protopb.RegistrationRequest{
+func (req *RegistrationRequest) ConvertToGrpc() *protopb.RegistrationRequest {
 	return &protopb.RegistrationRequest{
 		CreatedAt: timestamppb.New(req.CreatedAt),
-		LastName: req.LastName,
-		Email: req.Email,
-		Username: req.Username,
+		LastName:  req.LastName,
+		Email:     req.Email,
+		Username:  req.Username,
 		FirstName: req.FirstName,
-		Id: req.Id,
-		UserId: req.UserId,
-		Website: req.Website,
+		Id:        req.Id,
+		UserId:    req.UserId,
+		Website:   req.Website,
+		Status:    model.ToStringRequestStatus(req.Status),
 	}
 }
 
@@ -147,11 +159,13 @@ func (verificationRequest VerificationRequest) ConvertToGrpc() *protopb.Verifica
 	}
 }
 func (n *UserNotification) ConvertFromGrpc(notification protopb.CreateNotificationRequest) *UserNotification {
-	if n == nil { n = &UserNotification{} }
+	if n == nil {
+		n = &UserNotification{}
+	}
 	return &UserNotification{
-		UserId: notification.UserId,
-		CreatorId: notification.CreatorId,
+		UserId:           notification.UserId,
+		CreatorId:        notification.CreatorId,
 		NotificationType: notification.Type,
-		ContentId: notification.ContentId,
+		ContentId:        notification.ContentId,
 	}
 }

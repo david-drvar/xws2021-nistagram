@@ -55,11 +55,9 @@ function EditProfile () {
         })
 
         if (response.status === 200) {
-            console.log("RADI")
-          //  props.updateUser()
             toastService.show("success", "Successfully updated!");
         } else {
-            console.log("NE RADIs")
+            toastService.show("error", "Something went wrong.Please try again!");
         }
 
     }

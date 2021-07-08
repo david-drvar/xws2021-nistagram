@@ -147,5 +147,7 @@ func (repository *privacyRepository) GetAlLPublicUsers(ctx context.Context) ([]p
 		return nil, nil
 	}
 
+
+
 	return privacies, nil
 }

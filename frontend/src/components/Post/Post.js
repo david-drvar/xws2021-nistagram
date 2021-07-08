@@ -21,12 +21,18 @@ import favoritesService from './../../services/favorites.service';
 import complaintService from "../../services/complaint.service";
 
 function Post (props) {
-    const { postUser, shouldReload } = props;
-    const [post, setPost] = useState(props.post)
+    const { shouldReload, isAd } = props;
+
+    console.log(props)
+
+    const [post, setPost] = useState(isAd ? props.post.post : props.post)
+    const [adData, setAdData] = useState(isAd ? props.post : {})
     const [user, setUser] = useState({});
+
     const [hoursAgo, setHoursAgo] = useState(0)
     const [daysAgo, setDaysAgo] = useState(0);
     const [minutesAgo, setMinutesAgo] = useState(0)
+    const [notPosted, setNotPosted] = useState("")
 
     const [showSaveModal, setShowSaveModal] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
@@ -56,14 +62,25 @@ function Post (props) {
     useEffect(() => {
         const currentTime = moment(new Date())
         const difference = moment.duration(currentTime.diff(post.createdAt))
-        if(difference.asHours() < 24){
-            difference.asHours() < 0 ? setMinutesAgo(Math.floor(difference.asMinutes())) : setHoursAgo(Math.floor(difference.asHours()))
+        let timing = "";
+        if(Math.abs(difference.asHours()) < 24){
+            if(Math.abs(difference.asHours()) < 0) { 
+                setMinutesAgo(Math.floor(difference.asMinutes()))
+                timing += Math.abs(Math.floor(difference.asMinutes())) + " minutes."
+            }else{
+                timing += Math.abs(Math.floor(difference.asHours())) + " hours."
+                setHoursAgo(Math.floor(difference.asHours()))
+            }
         }else{
             setDaysAgo(Math.floor(difference.asDays()))
+            timing += Math.abs(Math.floor(difference.asDays())) + " days."
+        }
+        if(difference.asMinutes() < 0){
+            setNotPosted("Will be posted in " + timing)
         }
         changeLikesText();
         changeDislikesText()
-        if(store.user.jwt !== "") getUserCollections()
+        if(store.user.jwt !== "" && store.user.role!="Admin") getUserCollections()
     }, [])
 
     useEffect(()=>{
@@ -96,7 +113,6 @@ function Post (props) {
                 name: "Unclassified",
                 posts: [...response.data.unclassified],
             }];
-            console.log(newCollections)
             setCollections(newCollections)
 
             // Check in which collection the post has been saved
@@ -125,9 +141,9 @@ function Post (props) {
     }
 
     const getUserInfo = async () => {
-        if(postUser && postUser.id && postUser.id !== store.user.id){
+        if(post.userId && post.userId !== store.user.id){
             const response = await userService.getUserById({
-                id: postUser.id,
+                id: post.userId,
                 jwt: store.user.jwt
             })
             
@@ -273,6 +289,7 @@ function Post (props) {
                 <PostHeader 
                     username={user.username} 
                     hideUsername={false}
+                    isAd={post.isAd}
                     caption={post.location}
                     captionSize="small"
                     image={user.profilePhoto}
@@ -312,8 +329,13 @@ function Post (props) {
                 <span>Liked by {likesText} and disliked by {dislikesText}. </span>
             </div>
             <div className="Post-caption">
-                <strong> <NavLink className="username" to={{pathname: `/profile/${user.username}`}}>{user.username}</NavLink> </strong> {post.description} 
+                <strong> <NavLink className="username" to={{pathname: `/profile/${user.username}`}}>{user.username}</NavLink> </strong> 
+                <span>{post.description}</span> 
+                { console.log(isAd) }
                 {post.hashtags.map(hashtag => <span className="hashtag"> #{hashtag.text}</span> )}
+                {isAd && <div className="adLink"> Sponsored link: 
+                    <a target="_blank" rel="noreferrer" href={!adData.link.includes("http") ? "http://" + adData.link : adData.link}>{adData.link}</a> 
+                </div>}
             </div>
             <div className="comments">
                 {post.comments.length > 0 ? post.comments.map((comment) => {
@@ -323,9 +345,10 @@ function Post (props) {
                 }) : <p className="noComments">No comments yet...</p> }
             </div>
             <div className="timePosted">
-                { daysAgo < 1 ? (
+                { notPosted !== "" ? notPosted :
+                    (daysAgo < 1 ? (
                     hoursAgo < 1 ? minutesAgo + " minutes ago" : hoursAgo + " hours ago" ) :  
-                    daysAgo + " days ago"
+                    daysAgo + " days ago")
                 }
             </div>
             <div className="addComment">

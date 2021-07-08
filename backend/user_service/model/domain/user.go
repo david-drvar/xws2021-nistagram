@@ -33,6 +33,16 @@ type User struct {
 	TokenEnd        time.Time
 }
 
+type InfluencerSearchResult struct {
+	Id              string
+	FirstName       string
+	LastName        string
+	Username        string
+	Role            model.UserRole
+	ProfilePhoto    string
+	IsProfilePublic bool
+}
+
 type LoginRequest struct {
 	Email    string
 	Password string
@@ -43,22 +53,22 @@ type RegistrationRequest struct {
 	UserId    string
 	CreatedAt time.Time
 	Status    model.RequestStatus
-	Username string
-	Email string
-	Website string
+	Username  string
+	Email     string
+	Website   string
 	FirstName string
-	LastName string
+	LastName  string
 }
 
 type UserNotification struct {
-	UserId            string
-	CreatorId 		  string
-	NotificationType  string
-	IsRead			  bool
-	ContentId         string
+	UserId           string
+	CreatorId        string
+	NotificationType string
+	IsRead           bool
+	ContentId        string
 }
 
-func (user *User) CheckValidation() (bool, error){
+func (user *User) CheckValidation() (bool, error) {
 
 	match, err := regexp.MatchString("^[a-zA-Z ,.'-]+$", user.FirstName)
 	if !match {
@@ -77,4 +87,13 @@ type VerificationRequest struct {
 	Category      model.UserCategory
 	FirstName     string
 	LastName      string
+}
+
+type CampaignRequest struct {
+	Id           string
+	AgentId      string
+	InfluencerId string
+	CampaignId   string
+	Status       model.RequestStatus
+	PostAt       time.Time
 }

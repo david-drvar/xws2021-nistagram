@@ -8,16 +8,18 @@ import (
 	"github.com/david-drvar/xws2021-nistagram/content_service/model/persistence"
 	"github.com/david-drvar/xws2021-nistagram/content_service/util/images"
 	"gorm.io/gorm"
+	"time"
 )
 
 type StoryRepository interface {
 	GetAllHomeStories(context.Context, []string, bool) ([]persistence.Story, error)
-	CreateStory(context.Context, *domain.Story) error
+	CreateStory(context.Context, *domain.Story) (persistence.Story, error)
 	GetStoryById(context.Context, string) (*persistence.Story, error)
 	RemoveStory(context.Context, string, string) error
 	GetHighlightsStories(context.Context, string) ([]persistence.Story, error)
 	GetUsersStories(context.Context, string, bool) ([]persistence.Story, error)
 	GetMyStories(context.Context, string) ([]persistence.Story, error)
+	UpdateCreatedAt(context.Context, string, time.Time) error
 }
 
 type storyRepository struct {
@@ -58,7 +60,7 @@ func (repository *storyRepository) GetAllHomeStories(ctx context.Context, userId
 
 	stories := []persistence.Story{}
 	result := repository.DB.Order("created_at desc").
-		Where(storyDurationQuery + " AND user_id IN ? AND is_close_friends = ?", userIds, isCloseFriends).
+		Where(storyDurationQuery + "AND is_ad = false AND user_id IN ? AND is_close_friends = ?", userIds, isCloseFriends).
 		Find(&stories)
 	if result.Error != nil {
 		return stories, result.Error
@@ -116,15 +118,15 @@ func (repository *storyRepository) GetStoryById(ctx context.Context, id string) 
 }
 
 
-func (repository *storyRepository) CreateStory(ctx context.Context, story *domain.Story) error {
+func (repository *storyRepository) CreateStory(ctx context.Context, story *domain.Story) (persistence.Story, error) {
 	span := tracer.StartSpanFromContextMetadata(ctx, "CreateStory")
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
+	var storyToSave persistence.Story
+	storyToSave = storyToSave.ConvertToPersistence(*story)
+	storyToSave.CreatedAt=time.Now()
 	err := repository.DB.Transaction(func (tx *gorm.DB) error {
-		var storyToSave persistence.Story
-		storyToSave = storyToSave.ConvertToPersistence(*story)
-
 		result := repository.DB.Create(&storyToSave)
 		if result.Error != nil || result.RowsAffected != 1 {
 			return errors.New("cannot save story")
@@ -166,8 +168,8 @@ func (repository *storyRepository) CreateStory(ctx context.Context, story *domai
 		return nil
 	})
 
-	if err != nil { return err }
-	return nil
+	if err != nil { return persistence.Story{}, err }
+	return storyToSave, nil
 }
 
 func (repository *storyRepository) RemoveStory(ctx context.Context, storyId string, userId string) error {
@@ -177,8 +179,11 @@ func (repository *storyRepository) RemoveStory(ctx context.Context, storyId stri
 
 	err := repository.DB.Transaction(func (tx *gorm.DB) error{
 		story := &persistence.Story{
-			Post: persistence.Post{Id: storyId, UserId: userId },
+			Post: persistence.Post{Id: storyId },
 		}
+
+		if userId != "" { story.Post.UserId = userId }
+
 		result := repository.DB.First(&story)
 
 		if result.Error != nil || result.RowsAffected != 1 {
@@ -246,4 +251,15 @@ func (repository *storyRepository) GetHighlightsStories (ctx context.Context, hi
 	}
 
 	return stories, nil
+}
+
+func (repository *storyRepository) UpdateCreatedAt(ctx context.Context, id string, createdAt time.Time) error{
+	span := tracer.StartSpanFromContextMetadata(ctx, "UpdateCreatedAt")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	result := repository.DB.Model(&persistence.Story{}).Where("id = ?", id).Update("created_at", createdAt)
+	if result.Error != nil { return result.Error }
+
+	return nil
 }

@@ -212,6 +212,13 @@ func (c *MessageController) AcceptMessageRequest(w http.ResponseWriter, r *http.
 		w.Write([]byte{})
 		return
 	}
+
+	err = grpc_common.DeleteByTypeAndCreator(ctx, "MessageRequest", messageRequest.ReceiverId, messageRequest.SenderId)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte{})
+		return
+	}
 	json.NewEncoder(w).Encode(messageRequest)
 }
 
@@ -230,5 +237,28 @@ func (c *MessageController) DeclineMessageRequest(w http.ResponseWriter, r *http
 		w.Write([]byte{})
 		return
 	}
+	err = grpc_common.DeleteByTypeAndCreator(ctx, "MessageRequest", messageRequest.ReceiverId, messageRequest.SenderId)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte{})
+		return
+	}
 	json.NewEncoder(w).Encode(messageRequest)
+}
+
+func (c *MessageController) SeenPhotoOrVideo(w http.ResponseWriter, r *http.Request) {
+	ctx := context.Background()
+	span := tracer.StartSpanFromContextMetadata(ctx, "SeenPhotoOrVideo")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	messageId := mux.Vars(r)["messageId"]
+
+	err := c.Service.SeenPhotoOrVideo(ctx, messageId)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte{})
+		return
+	}
+
 }

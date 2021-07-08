@@ -1,0 +1,36 @@
+.saveModal{
+    position: relative;
+}
+
+.updateInput{
+    display: flex;
+    flex-direction: row;
+    column-gap: 1em;
+    width: 80%;
+    justify-content: center;
+    align-items: center;
+    margin: 1em auto;
+}
+
+.updateInput label{
+    width: 10em;
+}
+
+.dropdown{
+    display: flex;
+    flex-direction: row;
+    column-gap: 1em;
+    width: 80%;
+    justify-content: space-evenly;
+    align-items: center;
+    margin: 10px auto;
+}
+
+.note{
+    font-size: 12px;
+    color: gray;
+    margin: 15px auto;
+    margin-bottom: 0;
+    display: flex;
+    justify-content: center;
+}

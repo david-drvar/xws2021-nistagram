@@ -17,6 +17,7 @@ func FillDatabase(db *gorm.DB) error {
 		&persistence.RegistrationRequest{},
 		&persistence.APIKeys{},
 		&persistence.UserNotification{},
+		&persistence.CampaignRequest{},
 		)
 
 	return err
@@ -32,6 +33,7 @@ func dropTables(db *gorm.DB) {
 			&persistence.VerificationRequest{},
 			&persistence.APIKeys{},
 			&persistence.RegistrationRequest{},
-			&persistence.UserNotification{})
+			&persistence.UserNotification{},
+			&persistence.CampaignRequest{})
 	}
 }

@@ -11,12 +11,17 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
+// Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
 // UsersClient is the client API for Users service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UsersClient interface {
+	//Api Key
+	GetKeyByUserId(ctx context.Context, in *RequestIdUsers, opts ...grpc.CallOption) (*ApiTokenResponse, error)
+	GenerateApiToken(ctx context.Context, in *RequestIdUsers, opts ...grpc.CallOption) (*ApiTokenResponse, error)
+	ValidateKey(ctx context.Context, in *ApiTokenResponse, opts ...grpc.CallOption) (*EmptyResponse, error)
 	//registration requests!
 	CreateAgentUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*UsersDTO, error)
 	GetAllPendingRequests(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*ResponseRequests, error)
@@ -33,6 +38,7 @@ type UsersClient interface {
 	UpdateUserPhoto(ctx context.Context, in *UserPhotoRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
 	UpdateUserPassword(ctx context.Context, in *CreatePasswordRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
 	SearchUser(ctx context.Context, in *SearchUserDtoRequest, opts ...grpc.CallOption) (*UsersResponse, error)
+	GetAllInfluncers(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*InfluencerSearchResult, error)
 	SendEmail(ctx context.Context, in *SendEmailDtoRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
 	GetUserByEmail(ctx context.Context, in *RequestEmailUser, opts ...grpc.CallOption) (*UsersDTO, error)
 	GetUserByUsername(ctx context.Context, in *RequestUsernameUser, opts ...grpc.CallOption) (*UsersDTO, error)
@@ -63,6 +69,33 @@ type usersClient struct {
 
 func NewUsersClient(cc grpc.ClientConnInterface) UsersClient {
 	return &usersClient{cc}
+}
+
+func (c *usersClient) GetKeyByUserId(ctx context.Context, in *RequestIdUsers, opts ...grpc.CallOption) (*ApiTokenResponse, error) {
+	out := new(ApiTokenResponse)
+	err := c.cc.Invoke(ctx, "/proto.Users/GetKeyByUserId", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *usersClient) GenerateApiToken(ctx context.Context, in *RequestIdUsers, opts ...grpc.CallOption) (*ApiTokenResponse, error) {
+	out := new(ApiTokenResponse)
+	err := c.cc.Invoke(ctx, "/proto.Users/GenerateApiToken", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *usersClient) ValidateKey(ctx context.Context, in *ApiTokenResponse, opts ...grpc.CallOption) (*EmptyResponse, error) {
+	out := new(EmptyResponse)
+	err := c.cc.Invoke(ctx, "/proto.Users/ValidateKey", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *usersClient) CreateAgentUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*UsersDTO, error) {
@@ -194,6 +227,15 @@ func (c *usersClient) UpdateUserPassword(ctx context.Context, in *CreatePassword
 func (c *usersClient) SearchUser(ctx context.Context, in *SearchUserDtoRequest, opts ...grpc.CallOption) (*UsersResponse, error) {
 	out := new(UsersResponse)
 	err := c.cc.Invoke(ctx, "/proto.Users/SearchUser", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *usersClient) GetAllInfluncers(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*InfluencerSearchResult, error) {
+	out := new(InfluencerSearchResult)
+	err := c.cc.Invoke(ctx, "/proto.Users/GetAllInfluncers", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -393,6 +435,10 @@ func (c *usersClient) GetAllVerificationRequests(ctx context.Context, in *EmptyR
 // All implementations must embed UnimplementedUsersServer
 // for forward compatibility
 type UsersServer interface {
+	//Api Key
+	GetKeyByUserId(context.Context, *RequestIdUsers) (*ApiTokenResponse, error)
+	GenerateApiToken(context.Context, *RequestIdUsers) (*ApiTokenResponse, error)
+	ValidateKey(context.Context, *ApiTokenResponse) (*EmptyResponse, error)
 	//registration requests!
 	CreateAgentUser(context.Context, *CreateUserRequest) (*UsersDTO, error)
 	GetAllPendingRequests(context.Context, *EmptyRequest) (*ResponseRequests, error)
@@ -409,6 +455,7 @@ type UsersServer interface {
 	UpdateUserPhoto(context.Context, *UserPhotoRequest) (*EmptyResponse, error)
 	UpdateUserPassword(context.Context, *CreatePasswordRequest) (*EmptyResponse, error)
 	SearchUser(context.Context, *SearchUserDtoRequest) (*UsersResponse, error)
+	GetAllInfluncers(context.Context, *EmptyRequest) (*InfluencerSearchResult, error)
 	SendEmail(context.Context, *SendEmailDtoRequest) (*EmptyResponse, error)
 	GetUserByEmail(context.Context, *RequestEmailUser) (*UsersDTO, error)
 	GetUserByUsername(context.Context, *RequestUsernameUser) (*UsersDTO, error)
@@ -438,6 +485,15 @@ type UsersServer interface {
 type UnimplementedUsersServer struct {
 }
 
+func (UnimplementedUsersServer) GetKeyByUserId(context.Context, *RequestIdUsers) (*ApiTokenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetKeyByUserId not implemented")
+}
+func (UnimplementedUsersServer) GenerateApiToken(context.Context, *RequestIdUsers) (*ApiTokenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GenerateApiToken not implemented")
+}
+func (UnimplementedUsersServer) ValidateKey(context.Context, *ApiTokenResponse) (*EmptyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ValidateKey not implemented")
+}
 func (UnimplementedUsersServer) CreateAgentUser(context.Context, *CreateUserRequest) (*UsersDTO, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateAgentUser not implemented")
 }
@@ -482,6 +538,9 @@ func (UnimplementedUsersServer) UpdateUserPassword(context.Context, *CreatePassw
 }
 func (UnimplementedUsersServer) SearchUser(context.Context, *SearchUserDtoRequest) (*UsersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SearchUser not implemented")
+}
+func (UnimplementedUsersServer) GetAllInfluncers(context.Context, *EmptyRequest) (*InfluencerSearchResult, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllInfluncers not implemented")
 }
 func (UnimplementedUsersServer) SendEmail(context.Context, *SendEmailDtoRequest) (*EmptyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendEmail not implemented")
@@ -555,8 +614,62 @@ type UnsafeUsersServer interface {
 	mustEmbedUnimplementedUsersServer()
 }
 
-func RegisterUsersServer(s *grpc.Server, srv UsersServer) {
-	s.RegisterService(&_Users_serviceDesc, srv)
+func RegisterUsersServer(s grpc.ServiceRegistrar, srv UsersServer) {
+	s.RegisterService(&Users_ServiceDesc, srv)
+}
+
+func _Users_GetKeyByUserId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestIdUsers)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServer).GetKeyByUserId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Users/GetKeyByUserId",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServer).GetKeyByUserId(ctx, req.(*RequestIdUsers))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Users_GenerateApiToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestIdUsers)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServer).GenerateApiToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Users/GenerateApiToken",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServer).GenerateApiToken(ctx, req.(*RequestIdUsers))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Users_ValidateKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ApiTokenResponse)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServer).ValidateKey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Users/ValidateKey",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServer).ValidateKey(ctx, req.(*ApiTokenResponse))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Users_CreateAgentUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -825,6 +938,24 @@ func _Users_SearchUser_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UsersServer).SearchUser(ctx, req.(*SearchUserDtoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Users_GetAllInfluncers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EmptyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServer).GetAllInfluncers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Users/GetAllInfluncers",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServer).GetAllInfluncers(ctx, req.(*EmptyRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1207,10 +1338,25 @@ func _Users_GetAllVerificationRequests_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
-var _Users_serviceDesc = grpc.ServiceDesc{
+// Users_ServiceDesc is the grpc.ServiceDesc for Users service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var Users_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "proto.Users",
 	HandlerType: (*UsersServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetKeyByUserId",
+			Handler:    _Users_GetKeyByUserId_Handler,
+		},
+		{
+			MethodName: "GenerateApiToken",
+			Handler:    _Users_GenerateApiToken_Handler,
+		},
+		{
+			MethodName: "ValidateKey",
+			Handler:    _Users_ValidateKey_Handler,
+		},
 		{
 			MethodName: "CreateAgentUser",
 			Handler:    _Users_CreateAgentUser_Handler,
@@ -1270,6 +1416,10 @@ var _Users_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SearchUser",
 			Handler:    _Users_SearchUser_Handler,
+		},
+		{
+			MethodName: "GetAllInfluncers",
+			Handler:    _Users_GetAllInfluncers_Handler,
 		},
 		{
 			MethodName: "SendEmail",

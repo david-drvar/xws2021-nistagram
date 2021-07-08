@@ -18,10 +18,10 @@ import (
 )
 
 type UserGrpcController struct {
-	service    *services.UserService
+	service        *services.UserService
 	requestService *services.RegistrationRequestService
-	jwtManager *common.JWTManager
-	logger     *logger.Logger
+	jwtManager     *common.JWTManager
+	logger         *logger.Logger
 }
 
 func NewUserController(db *gorm.DB, jwtManager *common.JWTManager, logger *logger.Logger, redis *saga.RedisServer) (*UserGrpcController, error) {
@@ -30,6 +30,7 @@ func NewUserController(db *gorm.DB, jwtManager *common.JWTManager, logger *logge
 		return nil, err
 	}
 	requestService, err := services.NewRegistrationRequestService(db, redis)
+
 	return &UserGrpcController{
 		service,
 		requestService,
@@ -448,16 +449,37 @@ func (s *UserGrpcController) CheckIsActive(ctx context.Context, in *protopb.Requ
 	return &protopb.BooleanResponseUsers{Response: retVal}, nil
 }
 
-func (s *UserGrpcController) ChangeUserActiveStatus(ctx context.Context, in *protopb.RequestIdUsers) (*protopb.EmptyResponse ,error) {
+func (s *UserGrpcController) ChangeUserActiveStatus(ctx context.Context, in *protopb.RequestIdUsers) (*protopb.EmptyResponse, error) {
 	span := tracer.StartSpanFromContextMetadata(ctx, "CheckIsActive")
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	err := s.service.ChangeUserActiveStatus(ctx, in.Id)
 	if err != nil {
-		return  nil, err
+		return nil, err
 	}
 
 	_, err = grpc_common.DeleteComplaintByUserId(ctx, in.Id)
 	return &protopb.EmptyResponse{}, err
+}
+
+func (s *UserGrpcController) GetAllInfluncers(ctx context.Context, in *protopb.EmptyRequest) (*protopb.InfluencerSearchResult, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "GetAllInfluncers")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	users, err := s.service.GetAllInfluncers(ctx)
+
+	if err != nil {
+		return &protopb.InfluencerSearchResult{}, err
+	}
+
+	var usersList []*protopb.InfluencerSearch
+	for _, user := range users {
+		usersList = append(usersList, user.ConvertToGrpc())
+	}
+
+	finalResponse := protopb.InfluencerSearchResult{Users: usersList}
+
+	return &finalResponse, nil
 }

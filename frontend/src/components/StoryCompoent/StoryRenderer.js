@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Slider from './../Post/Slider';
-import { WithHeader } from 'react-insta-stories';
+import { WithHeader, WithSeeMore } from 'react-insta-stories';
 import moment from 'moment';
 
 
@@ -9,6 +9,17 @@ const StoryRenderer = ({ story, action, isPaused, config }) => {
 
     const [localStory, setLocalStory] = useState(story);
     const [caption, setCaption] = useState("");
+
+    const seeMoreFactory = (url) => {
+        if(!url.startsWith('http')) {
+            url = "http://" + url
+        }
+        return ({ close }) => {
+            close()
+            window.open(url, '_blank')
+            return null
+        }
+    }
 
     useEffect(()=>{
         let timeCreated = "";
@@ -30,17 +41,21 @@ const StoryRenderer = ({ story, action, isPaused, config }) => {
             }
         }
 
+        const sponsored = story.isAd ? " · Sponsored" : ""
+
         const newHeader = {
-            heading: header.heading ? header.heading : "username",
+            heading: header.heading ? header.heading + sponsored : "username",
         }
         if(timeCreated) newHeader["subheading"] = timeCreated;
         if(header.profileImage) newHeader["profileImage"] = header.profileImage;
         if(story.isCloseFriends) newHeader.heading += " - Close Friends"
-
-        setLocalStory({
+        
+        let tempLocalStory = {
             ...story,
             header: newHeader
-        })
+        }
+        if(story.isAd) tempLocalStory["seeMore"] = seeMoreFactory(header.link)
+        setLocalStory(tempLocalStory)
 
         let hashtags = "";
         story.hashtags && story.hashtags.forEach(hashtag => hashtags += ` #${hashtag.text}`)
@@ -51,14 +66,16 @@ const StoryRenderer = ({ story, action, isPaused, config }) => {
     }, [story])
 
     return (
-        <WithHeader story={localStory}>
-            <Slider 
-                showStoryCaption={true}
-                storyCaption={caption}
-                showTags={true} 
-                media={story.media}
-                />
-        </WithHeader>
+        <WithSeeMore story={localStory} action={action}>
+            <WithHeader story={localStory}>
+                <Slider 
+                    showStoryCaption={true}
+                    storyCaption={caption}
+                    showTags={true} 
+                    media={story.media}
+                    />
+            </WithHeader>
+        </WithSeeMore>
     )
 }
 

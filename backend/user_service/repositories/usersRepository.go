@@ -39,6 +39,10 @@ type UserRepository interface {
 	GetUserPhoto(context.Context, string) (string, error)
 	CheckIsActive(context.Context, string) (bool, error)
 	ChangeUserActiveStatus(context.Context, string) error
+	CreateCampaignRequest(ctx context.Context, request *persistence.CampaignRequest) (*persistence.CampaignRequest, error)
+	GetAllInfluncers(ctx context.Context) ([]domain.User, error)
+	UpdateCampaignRequest(ctx context.Context, request *persistence.CampaignRequest) error
+	GetCampaignRequestsByAgent(ctx context.Context, agentId string) ([]persistence.CampaignRequest, error)
 }
 
 type userRepository struct {
@@ -186,7 +190,6 @@ func (repository *userRepository) GetAllUsers(ctx context.Context) ([]domain.Use
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	var users []persistence.User
-	var dbUserAdditionalInfo persistence.UserAdditionalInfo
 	var usersDomain []domain.User
 
 	result := repository.DB.Where("is_active = ?", true).Find(&users)
@@ -195,6 +198,7 @@ func (repository *userRepository) GetAllUsers(ctx context.Context) ([]domain.Use
 	}
 
 	for _, user := range users {
+		var dbUserAdditionalInfo persistence.UserAdditionalInfo
 		result = repository.DB.Where("id = ?", user.Id).Find(&dbUserAdditionalInfo)
 		if result.Error != nil {
 			return nil, result.Error
@@ -212,6 +216,26 @@ func (repository *userRepository) GetAllUsers(ctx context.Context) ([]domain.Use
 	}
 
 	return usersDomain, nil
+}
+
+func (repository *userRepository) GetAllInfluncers(ctx context.Context) ([]domain.User, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "GetAllInfluncers")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	users, err := repository.GetAllUsers(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var finalUsers []domain.User
+	for _, user := range users {
+		if user.Category == model.Influencer {
+			finalUsers = append(finalUsers, user)
+		}
+	}
+
+	return finalUsers, nil
 }
 
 func (repository *userRepository) LoginUser(ctx context.Context, request domain.LoginRequest) (persistence.User, error) {
@@ -544,7 +568,7 @@ func (repository *userRepository) GetUserPhoto(ctx context.Context, userId strin
 	return "", nil
 }
 
-func (repository *userRepository) CheckIsActive(ctx context.Context, id string) (bool, error){
+func (repository *userRepository) CheckIsActive(ctx context.Context, id string) (bool, error) {
 	span := tracer.StartSpanFromContextMetadata(ctx, "CheckIsActive")
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)
@@ -557,7 +581,7 @@ func (repository *userRepository) CheckIsActive(ctx context.Context, id string) 
 
 }
 
-func (repository userRepository) ChangeUserActiveStatus(ctx context.Context, id string) (error){
+func (repository userRepository) ChangeUserActiveStatus(ctx context.Context, id string) error {
 	span := tracer.StartSpanFromContextMetadata(ctx, "CheckIsActive")
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)
@@ -565,14 +589,64 @@ func (repository userRepository) ChangeUserActiveStatus(ctx context.Context, id 
 	var user persistence.User
 	user, _ = repository.GetUserById(ctx, id)
 	user.IsActive = !user.IsActive
-	_, err := repository.SaveUserProfilePhoto(ctx, &user)
-	if err != nil {
-		return err
 
+	db := repository.DB.Model(&user).Where("id = ?", id).Updates(map[string]interface{}{"IsActive": user.IsActive})
+	if db.Error != nil {
+		return db.Error
+	} else if db.RowsAffected == 0 {
+		return errors.New("rows affected is equal to zero")
 	}
 
 	return nil
 
 }
 
+func (repository userRepository) CreateCampaignRequest(ctx context.Context, request *persistence.CampaignRequest) (*persistence.CampaignRequest, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "CreateCampaignRequest")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
+	var requests []persistence.CampaignRequest
+
+	db := repository.DB.Model(&request).Where("agent_id = ? AND influencer_id=? AND campaign_id=?", request.AgentId, request.InfluencerId, request.CampaignId).Find(&requests)
+
+	if db.Error != nil {
+		return nil, db.Error
+	} else if db.RowsAffected != 0 {
+		return nil, errors.New("cannot create campaign")
+	}
+
+	//if request.PostAt.Before(time.Now()) {
+	//	return nil, errors.New("cannot create campaign")
+	//}
+
+	request.Id = uuid.New().String()
+	db = repository.DB.Create(&request)
+
+	return request, db.Error
+}
+
+func (repository userRepository) UpdateCampaignRequest(ctx context.Context, request *persistence.CampaignRequest) error {
+	span := tracer.StartSpanFromContextMetadata(ctx, "UpdateCampaignRequest")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	var dbRequest persistence.CampaignRequest
+	db := repository.DB.Model(&request).Where("agent_id = ? AND influencer_id=? AND campaign_id=?", request.AgentId, request.InfluencerId, request.CampaignId).Find(&dbRequest)
+	if db.Error != nil {
+		return db.Error
+	}
+
+	dbRequest.Status = request.Status
+	return repository.DB.Model(&request).Where("id = ?", dbRequest.Id).Updates(dbRequest).Error
+}
+
+func (repository userRepository) GetCampaignRequestsByAgent(ctx context.Context, agentId string) ([]persistence.CampaignRequest, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "GetCampaignRequestsByAgent")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	var requests []persistence.CampaignRequest
+	result := repository.DB.Where("agent_id = ?", agentId).Find(&requests)
+	return requests, result.Error
+}

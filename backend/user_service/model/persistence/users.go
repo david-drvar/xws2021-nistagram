@@ -89,9 +89,9 @@ func (u UserAdditionalInfo) ConvertFromGrpc(user *protopb.User) *UserAdditionalI
 
 type Privacy struct {
 	UserId          string `gorm:"primaryKey"`
-	IsProfilePublic bool  `gorm:"type:boolean"`
-	IsDMPublic      bool	`gorm:"type:boolean"`
-	IsTagEnabled    bool	`gorm:"type:boolean"`
+	IsProfilePublic bool   `gorm:"type:boolean"`
+	IsDMPublic      bool   `gorm:"type:boolean"`
+	IsTagEnabled    bool   `gorm:"type:boolean"`
 }
 
 func (privacy *Privacy) ConvertFromGrpc(p *protopb.PrivacyMessage) *Privacy {
@@ -132,6 +132,16 @@ type VerificationRequest struct {
 	CreatedAt     time.Time
 }
 
+type CampaignRequest struct {
+	Id           string `gorm:"primaryKey"`
+	AgentId      string
+	InfluencerId string
+	CampaignId   string
+	Status       model.RequestStatus
+	PostAt       time.Time
+}
+
+
 type APIKeys struct {
 	UserId string `gorm:"primaryKey"`
 	APIKey string
@@ -144,23 +154,23 @@ type RegistrationRequest struct {
 	Status    model.RequestStatus
 }
 
-
 type UserNotification struct {
 	NotificationId string `gorm:"primaryKey"`
-	UserId string
-	CreatorId string
-	Text string
-	Type string
-	IsRead bool
-	ContentId string
-	CreatedAt time.Time
+	UserId         string
+	CreatorId      string
+	Text           string
+	Type           string
+	IsRead         bool
+	ContentId      string
+	CreatedAt      time.Time
 }
+
 func (notification *UserNotification) ConvertFromGrpc(n *protopb.Notification) *UserNotification {
 	return &UserNotification{
 		NotificationId: n.Id,
-		UserId: n.UserId,
-		CreatorId: n.CreatorId,
-		Text: n.Text,
-		IsRead: n.IsRead,
+		UserId:         n.UserId,
+		CreatorId:      n.CreatorId,
+		Text:           n.Text,
+		IsRead:         n.IsRead,
 	}
 }

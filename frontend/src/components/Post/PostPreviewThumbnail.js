@@ -9,7 +9,7 @@ const PostPreviewThumbnail = (props) => {
     const { post, openPost } = props;
 
     return (
-        <div className="postPreviewThumbnail__Wrapper" onClick={() => openPost(post)}>
+        <div className="postPreviewThumbnail__Wrapper" onClick={() => openPost(post.id)}>
             <img src={post.media[0].content} className="thumbnail" alt="" />
             <div className="hover-overlay hover-overlay--blur">
                 <div className="single-statistic">

@@ -48,6 +48,21 @@ class StoryService extends RootService {
         return response
     }
 
+    async getStoryById(data){
+        const { id, jwt } = data;
+        const headers = this.setupHeaders(jwt)
+
+        const response = this.apiClient.get(`/${id}`, { headers })
+            .then(res => {
+                return res
+            }).catch(err => {
+                console.error(err)
+                return err
+            })
+        return response
+    }
+
+
     async createStory(data){
         const { id, userId, isAd, type, description, location, createdAt, isCloseFriends,
             media, comments, likes, dislikes, hashtags, jwt } = data;
@@ -57,6 +72,20 @@ class StoryService extends RootService {
             id, userId, isAd, type, description, location, createdAt, isCloseFriends,
             media, comments, likes, dislikes, hashtags
         }, {headers})
+            .then(res => {
+                return res
+            }).catch(err => {
+                console.error(err)
+                return err
+            })
+        return response
+    }
+
+    async deleteStory(data){
+        const { id,jwt } = data;
+        const headers = this.setupHeaders(jwt)
+
+        const response = this.apiClient.delete(''+id, {headers})
             .then(res => {
                 return res
             }).catch(err => {
@@ -83,6 +112,20 @@ class StoryService extends RootService {
         })
 
         return stories;
+    }
+
+    async getStoryById(data){
+        const { id, jwt } = data;
+        const headers = this.setupHeaders(jwt)
+
+        const response = this.apiClient.get(`/${id}`, { headers })
+            .then(res => {
+                return res
+            }).catch(err => {
+                console.error(err)
+                return err
+            })
+        return response
     }
 }
 

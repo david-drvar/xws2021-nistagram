@@ -8,16 +8,26 @@ import '../../style/ProfileIcon.css';
 import complaintService from "../../services/complaint.service";
 import toastService from "../../services/toast.service";
 import {useSelector} from "react-redux";
+import UserAutocomplete from "../Post/UserAutocomplete";
+import userService from "../../services/user.service";
+import chatService from "../../services/chat.service";
 
 function Story(props) {
-    const { story, iconSize, hideUsername, fixMargins } = props;
+    const { story, iconSize, hideUsername, fixMargins, link } = props;
     const [showModal, setModal] = useState(false);
+    const [showModalChat, setModalChat] = useState(false);
     const [showModalReport, setModalReport] = useState(false);
     const [convertedStory, setConvertedStory] = useState([])
     const [header, setHeader] = useState({})
     const [reportCategory, setReportCategory] = useState("");
     const [reportCategoryErr, setReportCategoryErr] = useState("Select report category");
     const [storyId, setStoryId] = useState("");
+
+    const [users, setUsers] = useState([]);
+    const [selectedUser, setSelectedUser] = useState({});
+    const [chatRoom, setChatRoom] = useState("");
+    const [conn, setConn] = useState({});
+
     const store = useSelector(state => state)
 
     // Convert story with multiple media to multiple stories with single media, to comply with react-insta-stories
@@ -32,7 +42,14 @@ function Story(props) {
             heading: story.username,
             profileImage: story.userPhoto
         })
+        getAllUsers();
+
     }, [])
+
+    async function getAllUsers() {
+        const response = await userService.getAllUsers({ jwt: store.user.jwt });
+        await setUsers(response.data.users);
+    }
 
     async function sendReport() {
         if (reportCategory === "") {
@@ -68,6 +85,27 @@ function Story(props) {
         setModalReport(!showModalReport)
     }
 
+    async function startChat() {
+        const response = await chatService.StartConversation({
+            person1: store.user.id,
+            person2: selectedUser.id,
+            jwt : store.user.jwt
+        });
+        if (response.status === 200) {
+            toastService.show("success", "Chat room retrieved successfully")
+            await setChatRoom(response.data)
+            await setConn(new WebSocket("ws://localhost:8003" + "/ws/" + response.data.Id));
+        }
+        else
+            toastService.show("error", "Something went wrong. Try again")
+    }
+
+    async function sendMessage() {
+        await setConn(new WebSocket("ws://localhost:8003" + "/ws/" + selectedUser.id + "_" + store.user.id))
+        console.log(conn)
+        conn.send(JSON.stringify({SenderId : store.user.id, ReceiverId : selectedUser.id, RoomId : chatRoom.Id, Content : storyId, ContentType : "Story"}));
+    }
+
     return (
         <div>
             <div className={`story ${fixMargins ? "fixMargins" : ""}`}>
@@ -78,14 +116,15 @@ function Story(props) {
             </div>
             
             <Modal show={showModal} onHide={() => setModal(!showModal)}>
-                <div  >
+                <div>
                     <Button variant={"outline-danger"} onClick={handleModalReport}>Report story</Button>
+                    <Button variant={"outline-info"} onClick={(e) => setModalChat(true)}>Send to...</Button>
                 <Stories
                     onAllStoriesEnd={() => setModal(!showModal)}
                     renderers={[renderer]}
                     stories={convertedStory} 
                     defaultInterval={10000} 
-                    header={{...header, setStoryId}}
+                    header={{...header, setStoryId, link}} // Add link here
                     width={500}
                     height={700}
                 />
@@ -117,6 +156,19 @@ function Story(props) {
                     <div style={{display:'flex',float:'right'}}>
                         <Button variant="info" style={{marginRight:'10px'}} onClick={sendReport} >Confirm</Button>
                         <Button variant="secondary" onClick={() => setModalReport(!showModalReport)} >Cancel</Button>
+                    </div>
+                </Modal.Body>
+            </Modal>
+
+            <Modal show={showModalChat} onHide={setModalChat}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Send this post</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <UserAutocomplete setSelectedUser={setSelectedUser} suggestions={users} />
+                    <div style={{display:'flex',float:'right'}}>
+                        <Button variant="info" style={{marginRight:'10px'}} onClick={(e) => sendMessage()} >Send</Button>
+                        <Button variant="secondary" onClick={(e) => setModalChat(false)} >Cancel</Button>
                     </div>
                 </Modal.Body>
             </Modal>

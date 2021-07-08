@@ -15,9 +15,9 @@ type RegistrationRequestService struct {
 	service *UserService
 }
 
-func NewRegistrationRequestService(db *gorm.DB, redis *saga.RedisServer) (*RegistrationRequestService, error) {
-	registrationRequestRepo, err := repositories.NewRegistrationRequestRepo(db)
-	service, err := NewUserService(db, redis)
+func NewRegistrationRequestService(db *gorm.DB,redis *saga.RedisServer) (*RegistrationRequestService, error) {
+	registrationRequestRepo, err := repositories.NewRegistrationRequestRepo(db,redis)
+	service, err := NewUserService(db,redis)
 	return &RegistrationRequestService{
 		registrationRequestRepository: registrationRequestRepo,
 		service: service,

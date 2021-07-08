@@ -27,9 +27,18 @@ import ViewPendingVerificationRequests from "./components/VerificationRequest/Vi
 import ViewAllVerificationRequests from "./components/VerificationRequest/ViewAllVerificationRequests";
 import EditProfileImage from "./components/UserData/EditProfileImage";
 import Notifications from "./components/Notifications/Notifications";
+import CampaignsHome from './components/Campaigns/CampaignsHome'
+import CampaignPreview from './components/Campaigns/CampaignPreview'
+import CreateCampaign from './components/Campaigns/CreateCampaign';
+import AuthenticatedRoute from "./routes/AuthenticatedRoute";
+import AgentRoute from "./routes/AgentRoute";
+import CampaignRequests from "./components/AgentComponents/CampaignRequests";
+import Influencers from "./components/AgentComponents/Influencers";
+import ComplaintPreview from "./components/AdminComponents/ComplaintPreview";
+import AgentCheck from "./components/AdminComponents/AgentCheck";
+import AgentReg from "./components/AdminComponents/AgentReg";
+import AdminRoute from "./routes/AdminRoute";
 
-import AuthenticatedRoute from './AuthenticatedRoute';
-import AdminRoute from './AdminRoute';
 
 const App = () => {
     return (
@@ -44,7 +53,7 @@ const App = () => {
                 <Route path='/profile/:username' exact component={Profile}/>
                 <Route path='/info' exact component={ProfileInfo}/>
 
-                <AuthenticatedRoute path='/newpost' exact component={NewPost} isAdminProhibited={true} />
+                <AuthenticatedRoute path='/new_post' exact component={NewPost} isAdminProhibited={true} />
                 <AuthenticatedRoute path='/chats' exact component={Chats} isAdminProhibited={true} />
                 <AuthenticatedRoute path='/saved' exact component={Saved} isAdminProhibited={true} />
                 <AuthenticatedRoute path='/story-archive' exact component={StoryArchive} isAdminProhibited={true} />
@@ -63,6 +72,14 @@ const App = () => {
                 <AuthenticatedRoute path='/password' exact component={ChangePassword} />
                 <AuthenticatedRoute path='/privacy' exact component={EditUserPrivacy} />
                 <AuthenticatedRoute path='/edit_photo' exact component={EditProfileImage} />
+                <Route path='/agent_registration' exact component={AgentReg} />
+                <AuthenticatedRoute path='/agent_check' exact component={AgentCheck} />
+                <AuthenticatedRoute path='/complaints' exact component={ComplaintPreview} />
+                <AuthenticatedRoute path='/influencers' exact component={Influencers} />
+                <AuthenticatedRoute path='/campaign-requests' exact component={CampaignRequests} />
+                <AgentRoute path="/campaigns" exact component={CampaignsHome} />
+                <AgentRoute path="/campaigns/create" exact component={CreateCampaign} />
+                <AgentRoute path="/campaigns/preview/:id" component={CampaignPreview} />
             </Router>
         </div>
     );

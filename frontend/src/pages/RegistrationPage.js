@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import PasswordStrengthBar from 'react-password-strength-bar';
 import {Alert, Button, FormControl} from "react-bootstrap";
 import userService from "../services/user.service";
+import toastService from "../services/toast.service";
 
 const RegistrationPage = () => {
     // Declare a new state variable, which we'll call "count"
@@ -29,7 +30,6 @@ const RegistrationPage = () => {
     const [submitted, setSubmitted] = useState(false);
     const [successfullyReg, setSuccessfullyReg] = useState(false);
     const [disabled, setDisabled] = useState(false);
-    const [errorMessage, setErrorMessage] = useState(false);
     const [blacklistedPasswords, setBlacklistedPasswords] = useState([]);
     const [website, setWebsite] = useState("");
     const [profilePhoto, setProfilePhoto] = useState("");
@@ -205,19 +205,17 @@ const RegistrationPage = () => {
             birthdate: jsonDate,
             profilePhoto: profilePhoto,
             phoneNumber: phoneNumber,
-            sex: 'MAN',
+            sex: sex,
             isActive: true,
             biography: biography,
             website: website,
         })
         if (response.status === 200) {
-                console.log(response.data)
-                setErrorMessage(false);
-                setSuccessfullyReg(true);
-                setDisabled(!disabled);
+            toastService.show("success", "Successfully registered!Please log-in.")
+            setSuccessfullyReg(true)
+            setDisabled(!disabled);
         } else {
-            setErrorMessage(true);
-            console.log("NE RADI")
+            toastService.show("error", "E-mail address and username must be unique! Try again")
         }
     }
 
@@ -359,11 +357,7 @@ const RegistrationPage = () => {
             </div>
 
             {
-                successfullyReg ?
-                    <Alert variant='success' show={true}  style={({textAlignVertical: "center", textAlign: "center"})}>
-                        Successfully registered please login.
-                    </Alert>
-                    :
+                !successfullyReg &&
                     <div className="row" style={{marginTop: '1rem'}}>
                         <div className="col-sm-5 mb-2">
                         </div>
@@ -373,12 +367,6 @@ const RegistrationPage = () => {
                     </div>
             }
 
-            {
-                errorMessage &&
-                <Alert variant='danger' show={true}  style={({textAlignVertical: "center", textAlign: "center"})}>
-                    The e-mail address must be unique! Please try again
-                </Alert>
-            }
         </div>
     );
 }

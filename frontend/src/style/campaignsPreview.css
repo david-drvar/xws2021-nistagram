@@ -1,0 +1,21 @@
+.header{
+    display: flex;
+    flex-direction: row;
+}
+
+.stats{
+    font-size: 18px;
+    font-weight: 500px;
+    margin-bottom: 15px;
+}
+
+.ads{
+    width: 100%;
+}
+
+.buttons{
+    display: flex;
+    column-gap: 0.5em;
+    height: 40px;
+    margin: 0.5em 2em;
+}

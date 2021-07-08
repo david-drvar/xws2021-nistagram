@@ -28,6 +28,7 @@ func ServerSetup(controller *controllers.MessageController) {
 	router.HandleFunc("/room/conversation", controller.StartConversation).Methods("POST")
 	router.HandleFunc("/request/accept", controller.AcceptMessageRequest).Methods("POST")
 	router.HandleFunc("/request/decline", controller.DeclineMessageRequest).Methods("POST")
+	router.HandleFunc("/message/{messageId}/seenPhoto", controller.SeenPhotoOrVideo).Methods("GET")
 
 	c := common.SetupCors()
 

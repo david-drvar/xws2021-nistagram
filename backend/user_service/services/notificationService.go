@@ -47,6 +47,8 @@ func (s NotificationService) CreateNotification(ctx context.Context, domainNotif
 		userNotification.Text = " shared a post."
 	} else if domainNotification.NotificationType == "Story" {
 		userNotification.Text = " shared a story."
+	} else if domainNotification.NotificationType == "Campaign" {
+		userNotification.Text = " wants to hire you for campaign ."
 	} else {
 		return errors.New("Bad notification type")
 	}

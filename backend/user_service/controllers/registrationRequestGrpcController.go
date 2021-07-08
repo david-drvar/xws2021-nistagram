@@ -21,7 +21,7 @@ type RegistrationRequestController struct {
 }
 
 func NewRegistrationRequestController(db *gorm.DB, jwtManager *common.JWTManager, logger *logger.Logger, redis *saga.RedisServer) (*RegistrationRequestController, error) {
-	service, err := services.NewRegistrationRequestService(db, redis)
+	service, err := services.NewRegistrationRequestService(db,redis)
 	if err != nil {
 		return nil, err
 	}

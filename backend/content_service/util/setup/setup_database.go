@@ -8,6 +8,7 @@ import (
 func FillDatabase(db *gorm.DB) error {
 	// dropTables(db)
 
+	db.Migrator().DropTable(&persistence.AdCategory{})
 	err := db.AutoMigrate(&persistence.Post{},
 		&persistence.Story{},
 		&persistence.Media{},
@@ -29,6 +30,14 @@ func FillDatabase(db *gorm.DB) error {
 		&persistence.Hashtag{},
 		&persistence.HashtagObjava{},
 	)
+	result := db.Create([]*persistence.AdCategory{
+		{ Id: "6696fd8b-cbe5-4fe6-b1bc-ad523b9d4346", Name: "Sports"},
+		{ Id: "e5cf9990-2a13-4fe5-9bb5-0a6a50c568c1", Name: "Fashion"},
+		{ Id: "e48f8c1c-c788-400e-a07a-8c9b3a757f13", Name: "Drinks"},
+		{ Id: "cd804355-f4c4-475f-9869-844d5dfe882d", Name: "Technology"},
+		{ Id: "e6d6b6be-7910-417c-9ca7-e9dffecf310f", Name: "Events"},
+	})
+	if result.Error != nil { return result.Error }
 
 	return err
 }

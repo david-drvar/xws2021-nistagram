@@ -256,6 +256,7 @@ func CheckIsActive(ctx context.Context, userId string) (bool, error) {
 
 func DeleteByTypeAndCreator(ctx context.Context, notificationType string, userId string, creatorId string) (error){
 	conn, err := CreateGrpcConnection(os.Getenv("USER_SERVICE"))
+
 	if err != nil{
 		return status.Errorf(codes.Unknown, err.Error())
 	}

@@ -272,7 +272,7 @@ func (c *StoryGrpcController) GetStoryById(ctx context.Context, in *protopb.Requ
 		if err != nil { return &protopb.Story{}, status.Errorf(codes.Unknown, err.Error()) }
 
 		if !isPublic { return &protopb.Story{}, status.Errorf(codes.Unknown, "this story is not public") }
-	}else if story.UserId != claims.UserId{
+	}else if story.UserId != claims.UserId && claims.Role!="Admin" {
 		following, err := grpc_common.CheckFollowInteraction(ctx, story.UserId, claims.UserId)
 		if err != nil { return &protopb.Story{}, status.Errorf(codes.Unknown, err.Error()) }
 

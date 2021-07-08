@@ -19,7 +19,8 @@ type MessageRepository interface {
 	CreateMessageRequest(context.Context, *model.MessageRequest) (*model.MessageRequest, error)
 	AcceptMessageRequest(context.Context, model.MessageRequest) error
 	DeclineMessageRequest(context.Context, model.MessageRequest) error
-	GetChatRoomByUsers(ctx context.Context, room model.ChatRoom) (*model.ChatRoom, error)
+	GetChatRoomByUsers( context.Context,  model.ChatRoom) (*model.ChatRoom, error)
+	SeenPhotoOrVideo( context.Context,  string) error
 }
 
 type messageRepository struct {
@@ -191,6 +192,21 @@ func (repo *messageRepository) DeclineMessageRequest(ctx context.Context, messag
 		return errors.New("Could not accept message request")
 	} else if result.RowsAffected == 0 {
 		return errors.New("Could not accept message request")
+	}
+
+	return nil
+}
+
+func (repo *messageRepository) SeenPhotoOrVideo(ctx context.Context, id string) error {
+	span := tracer.StartSpanFromContextMetadata(ctx, "SeenPhotoOrVideo")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	result := repo.db.Where("id = ?", id).Updates(&model.Message{IsRead: true, IsMediaOpened: true})
+	if result.Error != nil {
+		return errors.New("Something went wrong after seen video")
+	}else if result.RowsAffected == 0 {
+		return errors.New("Something went wrong after seen video")
 	}
 
 	return nil

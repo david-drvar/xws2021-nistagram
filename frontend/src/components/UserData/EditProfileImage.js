@@ -29,10 +29,8 @@ function EditProfileImage(){
         })
 
         if (response.status === 200) {
-            console.log("BRAVO")
             toastService.show("success", "Successfully updated!");
         } else {
-            console.log("NE BRAVO")
             toastService.show("error", "Could not update image!");
 
         }

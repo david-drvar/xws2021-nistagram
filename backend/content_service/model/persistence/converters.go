@@ -1,6 +1,7 @@
 package persistence
 
 import (
+	"github.com/david-drvar/xws2021-nistagram/content_service/model"
 	"github.com/david-drvar/xws2021-nistagram/content_service/model/domain"
 	"github.com/david-drvar/xws2021-nistagram/content_service/util"
 	"github.com/david-drvar/xws2021-nistagram/content_service/util/images"
@@ -46,19 +47,26 @@ func (p Post) ConvertToDomainReduced(commentsNum int, likesNum int, dislikesNum 
 }
 
 func (p Post) ConvertToPersistence(post domain.Post) Post {
-	return Post{
+	newPost := Post{
 		Id:          uuid.NewV4().String(),
 		UserId:      post.UserId,
 		IsAd:        post.IsAd,
 		Type:        post.Type,
 		Description: post.Description,
 		Location:    post.Location,
-		CreatedAt:   time.Now(),
 	}
+
+	if post.CreatedAt.Equal(time.Time{}) {
+		newPost.CreatedAt = time.Now()
+	}else{
+		newPost.CreatedAt = post.CreatedAt
+	}
+
+	return newPost
 }
 
 func (s Story) ConvertToPersistence(story domain.Story) Story {
-	return Story{
+	newStory := Story{
 		Post: Post {
 			Id:          uuid.NewV4().String(),
 			UserId:      story.UserId,
@@ -70,6 +78,14 @@ func (s Story) ConvertToPersistence(story domain.Story) Story {
 		},
 		IsCloseFriends: story.IsCloseFriends,
 	}
+
+	if story.CreatedAt.Equal(time.Time{}){
+		newStory.CreatedAt = time.Now()
+	}else{
+		newStory.CreatedAt = story.CreatedAt
+	}
+
+	return newStory
 }
 
 func (s Story) ConvertToDomain(media []domain.Media, hashtags []domain.Hashtag) domain.Story {
@@ -231,5 +247,76 @@ func (c *HighlightStory) ConvertToPersistence(request domain.HighlightRequest) *
 	return &HighlightStory{
 		HighlightId: request.HighlightId,
 		StoryId:     request.StoryId,
+	}
+}
+
+func (a Ad) ConvertToPersistence(ad domain.Ad) Ad{
+	return Ad{
+		Id:         ad.Id,
+		Link:       ad.Link,
+		CampaignId: ad.CampaignId,
+		PostId:     ad.Post.Id,
+		LinkClicks: ad.LinkClicks,
+		Type:       ad.Post.Type.String(),
+	}
+}
+
+func (a Ad) ConvertToDomain(comments []domain.Comment, likes []domain.Like, dislikes []domain.Like, content domain.Objava) domain.Ad {
+	return domain.Ad{
+		Id:         a.Id,
+		Link:       a.Link,
+		CampaignId: a.CampaignId,
+		Post:       domain.Post{
+			Objava:   content,
+			Comments: comments,
+			Likes:    likes,
+			Dislikes: dislikes,
+		},
+		LinkClicks: a.LinkClicks,
+	}
+}
+
+func (c Campaign) ConvertToDomain(ads []domain.Ad, category domain.AdCategory) domain.Campaign{
+	return domain.Campaign{
+		Id:           c.Id,
+		Name:		  c.Name,
+		IsOneTime:    c.IsOneTime,
+		StartDate:    c.StartDate,
+		EndDate:      c.EndDate,
+		Placements:   c.Placements,
+		AgentId:      c.AgentId,
+		Category: 	  category,
+		LastUpdated:  time.Now(),
+		Ads: 		  ads,
+		Type: 		  model.PostType(c.Type),
+	}
+}
+
+func (c Campaign) ConvertToPersistence(camp domain.Campaign) Campaign{
+	return Campaign{
+		Id:           camp.Id,
+		Name:		  camp.Name,
+		IsOneTime:    camp.IsOneTime,
+		StartDate:    camp.StartDate,
+		EndDate:      camp.EndDate,
+		Placements:   camp.Placements,
+		AgentId:      camp.AgentId,
+		AdCategoryId: camp.Category.Id,
+		LastUpdated:  camp.LastUpdated,
+		Type: 		  camp.Type.String(),
+	}
+}
+
+func (ac AdCategory) ConvertToDomain() domain.AdCategory{
+	return domain.AdCategory{
+		Id:   ac.Id,
+		Name: ac.Name,
+	}
+}
+
+func (ac AdCategory) ConvertToPersistence(category domain.AdCategory) AdCategory{
+	return AdCategory{
+		Id:   category.Id,
+		Name: category.Name,
 	}
 }

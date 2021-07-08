@@ -27,7 +27,10 @@ func SetupContentRBAC(db *gorm.DB) error {
 			createHashtag, getAllHashtags,
 			getAllHighlights, getHighlight, createHighlight, removeHighlight, createHighlightStory, removeHighlightStory, getUserLikedOrDislikedPosts,
 			createContentComplaint, getAllContentComplaints, rejectById, deleteComplaintByUserId,
-
+			getAds, createAd,
+			getCampaigns, getCampaign, createCampaign, updateCampaign, deleteCampaign,
+			getAdCategories, getAdCategory, createAdCategory, createCampaignRequest,getCampaignRequestsByAgent,
+			updateCampaignRequest,
 		}
 		result = db.Create(&permissions)
 		if result.Error != nil {
@@ -73,7 +76,16 @@ func SetupContentRBAC(db *gorm.DB) error {
 			basicCreateContentComplaint, verifiedCreateContentComplaint, agentCreateContentComplaint,
 			adminGetAllContentComplaints,
 			adminRejectById,
-			adminDeleteComplaintByUserId,
+			adminDeleteComplaintByUserId,nonregisteredDeleteComplaintByUserId,basicDeleteComplaintByUserId, verifiedDeleteComplaintByUserId, agentDeleteComplaintByUserId,
+			basicGetAds, agentGetAds, nonregisteredGetAds, verifiedGetAds, adminGetAds,
+			agentCreateAd,
+			agentCreateCampaign, agentGetCampaigns, agentGetCampaign, agentUpdateCampaign, agentDeleteCampaign,
+			basicGetAdCategories, nonregisteredGetAdCategories, verifiedGetAdCategories, agentGetAdCategories, adminGetAdCategories,
+			basicGetAdCategory, nonregisteredGetAdCategory, verifiedGetAdCategory, agentGetAdCategory, adminGetAdCategory,
+			adminCreateAdCategory,
+			agentCreateCampaignRequest,
+			agentGetCampaignRequestsByAgent,
+			basicUpdateCampaignRequest, agentUpdateCampaignRequest, verifiedUpdateCampaignRequest,
 		}
 		result = db.Create(&rolePermissions)
 		if result.Error != nil {
@@ -146,7 +158,25 @@ var (
 	getAllContentComplaints = Permission{Id: "7f2315ec-909e-4856-9ccf-01c30ae76263", Name: "GetAllContentComplaints"}
 	rejectById 				= Permission{Id: "fe5fecc4-dc44-11eb-ba80-0242ac130004", Name: "RejectById"}
 	deleteComplaintByUserId = Permission{Id: "3dc694f6-dcf1-11eb-ba80-0242ac130004", Name: "DeleteComplaintByUserId"}
-	)
+
+
+	getAds						= Permission{Id: "e1341af3-1c36-4cb8-bb26-88bd5ab2af3e", Name: "GetAds"}
+	createAd					= Permission{Id: "1cf92a55-a41a-425f-960d-8a94e7a3e997", Name: "CreateAd"}
+
+	getCampaigns 				= Permission{Id: "cb810786-dea4-4774-940d-d4e4d693d6f4", Name: "GetCampaigns"}
+	getCampaign 				= Permission{Id: "8e3a5753-3dac-4f69-a1ad-124143906070", Name: "GetCampaign"}
+	createCampaign 				= Permission{Id: "5b194118-4624-4725-b891-cba62eb5b506", Name: "CreateCampaign"}
+	updateCampaign 				= Permission{Id: "3588ce92-6da6-4401-95e2-0af71b2e11c9", Name: "UpdateCampaign"}
+	deleteCampaign 				= Permission{Id: "f54196d5-81e6-4364-86dd-45f8d864d3c1", Name: "DeleteCampaign"}
+
+	getAdCategories 			= Permission{Id: "05cd31bd-1260-4871-ad8b-182759a95781", Name: "GetAdCategories"}
+	getAdCategory 				= Permission{Id: "c3e205c5-d111-4486-847c-b3ac5e3869da", Name: "GetAdCategory"}
+	createAdCategory 			= Permission{Id: "e1bb9ce5-01e9-4562-b841-ffebffef161d", Name: "CreateAdCategory"}
+
+	createCampaignRequest      = Permission{Id: "666112e5-395e-4c04-a278-5d5d319bd1e8", Name: "CreateCampaignRequest"}
+	getCampaignRequestsByAgent = Permission{Id: "f0d7798f-188b-4936-ba2c-0d5cf7c7539a", Name: "GetCampaignRequestsByAgent"}
+	updateCampaignRequest      = Permission{Id: "797df38e-4862-47af-a87a-0194faed3c15", Name: "UpdateCampaignRequest"}
+)
 
 var (
 	// Posts
@@ -254,7 +284,6 @@ var (
 
 	basicGetUserLikedOrDislikedPosts    = RolePermission{RoleId: basic.Id, PermissionId: getUserLikedOrDislikedPosts.Id}
 	verifiedGetUserLikedOrDislikedPosts = RolePermission{RoleId: verified.Id, PermissionId: getUserLikedOrDislikedPosts.Id}
-
 	// - - - - - - - - - -
 
 	// Collections & Favorites
@@ -339,7 +368,54 @@ var (
 
 	adminGetAllContentComplaints = RolePermission{RoleId: admin.Id, PermissionId: getAllContentComplaints.Id}
 	adminRejectById 			 = RolePermission{RoleId: admin.Id, PermissionId: rejectById.Id}
+
 	adminDeleteComplaintByUserId = RolePermission{RoleId: admin.Id, PermissionId: deleteComplaintByUserId.Id}
+	nonregisteredDeleteComplaintByUserId = RolePermission{RoleId: nonregistered.Id, PermissionId: deleteComplaintByUserId.Id}
+	basicDeleteComplaintByUserId = RolePermission{RoleId: basic.Id, PermissionId: deleteComplaintByUserId.Id}
+	verifiedDeleteComplaintByUserId = RolePermission{RoleId: verified.Id, PermissionId: deleteComplaintByUserId.Id}
+	agentDeleteComplaintByUserId = RolePermission{RoleId: agent.Id, PermissionId: deleteComplaintByUserId.Id}
 	// - - - - - - - - -
 
+	// Ads
+	basicGetAds         		  = RolePermission{RoleId: basic.Id, PermissionId: getAds.Id}
+	verifiedGetAds			      = RolePermission{RoleId: verified.Id, PermissionId: getAds.Id}
+	adminGetAds			          = RolePermission{RoleId: admin.Id, PermissionId: getAds.Id}
+	agentGetAds			          = RolePermission{RoleId: agent.Id, PermissionId: getAds.Id}
+	nonregisteredGetAds			  = RolePermission{RoleId: nonregistered.Id, PermissionId: getAds.Id}
+
+	agentCreateAd 				  = RolePermission{RoleId: agent.Id, PermissionId: createAd.Id}
+	// - - - - - - - - -
+
+	// Campaigns
+	agentGetCampaign			  = RolePermission{RoleId: agent.Id, PermissionId: getCampaign.Id}
+	agentGetCampaigns			  = RolePermission{RoleId: agent.Id, PermissionId: getCampaigns.Id}
+	agentCreateCampaign			  = RolePermission{RoleId: agent.Id, PermissionId: createCampaign.Id}
+	agentUpdateCampaign			  = RolePermission{RoleId: agent.Id, PermissionId: updateCampaign.Id}
+	agentDeleteCampaign			  = RolePermission{RoleId: agent.Id, PermissionId: deleteCampaign.Id}
+	// - - - - - - - - -
+
+	// Ad Categories
+	basicGetAdCategories          = RolePermission{RoleId: basic.Id, PermissionId: getAdCategories.Id}
+	verifiedGetAdCategories	      = RolePermission{RoleId: verified.Id, PermissionId: getAdCategories.Id}
+	adminGetAdCategories		  = RolePermission{RoleId: admin.Id, PermissionId: getAdCategories.Id}
+	agentGetAdCategories		  = RolePermission{RoleId: agent.Id, PermissionId: getAdCategories.Id}
+	nonregisteredGetAdCategories  = RolePermission{RoleId: nonregistered.Id, PermissionId: getAdCategories.Id}
+
+	basicGetAdCategory          = RolePermission{RoleId: basic.Id, PermissionId: getAdCategory.Id}
+	verifiedGetAdCategory	    = RolePermission{RoleId: verified.Id, PermissionId: getAdCategory.Id}
+	adminGetAdCategory		    = RolePermission{RoleId: admin.Id, PermissionId: getAdCategory.Id}
+	agentGetAdCategory		    = RolePermission{RoleId: agent.Id, PermissionId: getAdCategory.Id}
+	nonregisteredGetAdCategory  = RolePermission{RoleId: nonregistered.Id, PermissionId: getAdCategory.Id}
+
+	adminCreateAdCategory 	    = RolePermission{RoleId: agent.Id, PermissionId: createAdCategory.Id}
+	// - - - - - - - - -
+
+	agentCreateCampaignRequest = RolePermission{RoleId: agent.Id, PermissionId: createCampaignRequest.Id}
+
+
+	agentGetCampaignRequestsByAgent = RolePermission{RoleId: agent.Id, PermissionId: getCampaignRequestsByAgent.Id}
+
+	basicUpdateCampaignRequest    = RolePermission{RoleId: basic.Id, PermissionId: updateCampaignRequest.Id}
+	agentUpdateCampaignRequest    = RolePermission{RoleId: agent.Id, PermissionId: updateCampaignRequest.Id}
+	verifiedUpdateCampaignRequest = RolePermission{RoleId: verified.Id, PermissionId: updateCampaignRequest.Id}
 )

@@ -26,7 +26,7 @@ func SetupUsersRBAC(db *gorm.DB) error {
 			updateUserPhoto, getUserNotifications, getBlockedUsers, deleteNotification,
 			updateNotification, getByTypeAndCreator, checkIsActive, changeUserActiveStatus,
 			createAgentUser,
-			getAllPendingRequests, updateRequest,
+			getAllPendingRequests, updateRequest,  getAllInfluncers,
 		}
 		result = db.Create(&permissions)
 		if result.Error != nil {
@@ -69,6 +69,9 @@ func SetupUsersRBAC(db *gorm.DB) error {
 			adminCreateAgentUser, basicCreateAgentUser, verifiedCreateAgentUser, nonregisteredCreateAgentUser,
 			adminGetAllPendingRequests,
 			adminUpdateRequest,
+			agentGetAllInfluncers,
+
+
 		}
 		result = db.Create(&rolePermissions)
 		if result.Error != nil {
@@ -97,14 +100,14 @@ var (
 	checkIsApproved   = Permission{Id: "c7f5bfa5-9749-4be3-a6bb-451a5acbd1b0", Name: "CheckIsApproved"}
 	getUserByUsername = Permission{Id: "aa3305b0-0b68-490f-b38e-5a0c1cf97a9e", Name: "GetUserByUsername"}
 
-	getUserById        = Permission{Id: "992d5bf5-3e7f-4c8e-a76a-ad8444c0b32e", Name: "GetUserById"}
-	getUsernameById    = Permission{Id: "c9295278-8fe8-40e6-9c9d-75543d48fa94", Name: "GetUsernameById"}
-	getPhotoById	   = Permission{Id: "b6fc6b92-f2b4-471c-b5bc-b6f0a442759e", Name: "GetPhotoById"}
-	getAllUsers        = Permission{Id: "26e41719-e309-4591-bb7e-3291b59c6dd4", Name: "GetAllUsers"}
-	updateUserProfile  = Permission{Id: "48719e11-38de-4935-a93a-a61886c9303e", Name: "UpdateUserProfile"}
-	updateUserPassword = Permission{Id: "50db6a87-483e-4d97-b320-9ff68235280a", Name: "UpdateUserPassword"}
-	searchUser         = Permission{Id: "afbbf68f-ad1d-45db-8345-37ab619eea33", Name: "SearchUser"}
-	approveAccount     = Permission{Id: "15e9a950-8581-4aa6-81c1-ae722c527051", Name: "ApproveAccount"}
+	getUserById                     = Permission{Id: "992d5bf5-3e7f-4c8e-a76a-ad8444c0b32e", Name: "GetUserById"}
+	getUsernameById                 = Permission{Id: "c9295278-8fe8-40e6-9c9d-75543d48fa94", Name: "GetUsernameById"}
+	getPhotoById                    = Permission{Id: "b6fc6b92-f2b4-471c-b5bc-b6f0a442759e", Name: "GetPhotoById"}
+	getAllUsers                     = Permission{Id: "26e41719-e309-4591-bb7e-3291b59c6dd4", Name: "GetAllUsers"}
+	updateUserProfile               = Permission{Id: "48719e11-38de-4935-a93a-a61886c9303e", Name: "UpdateUserProfile"}
+	updateUserPassword              = Permission{Id: "50db6a87-483e-4d97-b320-9ff68235280a", Name: "UpdateUserPassword"}
+	searchUser                      = Permission{Id: "afbbf68f-ad1d-45db-8345-37ab619eea33", Name: "SearchUser"}
+	approveAccount                  = Permission{Id: "15e9a950-8581-4aa6-81c1-ae722c527051", Name: "ApproveAccount"}
 	updatePrivacy                   = Permission{Id: "3ce13d71-30e2-4cca-8a48-8a5ee1b6a42e", Name: "UpdatePrivacy"}
 	blockUser                       = Permission{Id: "9ec3fb89-28d6-4789-82b8-f247706cb6a0", Name: "BlockUser"}
 	unBlockUser                     = Permission{Id: "bf4632b1-e3ae-41d5-a04a-4bac73b7a2ef", Name: "UnBlockUser"}
@@ -120,19 +123,22 @@ var (
 	updateUserPhoto                 = Permission{Id: "042cef39-9acb-49d9-8088-1a583623bfa0", Name: "UpdateUserPhoto"}
 	getUserNotifications            = Permission{Id: "2687d1e4-cf89-11eb-b8bc-0242ac130003", Name: "GetUserNotifications"}
 	getUserPrivacy                  = Permission{Id: "221ee966-d025-11eb-b8bc-0242ac130003", Name: "GetUserPrivacy"}
-	getBlockedUsers                  = Permission{Id: "bb400be1-7dcb-439c-9aba-235b566ec1fd", Name: "GetBlockedUsers"}
-	deleteNotification                  = Permission{Id: "3bc6fa56-2a22-4cb5-8176-ea5c8314bc3c", Name: "DeleteNotification"}
-	readAllNotifications           = Permission{Id : "602c1d0e-d1ac-11eb-b8bc-0242ac130003", Name: "ReadAllNotifications"}
-	deleteByTypeAndCreator         = Permission{Id : "b841f8f6-d1c5-11eb-b8bc-0242ac130003", Name: "DeleteByTypeAndCreator"}
-	updateNotification				= Permission{Id: "868d6039-d195-4b7d-b637-825cb780fcb1", Name : "UpdateNotification"}
-	getByTypeAndCreator				= Permission{Id: "98660578-e608-42ca-b7ee-7d7a9732607b\n", Name : "GetByTypeAndCreator"}
-	checkIsActive					= Permission{Id: "419fa77e-dc3e-11eb-ba80-0242ac130004", Name : "CheckIsActive"}
-	changeUserActiveStatus			= Permission{Id: "ab876e7e-dc3e-11eb-ba80-0242ac130004", Name : "ChangeUserActiveStatus"}
+	getBlockedUsers                 = Permission{Id: "bb400be1-7dcb-439c-9aba-235b566ec1fd", Name: "GetBlockedUsers"}
+	deleteNotification              = Permission{Id: "3bc6fa56-2a22-4cb5-8176-ea5c8314bc3c", Name: "DeleteNotification"}
+	readAllNotifications            = Permission{Id: "602c1d0e-d1ac-11eb-b8bc-0242ac130003", Name: "ReadAllNotifications"}
+	deleteByTypeAndCreator          = Permission{Id: "b841f8f6-d1c5-11eb-b8bc-0242ac130003", Name: "DeleteByTypeAndCreator"}
+	updateNotification              = Permission{Id: "868d6039-d195-4b7d-b637-825cb780fcb1", Name: "UpdateNotification"}
+	getByTypeAndCreator             = Permission{Id: "98660578-e608-42ca-b7ee-7d7a9732607b\n", Name: "GetByTypeAndCreator"}
+	checkIsActive                   = Permission{Id: "419fa77e-dc3e-11eb-ba80-0242ac130004", Name: "CheckIsActive"}
+	changeUserActiveStatus          = Permission{Id: "ab876e7e-dc3e-11eb-ba80-0242ac130004", Name: "ChangeUserActiveStatus"}
 
-	getAllPendingRequests 			= Permission{Id: "85fa9d3e-dc52-11eb-ba80-0242ac130004", Name: "GetAllPendingRequests"}
-	createAgentUser 				= Permission{Id: "4f8f5246-dc4b-11eb-ba80-0242ac130004", Name : "CreateAgentUser"}
-	updateRequest 					= Permission{Id : "e18e7370-dca0-11eb-ba80-0242ac130004", Name : "UpdateRequest"}
-	)
+	getAllPendingRequests      = Permission{Id: "85fa9d3e-dc52-11eb-ba80-0242ac130004", Name: "GetAllPendingRequests"}
+	createAgentUser            = Permission{Id: "4f8f5246-dc4b-11eb-ba80-0242ac130004", Name: "CreateAgentUser"}
+	updateRequest              = Permission{Id: "e18e7370-dca0-11eb-ba80-0242ac130004", Name: "UpdateRequest"}
+	getAllInfluncers           = Permission{Id: "9495ac44-0e35-4f6d-8b89-5b860ddd5754", Name: "GetAllInfluncers"}
+
+
+)
 
 var (
 	basicGetUserById         = RolePermission{RoleId: basic.Id, PermissionId: getUserById.Id}
@@ -256,57 +262,62 @@ var (
 	nonregisteredGetUserPrivacy = RolePermission{RoleId: nonregistered.Id, PermissionId: getUserPrivacy.Id}
 	agentGetUserPrivacy         = RolePermission{RoleId: agent.Id, PermissionId: getUserPrivacy.Id}
 
-	basicGetBlockedUsers      = RolePermission{RoleId: basic.Id, PermissionId: getBlockedUsers.Id}
-	adminGetBlockedUsers         = RolePermission{RoleId: admin.Id, PermissionId: getBlockedUsers.Id}
-	verifiedGetBlockedUsers      = RolePermission{RoleId: verified.Id, PermissionId: getBlockedUsers.Id}
-	agentGetBlockedUsers        = RolePermission{RoleId: agent.Id, PermissionId: getBlockedUsers.Id}
+	basicGetBlockedUsers    = RolePermission{RoleId: basic.Id, PermissionId: getBlockedUsers.Id}
+	adminGetBlockedUsers    = RolePermission{RoleId: admin.Id, PermissionId: getBlockedUsers.Id}
+	verifiedGetBlockedUsers = RolePermission{RoleId: verified.Id, PermissionId: getBlockedUsers.Id}
+	agentGetBlockedUsers    = RolePermission{RoleId: agent.Id, PermissionId: getBlockedUsers.Id}
 
-	basicDeleteNotification        = RolePermission{RoleId: basic.Id, PermissionId: deleteNotification.Id}
-	agentDeleteNotification         = RolePermission{RoleId: agent.Id, PermissionId: deleteNotification.Id}
-	adminDeleteNotification         = RolePermission{RoleId: admin.Id, PermissionId: deleteNotification.Id}
-	verifiedDeleteNotification      = RolePermission{RoleId: verified.Id, PermissionId: deleteNotification.Id}
+	basicDeleteNotification    = RolePermission{RoleId: basic.Id, PermissionId: deleteNotification.Id}
+	agentDeleteNotification    = RolePermission{RoleId: agent.Id, PermissionId: deleteNotification.Id}
+	adminDeleteNotification    = RolePermission{RoleId: admin.Id, PermissionId: deleteNotification.Id}
+	verifiedDeleteNotification = RolePermission{RoleId: verified.Id, PermissionId: deleteNotification.Id}
 
-	basicReadAllNotifications        = RolePermission{RoleId: basic.Id, PermissionId: readAllNotifications.Id}
+	basicReadAllNotifications         = RolePermission{RoleId: basic.Id, PermissionId: readAllNotifications.Id}
 	adminReadAllNotifications         = RolePermission{RoleId: admin.Id, PermissionId: readAllNotifications.Id}
 	verifiedReadAllNotifications      = RolePermission{RoleId: verified.Id, PermissionId: readAllNotifications.Id}
 	nonregisteredReadAllNotifications = RolePermission{RoleId: nonregistered.Id, PermissionId: readAllNotifications.Id}
 	agentReadAllNotifications         = RolePermission{RoleId: agent.Id, PermissionId: readAllNotifications.Id}
 
-	basicDeleteByTypeAndCreator        = RolePermission{RoleId: basic.Id, PermissionId: deleteByTypeAndCreator.Id}
+	basicDeleteByTypeAndCreator         = RolePermission{RoleId: basic.Id, PermissionId: deleteByTypeAndCreator.Id}
 	adminDeleteByTypeAndCreator         = RolePermission{RoleId: admin.Id, PermissionId: deleteByTypeAndCreator.Id}
 	verifiedDeleteByTypeAndCreator      = RolePermission{RoleId: verified.Id, PermissionId: deleteByTypeAndCreator.Id}
 	nonregisteredDeleteByTypeAndCreator = RolePermission{RoleId: nonregistered.Id, PermissionId: deleteByTypeAndCreator.Id}
 	agentDeleteByTypeAndCreator         = RolePermission{RoleId: agent.Id, PermissionId: deleteByTypeAndCreator.Id}
 
-	basicGetByTypeAndCreator        = RolePermission{RoleId: basic.Id, PermissionId: getByTypeAndCreator.Id}
+	basicGetByTypeAndCreator         = RolePermission{RoleId: basic.Id, PermissionId: getByTypeAndCreator.Id}
 	adminGetByTypeAndCreator         = RolePermission{RoleId: admin.Id, PermissionId: getByTypeAndCreator.Id}
 	verifiedGetByTypeAndCreator      = RolePermission{RoleId: verified.Id, PermissionId: getByTypeAndCreator.Id}
 	nonregisteredGetByTypeAndCreator = RolePermission{RoleId: nonregistered.Id, PermissionId: getByTypeAndCreator.Id}
 	agentGetByTypeAndCreator         = RolePermission{RoleId: agent.Id, PermissionId: getByTypeAndCreator.Id}
 
-	basicUpdateNotification        = RolePermission{RoleId: basic.Id, PermissionId: updateNotification.Id}
+	basicUpdateNotification         = RolePermission{RoleId: basic.Id, PermissionId: updateNotification.Id}
 	adminUpdateNotification         = RolePermission{RoleId: admin.Id, PermissionId: updateNotification.Id}
 	verifiedUpdateNotification      = RolePermission{RoleId: verified.Id, PermissionId: updateNotification.Id}
 	nonregisteredUpdateNotification = RolePermission{RoleId: nonregistered.Id, PermissionId: updateNotification.Id}
 	agentUpdateNotification         = RolePermission{RoleId: agent.Id, PermissionId: updateNotification.Id}
 
-	basicCheckIsActive        = RolePermission{RoleId: basic.Id, PermissionId: checkIsActive.Id}
+	basicCheckIsActive         = RolePermission{RoleId: basic.Id, PermissionId: checkIsActive.Id}
 	adminCheckIsActive         = RolePermission{RoleId: admin.Id, PermissionId: checkIsActive.Id}
 	verifiedCheckIsActive      = RolePermission{RoleId: verified.Id, PermissionId: checkIsActive.Id}
 	nonregisteredCheckIsActive = RolePermission{RoleId: nonregistered.Id, PermissionId: checkIsActive.Id}
 	agentCheckIsActive         = RolePermission{RoleId: agent.Id, PermissionId: checkIsActive.Id}
 
-	basicChangeUserActiveStatus        = RolePermission{RoleId: basic.Id, PermissionId: changeUserActiveStatus.Id}
+	basicChangeUserActiveStatus         = RolePermission{RoleId: basic.Id, PermissionId: changeUserActiveStatus.Id}
 	adminChangeUserActiveStatus         = RolePermission{RoleId: admin.Id, PermissionId: changeUserActiveStatus.Id}
 	verifiedChangeUserActiveStatus      = RolePermission{RoleId: verified.Id, PermissionId: changeUserActiveStatus.Id}
 	nonregisteredChangeUserActiveStatus = RolePermission{RoleId: nonregistered.Id, PermissionId: changeUserActiveStatus.Id}
 	agentChangeUserActiveStatus         = RolePermission{RoleId: agent.Id, PermissionId: changeUserActiveStatus.Id}
 
-	adminCreateAgentUser 				= RolePermission{RoleId: agent.Id, PermissionId: createAgentUser.Id}
-	basicCreateAgentUser 				= RolePermission{RoleId: basic.Id, PermissionId: createAgentUser.Id}
-	nonregisteredCreateAgentUser 				= RolePermission{RoleId: nonregistered.Id, PermissionId: createAgentUser.Id}
-	verifiedCreateAgentUser 				= RolePermission{RoleId: verified.Id, PermissionId: createAgentUser.Id}
+	adminCreateAgentUser         = RolePermission{RoleId: agent.Id, PermissionId: createAgentUser.Id}
+	basicCreateAgentUser         = RolePermission{RoleId: basic.Id, PermissionId: createAgentUser.Id}
+	nonregisteredCreateAgentUser = RolePermission{RoleId: nonregistered.Id, PermissionId: createAgentUser.Id}
+	verifiedCreateAgentUser      = RolePermission{RoleId: verified.Id, PermissionId: createAgentUser.Id}
 
-	adminGetAllPendingRequests 			= RolePermission{RoleId: admin.Id, PermissionId: getAllPendingRequests.Id}
-	adminUpdateRequest					= RolePermission{RoleId: admin.Id, PermissionId: updateRequest.Id}
-	)
+	adminGetAllPendingRequests = RolePermission{RoleId: admin.Id, PermissionId: getAllPendingRequests.Id}
+	adminUpdateRequest         = RolePermission{RoleId: admin.Id, PermissionId: updateRequest.Id}
+
+	agentGetAllInfluncers = RolePermission{RoleId: agent.Id, PermissionId: getAllInfluncers.Id}
+
+
+
+)

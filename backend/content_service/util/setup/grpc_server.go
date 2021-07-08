@@ -19,9 +19,7 @@ import (
 	"time"
 )
 
-func GRPCServer(db *gorm.DB) {
-	customLogger := logger.NewLogger()
-
+func GRPCServer(db *gorm.DB, customLogger *logger.Logger) {
 	// Create a listener on TCP port
 	lis, err := net.Listen("tcp", grpc_common.Content_service_address)
 	if err != nil {

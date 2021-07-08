@@ -124,7 +124,7 @@ type HighlightRequest struct {
 	StoryId     string
 }
 
-/*
+
 type RegistrationRequest struct {
 	Id        string
 	UserId    string
@@ -134,52 +134,55 @@ type RegistrationRequest struct {
 }
 
 type Ad struct {
-	Id string `gorm:"primaryKey"`
-	Link string
-	CampaignId string
-	PostId string
-	LinkClickNum int
+	Id 			 string
+	Link 		 string
+	CampaignId   string
+	Post 		 Post
+	LinkClicks   int
 }
 
 type Campaign struct {
-	Id string `gorm:"primaryKey"`
-	IsOneTime bool
-	StartDate time.Time //TODO
-	EndDate time.Time //TODO
-	PlacementNum int
-	AgentId string
-	IdAdCategory string
-	LastUpdated time.Time //TODO
+	Id 			 string
+	Name		 string
+	IsOneTime 	 bool
+	StartDate 	 time.Time
+	EndDate 	 time.Time
+	Placements   int
+	AgentId 	 string
+	Category	 AdCategory
+	LastUpdated  time.Time
+	Ads			 []Ad
+	Type		 model.PostType
 }
 
 type CampaignInfluencerRequest struct {
-	CampaignId   string `gorm:"primaryKey"`
-	InfluencerId string `gorm:"primaryKey"`
+	Id           string `gorm:"primaryKey"`
+	AgentId      string
+	InfluencerId string
+	CampaignId   string
 	Status       model.RequestStatus
+	PostAt       time.Time
 }
 
+/*
 type ContentComplaint struct {
 	Id       string `gorm:"primaryKey"`
 	Category model.ComplaintCategory
 	PostId   string
 	Status   model.RequestStatus
-}
+}*/
 
 type AdCategory struct {
-	Id string `gorm:"primaryKey"`
+	Id   string
 	Name string
 }
 
-type UserAdCategories struct {
-	UserId string `gorm:"primaryKey"`
-	IdAdCategory string `gorm:"primaryKey"`
-}
-
 type CampaignChanges struct {
-	CampaignId string `gorm:"primaryKey"`
+	CampaignId 	 string
+	Name		 string
 	AdCategoryId string
-	StartDate time.Time
-	EndDate time.Time
+	StartDate 	 time.Time
+	EndDate		 time.Time
 	PlacementNum int
 }
-*/
+

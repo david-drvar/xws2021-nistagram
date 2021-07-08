@@ -9,6 +9,26 @@ option go_package = "github.com/xws2021-nistagram/common/proto";
 
 service Users {
 
+  //Api Key
+  rpc GetKeyByUserId(RequestIdUsers) returns (ApiTokenResponse) {
+    option(google.api.http) = {
+      get: "/api/apiKey/{id}",
+    };
+  }
+
+  rpc GenerateApiToken(RequestIdUsers) returns (ApiTokenResponse) {
+    option(google.api.http) = {
+      post: "/api/apiKey/generate",
+      body: "*"
+    };
+  }
+
+  rpc ValidateKey(ApiTokenResponse) returns (EmptyResponse) {
+    option(google.api.http) = {
+      get: "/api/apiKey/validate/{token}",
+    };
+  }
+
   //registration requests!
   rpc CreateAgentUser(CreateUserRequest) returns (UsersDTO){
     option(google.api.http) = {
@@ -19,13 +39,13 @@ service Users {
 
   rpc GetAllPendingRequests(EmptyRequest) returns (ResponseRequests) {
     option(google.api.http) = {
-      get: "/api/users/get_requests"
+      get: "/api/users/agent/get_requests"
     };
   }
 
   rpc UpdateRequest(RegistrationRequest) returns (EmptyResponse) {
     option(google.api.http) = {
-      post: "/api/users/updateRequest",
+      post: "/api/users/agent/updateRequest",
       body: "*"
     };
   }
@@ -106,6 +126,12 @@ service Users {
     option(google.api.http) = {
       post: "/api/users/searchByUser"
       body: "user"
+    };
+  }
+
+  rpc GetAllInfluncers (EmptyRequest) returns (InfluencerSearchResult) {
+    option(google.api.http) = {
+      get: "/api/users/get-all-influencers",
     };
   }
 
@@ -251,7 +277,12 @@ service Users {
       get: "/api/users/get-all-verification-requests",
     };
   }
+
+
 }
+
+
+
 
 message CreateNotificationRequest {
   string userId = 1;
@@ -320,6 +351,19 @@ message UsersDTO {
   string resetCode=15;
   bool approvedAccount=16;
   google.protobuf.Timestamp tokenEnd=17;
+}
+
+message InfluencerSearch {
+  string id = 1;
+  string firstName = 2;
+  string lastName = 3;
+  string username = 4;
+  string profilePhoto = 5;
+  bool isProfilePublic = 6;
+}
+
+message InfluencerSearchResult {
+  repeated InfluencerSearch users = 1;
 }
 
 //TODO ne treba da vracamo usera vec usera bez sifre i sa biografijom i website-om

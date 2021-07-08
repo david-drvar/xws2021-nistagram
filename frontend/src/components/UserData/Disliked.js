@@ -5,11 +5,13 @@ import likeService from "../../services/like.service";
 import toastService from "../../services/toast.service";
 import Post from "../Post/Post";
 import PostPreviewGrid from "../Post/PostPreviewGrid";
+import Spinner from "../../helpers/spinner";
 
 function Disliked() {
     const dispatch = useDispatch()
     const store = useSelector(state => state);
     const [posts, setPosts] = useState([]);
+    const [loading, setLoading] = useState(true);
 
 
     useEffect(() => {
@@ -19,7 +21,11 @@ function Disliked() {
     function getUserLikedOrDislikedPosts() {
         likeService.getUserLikedOrDislikedPosts({ jwt: store.user.jwt , userId : store.user.id, isLike : false})
             .then(response => {
-                if(response.status === 200) setPosts(response.data.posts)
+                if(response.status === 200){
+                    setPosts(response.data.posts)
+                    setLoading(false);
+
+                }
             })
             .catch(err => {
                 toastService.show("error", "Could not retrieve disliked posts.")
@@ -29,10 +35,13 @@ function Disliked() {
     return (
         <div  style={{display: 'flex'}}>
             <ProfileInfo />
-            <div style={{marginRight: '30%',marginTop:'5%',display: 'flex', flexDirection: 'column'}}>
-                <PostPreviewGrid posts={posts} />
+            {loading ?
+                <Spinner type="MutatingDots" height="100" width="100"/> :
+                <div style={{marginRight: '30%', marginTop: '5%', display: 'flex', flexDirection: 'column'}}>
+                    <PostPreviewGrid posts={posts}/>
 
-            </div>
+                </div>
+            }
         </div>
     );
 }

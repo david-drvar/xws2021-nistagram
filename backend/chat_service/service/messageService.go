@@ -88,9 +88,17 @@ func (s *MessageService) AcceptMessageRequest(ctx context.Context, messageReques
 }
 
 func (s *MessageService) DeclineMessageRequest(ctx context.Context, messageRequest model.MessageRequest) error {
-	span := tracer.StartSpanFromContextMetadata(ctx, "AcceptMessageRequest")
+	span := tracer.StartSpanFromContextMetadata(ctx, "DeclineMessageRequest")
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	return s.repository.DeclineMessageRequest(ctx, messageRequest)
+}
+
+func (s MessageService) SeenPhotoOrVideo(ctx context.Context, id string) error {
+	span := tracer.StartSpanFromContextMetadata(ctx, "SeenPhotoOrVideo")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return s.repository.SeenPhotoOrVideo(ctx, id)
 }

@@ -541,3 +541,155 @@ func (c *ContentComplaint) ConvertToGrpc() *protopb.ContentComplaint {
 		UserId:   c.UserId,
 	}
 }
+
+func (a *Ad) ConvertToGrpc() *protopb.Ad{
+	if a == nil { a = &Ad{} }
+	return &protopb.Ad{
+		Id:         a.Id,
+		Link:       a.Link,
+		CampaignId: a.CampaignId,
+		LinkClicks: int32(a.LinkClicks),
+		Post:       &protopb.Post{
+			Id:          a.Post.Id,
+			UserId:      a.Post.UserId,
+			IsAd:        a.Post.IsAd,
+			Type:        a.Post.Type.String(),
+			Description: a.Post.Description,
+			Location:    a.Post.Location,
+			CreatedAt:   timestamppb.New(a.Post.CreatedAt),
+			Media:       ConvertMultipleMediaToGrpc(a.Post.Media),
+			Comments:    ConvertMultipleCommentsToGrpc(a.Post.Comments),
+			Likes:       ConvertMultipleLikesToGrpc(a.Post.Likes),
+			Dislikes:    ConvertMultipleLikesToGrpc(a.Post.Dislikes),
+			Hashtags:    ConvertMultipleHashtagToGrpc(a.Post.Hashtags),
+		},
+	}
+}
+
+func (a *Ad) ConvertFromGrpc(ad *protopb.Ad) *Ad{
+	if a == nil { a = &Ad{} }
+	if ad == nil { ad = &protopb.Ad{} }
+	return &Ad{
+		Id:         ad.Id,
+		Link:       ad.Link,
+		CampaignId: ad.CampaignId,
+		Post:       Post{
+			Objava:   Objava{
+				Id:          ad.Post.Id,
+				UserId:      ad.Post.UserId,
+				IsAd:        ad.Post.IsAd,
+				Type:        model.GetPostType(ad.Post.Type),
+				Description: ad.Post.Description,
+				Location:    ad.Post.Location,
+				CreatedAt:   ad.Post.CreatedAt.AsTime(),
+				Media:       ConvertMultipleMediaFromGrpc(ad.Post.Media),
+				Hashtags:    ConvertMultipleHashtagFromGrpc(ad.Post.Hashtags),
+			},
+		},
+		LinkClicks: int(ad.LinkClicks),
+	}
+}
+
+func (a Ad) CreateStoryAd() *Story{
+	return &Story{
+		Objava:         Objava{
+			Id:          a.Post.Id,
+			UserId:      a.Post.UserId,
+			IsAd:        true,
+			Type:        model.TypeStory,
+			Description: a.Post.Description,
+			Location:    a.Post.Location,
+			CreatedAt:   a.Post.CreatedAt,
+			Media:       a.Post.Media,
+			Hashtags:    a.Post.Hashtags,
+		},
+		IsCloseFriends: false,
+	}
+}
+
+func ConvertMultipleAdsToGrpc(ads []Ad) []*protopb.Ad{
+	grpcAds := []*protopb.Ad{}
+	for _, ad := range ads {
+		grpcAds = append(grpcAds, ad.ConvertToGrpc())
+	}
+	return grpcAds
+}
+
+func ConvertMultipleAdsFromGrpc(ads []*protopb.Ad) []Ad{
+	domainAds := []Ad{}
+	for _, ad := range ads {
+		var domainAd Ad
+		domainAds = append(domainAds, *domainAd.ConvertFromGrpc(ad))
+	}
+	return domainAds
+}
+
+func (c Campaign) ConvertToGrpc() *protopb.Campaign{
+	return &protopb.Campaign{
+		Id:           c.Id,
+		Name:		  c.Name,
+		IsOneTime:    c.IsOneTime,
+		StartDate:    timestamppb.New(c.StartDate),
+		EndDate:      timestamppb.New(c.EndDate),
+		Placements:   int32(c.Placements),
+		AgentId:      c.AgentId,
+		Category:     c.Category.ConvertToGrpc(),
+		LastUpdated:  timestamppb.New(c.LastUpdated),
+		Ads:          ConvertMultipleAdsToGrpc(c.Ads),
+		Type:         c.Type.String(),
+	}
+}
+
+func (c Campaign) ConvertFromGrpc(campaign *protopb.Campaign) Campaign{
+	if campaign == nil { campaign = &protopb.Campaign{} }
+	category := AdCategory{}
+	return Campaign{
+		Id:           campaign.Id,
+		Name:		  campaign.Name,
+		IsOneTime:    campaign.IsOneTime,
+		StartDate:    campaign.StartDate.AsTime(),
+		EndDate:      campaign.EndDate.AsTime(),
+		Placements:   int(campaign.Placements),
+		AgentId:      campaign.AgentId,
+		Category:     category.ConvertFromGrpc(campaign.Category),
+		LastUpdated:  campaign.LastUpdated.AsTime(),
+		Ads:          ConvertMultipleAdsFromGrpc(campaign.Ads),
+		Type:         model.PostType(campaign.Type),
+	}
+}
+
+func (ac AdCategory) ConvertToGrpc() *protopb.AdCategory{
+	return &protopb.AdCategory{
+		Id: ac.Id,
+		Name: ac.Name,
+	}
+}
+
+func (ac AdCategory) ConvertFromGrpc(adCategory *protopb.AdCategory) AdCategory{
+	return AdCategory{
+		Id: adCategory.Id,
+		Name: adCategory.Name,
+	}
+}
+
+func (u CampaignInfluencerRequest) ConvertToGrpc() *protopb.CampaignInfluencerRequest {
+	return &protopb.CampaignInfluencerRequest{
+		Id:           u.Id,
+		AgentId:      u.AgentId,
+		InfluencerId: u.InfluencerId,
+		CampaignId:   u.CampaignId,
+		Status:       string(u.Status),
+		PostAt:       timestamppb.New(u.PostAt),
+	}
+}
+
+func (campaignRequest *CampaignInfluencerRequest) ConvertFromGrpc(n *protopb.CampaignInfluencerRequest) *CampaignInfluencerRequest {
+	return &CampaignInfluencerRequest{
+		Id:           n.Id,
+		AgentId:      n.AgentId,
+		InfluencerId: n.InfluencerId,
+		CampaignId:   n.CampaignId,
+		Status:       model.RequestStatus(n.Status),
+		PostAt:       n.PostAt.AsTime(),
+	}
+}

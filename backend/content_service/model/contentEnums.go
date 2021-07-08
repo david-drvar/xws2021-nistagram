@@ -5,7 +5,7 @@ import "fmt"
 type PostType string
 const(
 	TypePost  PostType = "Post"
-	TypeStory          = "Story"
+	TypeStory PostType = "Story"
 )
 
 func (pt PostType) String() string{

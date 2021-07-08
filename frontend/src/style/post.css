@@ -33,6 +33,9 @@
     font-size: 1em;
 }
 
+.Post .Post-caption .adLink{
+    font-size: 14px;
+}
 
 .Post .avatar img {
     width: 100%;

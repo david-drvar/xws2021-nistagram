@@ -11,6 +11,7 @@ const Posts = (props) => {
     const [posts, setPosts] = useState([]);
     const store = useSelector(state => state)
 
+    // TODO Retrieve ads as well
     useEffect(()=>{
         postService.getHomepagePosts({ jwt: store.user.jwt })
             .then(response => {

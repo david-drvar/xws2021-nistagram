@@ -8,16 +8,18 @@ import (
 	"github.com/david-drvar/xws2021-nistagram/content_service/model/persistence"
 	"github.com/david-drvar/xws2021-nistagram/content_service/util/images"
 	"gorm.io/gorm"
+	"time"
 )
 
 type PostRepository interface {
 	GetAllPosts(context.Context, []string) ([]persistence.Post, error)
-	CreatePost(context.Context, *domain.Post) error
+	CreatePost(context.Context, *domain.Post) (persistence.Post, error)
 	GetPostById(context.Context, string) (*persistence.Post, error)
 	RemovePost(context.Context, string, string) error
 	GetPostsByLocation(ctx context.Context, location string) ([]persistence.Post, error)
 	GetCollectionsPosts(context.Context, string) ([]persistence.Post, error)
 	GetPostsForUser(context.Context, string) ([]persistence.Post, error)
+	UpdateCreatedAt(context.Context, string, time.Time) error
 }
 
 type postRepository struct {
@@ -53,7 +55,7 @@ func (repository *postRepository) GetAllPosts(ctx context.Context, followings []
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	posts := []persistence.Post{}
-	result := repository.DB.Order("created_at desc").Where("user_id IN (?)", followings).Find(&posts)
+	result := repository.DB.Order("created_at desc").Where("is_ad = false AND user_id IN (?)", followings).Find(&posts)
 	if result.Error != nil {
 		return posts, result.Error
 	}
@@ -89,15 +91,14 @@ func (repository *postRepository) GetPostById(ctx context.Context, id string) (*
 	return post, nil
 }
 
-func (repository *postRepository) CreatePost(ctx context.Context, post *domain.Post) error {
+func (repository *postRepository) CreatePost(ctx context.Context, post *domain.Post) (persistence.Post, error) {
 	span := tracer.StartSpanFromContextMetadata(ctx, "CreatePost")
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
+	var postToSave persistence.Post
+	postToSave = postToSave.ConvertToPersistence(*post)
 	err := repository.DB.Transaction(func(tx *gorm.DB) error {
-		var postToSave persistence.Post
-		postToSave = postToSave.ConvertToPersistence(*post)
-
 		result := repository.DB.Create(&postToSave)
 		if result.Error != nil || result.RowsAffected != 1 {
 			return errors.New("cannot save post")
@@ -141,10 +142,8 @@ func (repository *postRepository) CreatePost(ctx context.Context, post *domain.P
 		return nil
 	})
 
-	if err != nil {
-		return err
-	}
-	return nil
+	if err != nil { return persistence.Post{}, err }
+	return postToSave, nil
 }
 
 func (repository *postRepository) RemovePost(ctx context.Context, postId string, userId string) error {
@@ -153,7 +152,8 @@ func (repository *postRepository) RemovePost(ctx context.Context, postId string,
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	err := repository.DB.Transaction(func(tx *gorm.DB) error {
-		post := &persistence.Post{Id: postId, UserId: userId}
+		post := &persistence.Post{ Id: postId }
+		if userId != "" { post.UserId = userId }	// Removing post from campaign/ad repo won't contain userId
 		result := repository.DB.First(&post)
 
 		if result.Error != nil || result.RowsAffected != 1 {
@@ -225,7 +225,7 @@ func (repository *postRepository) GetCollectionsPosts(ctx context.Context, id st
 	result := repository.DB.Model(&persistence.Post{}).
 		Joins("left join favorites   ON posts.id = favorites.post_id").
 		Joins("left join collections ON favorites.collection_id = collections.id").
-		Where("collections.id = ?", id).
+		Where("collections.id = ? A", id).
 		Find(&posts)
 
 	if result.Error != nil {
@@ -247,4 +247,15 @@ func (repository *postRepository) GetPostsByLocation(ctx context.Context, locati
 	}
 
 	return posts, nil
+}
+
+func (repository *postRepository) UpdateCreatedAt(ctx context.Context, id string, createdAt time.Time) error{
+	span := tracer.StartSpanFromContextMetadata(ctx, "UpdateCreatedAt")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	result := repository.DB.Model(&persistence.Post{}).Where("id = ?", id).Update("created_at", createdAt)
+	if result.Error != nil { return result.Error }
+
+	return nil
 }

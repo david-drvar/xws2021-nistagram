@@ -12,6 +12,7 @@ const Stories = () => {
     const [stories, setStories] = useState([]);
     const store = useSelector(state => state);
 
+    // TODO Retrieve ads as well
     useEffect(()=>{
         storyService.getHomepageStories({ jwt: store.user.jwt })
             .then(response => {

@@ -16,3 +16,4 @@ func (notification UserNotification) ConvertToGrpc() *protopb.Notification {
 		CreatedAt: timestamppb.New(notification.CreatedAt),
 	}
 }
+

@@ -65,6 +65,20 @@ class PostService extends RootService {
             })
         return response
     }
+
+    async deletePost(data){
+        const { id,jwt } = data;
+        const headers = this.setupHeaders(jwt)
+
+        const response = this.apiClient.delete(''+id, {headers})
+            .then(res => {
+                return res
+            }).catch(err => {
+                console.error(err)
+                return err
+            })
+        return response
+    }
 }
 
 const postService = new PostService()

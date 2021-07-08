@@ -282,6 +282,92 @@ service Content {
 
   /* * * * * * * * * * * * */
 
+  /*   Ads   */
+  rpc GetAds (EmptyRequestContent) returns (AdArray) {
+    option(google.api.http) = {
+      get: "/ads"
+    };
+  }
+
+  rpc CreateAd (Ad) returns (EmptyResponseContent) {
+    option(google.api.http) = {
+      post: "/ads",
+      body: "*"
+    };
+  }
+  /* * * * * * * * * * * * */
+
+  /*   Campaigns   */
+  rpc GetCampaigns (EmptyRequestContent) returns (CampaignArray) {
+    option(google.api.http) = {
+      get: "/campaigns"
+    };
+  }
+
+  rpc GetCampaign (RequestId) returns (Campaign) {
+    option(google.api.http) = {
+      get: "/campaigns/{id}"
+    };
+  }
+
+  rpc CreateCampaign (Campaign) returns (EmptyResponseContent) {
+    option(google.api.http) = {
+      post: "/campaigns",
+      body: "*"
+    };
+  }
+
+  rpc UpdateCampaign (Campaign) returns (EmptyResponseContent) {
+    option(google.api.http) = {
+      put: "/campaigns",
+      body: "*"
+    };
+  }
+
+  rpc DeleteCampaign (RequestId) returns (EmptyResponseContent) {
+    option(google.api.http) = {
+      delete: "/campaigns/{id}"
+    };
+  }
+
+  rpc CreateCampaignRequest (CampaignInfluencerRequest) returns (EmptyResponseContent) {
+    option(google.api.http) = {
+      post: "/campaigns/create-campaign",
+      body:"*"
+    };
+  }
+
+  rpc UpdateCampaignRequest (CampaignInfluencerRequest) returns (EmptyResponseContent) {
+    option(google.api.http) = {
+      post: "/campaigns/update-campaign-request",
+      body:"*"
+    };
+  }
+
+  rpc GetCampaignRequestsByAgent (CampaignInfluencerRequest) returns (CampaignRequestArray) {
+    option(google.api.http) = {
+      post: "/campaigns/get-campaign-request-by-agent",
+      body:"*"
+    };
+  }
+
+  /* * * * * * * * * * * * */
+
+  /*   Ad Categories  */
+  rpc GetAdCategories (EmptyRequestContent) returns (AdCategoryArray) {
+    option(google.api.http) = {
+      get: "/ads/categories"
+    };
+  }
+
+  rpc CreateAdCategory (AdCategory) returns (EmptyResponseContent) {
+    option(google.api.http) = {
+      post: "/ads/categories",
+      body: "*"
+    };
+  }
+  /* * * * * * * * * * * * */
+
 }
 
 /*    Posts    */
@@ -375,6 +461,66 @@ message StoryHome {
 
 message StoriesHome {
   repeated StoryHome stories = 1;
+}
+
+/* * * * * * * * * * * * */
+
+
+
+/*    Ads    */
+// Using the same message for Story Ad and Post Ad,
+// since Story Ad cannot be for close friends, therefore we will only have empty fields
+// for fields specific for Post.
+message Ad{
+  string id = 1;
+  string link = 2;
+  string campaignId = 3;
+  int32  linkClicks = 4;
+  Post   post = 5;
+}
+
+message AdArray {
+  repeated Ad ads = 1;
+}
+
+message Campaign{
+  string id = 1;
+  string name = 2;
+  bool   isOneTime = 3;
+  google.protobuf.Timestamp startDate = 4;
+  google.protobuf.Timestamp endDate = 5;
+  int32  placements = 6;
+  string agentId = 7;
+  AdCategory category = 8;
+  google.protobuf.Timestamp lastUpdated = 9;
+  repeated Ad ads = 10;
+  string   type = 11;
+}
+
+message CampaignArray {
+  repeated Campaign campaigns = 1;
+}
+
+message AdCategory{
+  string id = 1;
+  string name = 2;
+}
+
+message AdCategoryArray{
+  repeated AdCategory categories = 1;
+}
+
+message  CampaignInfluencerRequest {
+  string id=1;
+  string agentId=2;
+  string influencerId=3;
+  string campaignId=4;
+  string status=5;
+  google.protobuf.Timestamp postAt = 6;
+}
+
+message  CampaignRequestArray {
+  repeated CampaignInfluencerRequest campaignRequests = 1;
 }
 
 /* * * * * * * * * * * * */

@@ -10,6 +10,7 @@ const PostHeader = (props) => {
       iconSize,
       hideUsername,
       image,
+      isAd
     } = props;
     
     return (
@@ -22,7 +23,7 @@ const PostHeader = (props) => {
         {(username || caption) && !hideUsername && (
           <div className="textContainer">
             {/* Make username clickable */}
-            <span> <NavLink className="username" to={{pathname: `/profile/${username}`,}}>{username}</NavLink> </span>
+            <span> <NavLink className="username" to={{pathname: `/profile/${username}`,}}>{username}</NavLink> {isAd ? "· Sponsored" : ""} </span>
             <span className={`caption ${captionSize}`}>{caption}</span>
           </div>
         )}

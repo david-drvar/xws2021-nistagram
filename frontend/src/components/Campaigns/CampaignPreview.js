@@ -40,8 +40,9 @@ const CampaignPreview = (props) => {
     }, [])
 
     const displayDate = () => {
-        let date = moment(campaign.startDate).format("DD/MM/YY")
+        let date = "Dates: " + moment(campaign.startDate).format("DD/MM/YY")
         !campaign.isOneTime ? date += ` - ${moment(campaign.endDate).format("DD/MM/YY")}` : date += ""
+        date += `, being placed ${campaign.isOneTime ? "" : "every day"} from ${campaign.startTime < 10 ? "0" + campaign.startTime : campaign.startTime}h - ${campaign.endTime}h`
         return date;
     }
 
@@ -110,6 +111,7 @@ const CampaignPreview = (props) => {
                                 <div className="stats">
                                     <div>{displayDate()}</div>
                                     <div>{(campaign.isOneTime ? "One time " : "Long term ") + campaign.type + " campaign"}</div>
+                                    <div>Category: {campaign.category.name ? campaign.category.name : ""}</div>
                                 </div>
                             </div>
                             <div className="buttons">
@@ -118,7 +120,7 @@ const CampaignPreview = (props) => {
                             </div>
                         </div>
                         <div className="ads">
-                            {campaign.type === "Post" ? renderStories(campaign.ads) : renderPosts(campaign.ads)}
+                            {campaign.type === "Story" ? renderStories(campaign.ads) : renderPosts(campaign.ads)}
                         </div>
                     </div>
                     )}

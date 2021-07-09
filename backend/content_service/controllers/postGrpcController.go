@@ -2,12 +2,12 @@ package controllers
 
 import (
 	"context"
-
 	"github.com/david-drvar/xws2021-nistagram/common"
 	"github.com/david-drvar/xws2021-nistagram/common/grpc_common"
 	"github.com/david-drvar/xws2021-nistagram/common/logger"
 	protopb "github.com/david-drvar/xws2021-nistagram/common/proto"
 	"github.com/david-drvar/xws2021-nistagram/common/tracer"
+	"github.com/david-drvar/xws2021-nistagram/content_service/model"
 	"github.com/david-drvar/xws2021-nistagram/content_service/model/domain"
 	"github.com/david-drvar/xws2021-nistagram/content_service/services"
 	"google.golang.org/grpc/codes"
@@ -16,7 +16,8 @@ import (
 )
 
 type PostGrpcController struct {
-	service    *services.PostService
+	service    		*services.PostService
+	campaignService *services.CampaignService
 	jwtManager *common.JWTManager
 	logger     *logger.Logger
 }
@@ -27,8 +28,12 @@ func NewPostController(db *gorm.DB, jwtManager *common.JWTManager, logger *logge
 		return nil, err
 	}
 
+	campaignService, err := services.NewCampaignService(db)
+	if err != nil { return nil, err }
+
 	return &PostGrpcController{
 		service,
+		campaignService,
 		jwtManager,
 		logger,
 	}, nil
@@ -175,8 +180,17 @@ func (c *PostGrpcController) GetAllPosts(ctx context.Context, in *protopb.EmptyR
 		responsePosts = append(responsePosts, post.ConvertToGrpc())
 	}
 
+	ads, err := c.campaignService.GetOngoingCampaignsAds(ctx, userIds, claims.UserId, model.TypePost)
+	if err != nil { return &protopb.PostArray{}, status.Errorf(codes.Unknown, err.Error()) }
+
+	responseAds := []*protopb.Ad{}
+	for _, ad := range ads {
+		responseAds = append(responseAds, ad.ConvertToGrpc())
+	}
+
 	return &protopb.PostArray{
 		Posts: responsePosts,
+		Ads: responseAds,
 	}, nil
 }
 

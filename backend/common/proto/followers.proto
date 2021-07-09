@@ -89,6 +89,12 @@ service Followers {
             body: "*"
         };
     }
+
+    rpc RecommendationPattern(RequestIdFollowers) returns (RecommendationResponse) {
+        option(google.api.http) = {
+            get: "/api/followers/recommendation/{id}",
+        };
+    }
 }
 
 message Follower {
@@ -126,6 +132,15 @@ message CreateFollowerRequest {
 
 message RequestIdFollowers{
     string id = 1;
+}
+
+message Recommendation {
+    string userId = 1;
+    string percentage = 2;
+}
+
+message RecommendationResponse {
+    repeated Recommendation recommendations = 1;
 }
 
 message RequestForNotification {

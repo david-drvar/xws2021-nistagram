@@ -102,6 +102,11 @@ const Influencers = () => {
     }
 
     async function createCampaignRequest(modalUser) {
+        console.log(campaign);
+        if (campaign.length === 0) {
+            toastService.show("error", "Select campaign");
+            return;
+        }
         const response = await campaignsService.createCampaignRequest({
             agentId: store.user.id,
             influencerId:modalUser.id,

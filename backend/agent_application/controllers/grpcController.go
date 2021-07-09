@@ -88,3 +88,11 @@ func (s *Server) CreateUserInAgentApp(ctx context.Context, user *protopb.CreateU
 func (s *Server) GetUserByUsername(ctx context.Context, in *protopb.RequestUsernameAgent) (*protopb.UserAgentApp, error) {
 	return s.userController.GetUserByUsername(ctx, in)
 }
+
+func (s *Server) GetKeyByUserId(ctx context.Context, in *protopb.RequestIdAgent) (*protopb.ApiTokenAgent, error) {
+	return s.userController.GetKeyByUserId(ctx, in)
+}
+
+func (s *Server) UpdateKey(ctx context.Context, in *protopb.ApiTokenAgent) (*protopb.EmptyResponseAgent, error) {
+	return s.userController.UpdateKey(ctx, in)
+}

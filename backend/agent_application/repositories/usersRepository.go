@@ -22,6 +22,8 @@ type UserRepository interface {
 	GetUserPhoto(ctx context.Context, id string) (string, error)
 	GetUserByUsername(ctx context.Context, username string) (persistence.User, error)
 	GetUserById(ctx context.Context, id string) (persistence.User, error)
+	GetKeyByUserId(ctx context.Context, id string) (persistence.APIKey, error)
+	UpdateKey(ctx context.Context, key persistence.APIKey) error
 }
 
 type userRepository struct {
@@ -154,4 +156,49 @@ func (repository *userRepository) GetUserById(ctx context.Context, id string) (p
 	}
 
 	return dbUser, nil
+}
+
+func (repository *userRepository) GetKeyByUserId(ctx context.Context, id string) (persistence.APIKey, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "GetKeyByUserId")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	var dbApiKey persistence.APIKey
+	result := repository.DB.Where("user_id = ?", id).First(&dbApiKey)
+	if result.Error != nil && result.Error.Error() == "record not found" {
+		return persistence.APIKey{}, nil
+	}
+	if result.Error != nil {
+		return persistence.APIKey{}, result.Error
+	}
+
+	return dbApiKey, nil
+}
+
+func (repository *userRepository) UpdateKey(ctx context.Context, key persistence.APIKey) error {
+	span := tracer.StartSpanFromContextMetadata(ctx, "UpdateKey")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	var dbApiKey persistence.APIKey
+
+	result := repository.DB.Where("user_id = ?", key.UserId).First(&dbApiKey)
+	if result.Error != nil && result.Error.Error() != "record not found" {
+		return result.Error
+	}
+
+	if dbApiKey.UserId == "" {
+		result = repository.DB.Create(&key)
+		if result.Error != nil {
+			return result.Error
+		}
+		return nil
+	}
+
+	dbApiKey.APIKey = key.APIKey
+	result = repository.DB.Model(&key).Where("user_id = ?", key.UserId).Updates(dbApiKey)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
 }

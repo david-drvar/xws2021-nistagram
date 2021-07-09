@@ -4,7 +4,7 @@
     display: flex;
     align-items: center;
     font-size: 0.9em;
-    margin: 0em;
+    margin: 0em; 
 }
 
 .post-header .textContainer {

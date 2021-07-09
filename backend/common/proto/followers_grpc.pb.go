@@ -11,6 +11,7 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
+// Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
 // FollowersClient is the client API for Followers service.
@@ -29,6 +30,7 @@ type FollowersClient interface {
 	AcceptFollowRequest(ctx context.Context, in *CreateFollowerRequest, opts ...grpc.CallOption) (*CreateFollowerResponse, error)
 	GetFollowersConnection(ctx context.Context, in *Follower, opts ...grpc.CallOption) (*Follower, error)
 	GetUsersForNotificationEnabled(ctx context.Context, in *RequestForNotification, opts ...grpc.CallOption) (*CreateUserResponse, error)
+	RecommendationPattern(ctx context.Context, in *RequestIdFollowers, opts ...grpc.CallOption) (*RecommendationResponse, error)
 }
 
 type followersClient struct {
@@ -147,6 +149,15 @@ func (c *followersClient) GetUsersForNotificationEnabled(ctx context.Context, in
 	return out, nil
 }
 
+func (c *followersClient) RecommendationPattern(ctx context.Context, in *RequestIdFollowers, opts ...grpc.CallOption) (*RecommendationResponse, error) {
+	out := new(RecommendationResponse)
+	err := c.cc.Invoke(ctx, "/proto.Followers/RecommendationPattern", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FollowersServer is the server API for Followers service.
 // All implementations must embed UnimplementedFollowersServer
 // for forward compatibility
@@ -163,6 +174,7 @@ type FollowersServer interface {
 	AcceptFollowRequest(context.Context, *CreateFollowerRequest) (*CreateFollowerResponse, error)
 	GetFollowersConnection(context.Context, *Follower) (*Follower, error)
 	GetUsersForNotificationEnabled(context.Context, *RequestForNotification) (*CreateUserResponse, error)
+	RecommendationPattern(context.Context, *RequestIdFollowers) (*RecommendationResponse, error)
 	mustEmbedUnimplementedFollowersServer()
 }
 
@@ -206,6 +218,9 @@ func (UnimplementedFollowersServer) GetFollowersConnection(context.Context, *Fol
 func (UnimplementedFollowersServer) GetUsersForNotificationEnabled(context.Context, *RequestForNotification) (*CreateUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUsersForNotificationEnabled not implemented")
 }
+func (UnimplementedFollowersServer) RecommendationPattern(context.Context, *RequestIdFollowers) (*RecommendationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RecommendationPattern not implemented")
+}
 func (UnimplementedFollowersServer) mustEmbedUnimplementedFollowersServer() {}
 
 // UnsafeFollowersServer may be embedded to opt out of forward compatibility for this service.
@@ -215,8 +230,8 @@ type UnsafeFollowersServer interface {
 	mustEmbedUnimplementedFollowersServer()
 }
 
-func RegisterFollowersServer(s *grpc.Server, srv FollowersServer) {
-	s.RegisterService(&_Followers_serviceDesc, srv)
+func RegisterFollowersServer(s grpc.ServiceRegistrar, srv FollowersServer) {
+	s.RegisterService(&Followers_ServiceDesc, srv)
 }
 
 func _Followers_CreateUserConnection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -435,7 +450,28 @@ func _Followers_GetUsersForNotificationEnabled_Handler(srv interface{}, ctx cont
 	return interceptor(ctx, in, info, handler)
 }
 
-var _Followers_serviceDesc = grpc.ServiceDesc{
+func _Followers_RecommendationPattern_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestIdFollowers)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FollowersServer).RecommendationPattern(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Followers/RecommendationPattern",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FollowersServer).RecommendationPattern(ctx, req.(*RequestIdFollowers))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// Followers_ServiceDesc is the grpc.ServiceDesc for Followers service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var Followers_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "proto.Followers",
 	HandlerType: (*FollowersServer)(nil),
 	Methods: []grpc.MethodDesc{
@@ -486,6 +522,10 @@ var _Followers_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUsersForNotificationEnabled",
 			Handler:    _Followers_GetUsersForNotificationEnabled_Handler,
+		},
+		{
+			MethodName: "RecommendationPattern",
+			Handler:    _Followers_RecommendationPattern_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

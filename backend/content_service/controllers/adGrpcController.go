@@ -34,16 +34,10 @@ func NewAdController(db *gorm.DB, jwtManager *common.JWTManager) (*AdGrpcControl
 func (controller *AdGrpcController) GetAds(ctx context.Context, in *protopb.EmptyRequestContent) (*protopb.AdArray, error){
 	span := tracer.StartSpanFromContextMetadata(ctx, "GetAds")
 	defer span.Finish()
-	claims, _ := controller.jwtManager.ExtractClaimsFromMetadata(ctx)
+	// claims, _ := controller.jwtManager.ExtractClaimsFromMetadata(ctx)
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
-	ads, err := controller.service.GetAds(ctx, claims.UserId)
-	if err != nil { return &protopb.AdArray{}, status.Errorf(codes.Unknown, "cannot retrieve ads") }
-
 	response := []*protopb.Ad{}
-	for _, ad := range ads{
-		response = append(response, ad.ConvertToGrpc())
-	}
 
 	return &protopb.AdArray{
 		Ads: response,
@@ -106,6 +100,66 @@ func (controller *AdGrpcController) CreateAdCategory(ctx context.Context, in *pr
 	category = category.ConvertFromGrpc(in)
 
 	err := controller.service.CreateAdCategory(ctx, category)
+	if err != nil { return &protopb.EmptyResponseContent{}, err }
+
+	return &protopb.EmptyResponseContent{}, nil
+}
+
+func (controller *AdGrpcController) GetUsersAdCategories(ctx context.Context, in *protopb.EmptyRequestContent) (*protopb.AdCategoryArray, error){
+	span := tracer.StartSpanFromContextMetadata(ctx, "GetUsersAdCategories")
+	defer span.Finish()
+	claims, _ := controller.jwtManager.ExtractClaimsFromMetadata(ctx)
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	categories, err := controller.service.GetUsersAdCategories(ctx, claims.UserId)
+	if err != nil { return &protopb.AdCategoryArray{}, err }
+
+	responseCategories := []*protopb.AdCategory{}
+	for _, category := range categories{
+		responseCategories = append(responseCategories, category.ConvertToGrpc())
+	}
+
+	return &protopb.AdCategoryArray{
+		Categories: responseCategories,
+	}, nil
+}
+
+func (controller *AdGrpcController) UpdateUsersAdCategories(ctx context.Context, in *protopb.AdCategoryArray) (*protopb.EmptyResponseContent, error){
+	span := tracer.StartSpanFromContextMetadata(ctx, "UpdateUsersAdCategories")
+	defer span.Finish()
+	claims, _ := controller.jwtManager.ExtractClaimsFromMetadata(ctx)
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	categories := []domain.AdCategory{}
+	for _, category := range in.Categories{
+		var domainCategory domain.AdCategory
+		categories = append(categories, domainCategory.ConvertFromGrpc(category))
+	}
+
+	err := controller.service.UpdateUsersAdCategories(ctx, claims.UserId, categories)
+	if err != nil { return &protopb.EmptyResponseContent{}, err }
+
+	return &protopb.EmptyResponseContent{}, nil
+}
+
+func (controller *AdGrpcController) CreateUserAdCategories(ctx context.Context, in *protopb.RequestId) (*protopb.EmptyResponseContent, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "CreateAdCategory")
+	defer span.Finish()
+	// claims, _ := controller.jwtManager.ExtractClaimsFromMetadata(ctx)
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	err := controller.service.CreateUserAdCategories(ctx, in.Id)
+	if err != nil { return &protopb.EmptyResponseContent{}, err }
+
+	return &protopb.EmptyResponseContent{}, nil
+}
+
+func (controller *AdGrpcController) IncrementLinkClicks(ctx context.Context, in *protopb.RequestId) (*protopb.EmptyResponseContent, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "IncrementLinkClicks")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	err := controller.service.IncrementLinkClicks(ctx, in.Id)
 	if err != nil { return &protopb.EmptyResponseContent{}, err }
 
 	return &protopb.EmptyResponseContent{}, nil

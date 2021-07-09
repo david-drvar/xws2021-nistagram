@@ -12,6 +12,7 @@ func FillDatabase(db *gorm.DB) error {
 		&persistence.OrderProducts{},
 		&persistence.PostReport{},
 		&persistence.StoryReport{},
+		&persistence.APIKey{},
 	)
 
 	return err

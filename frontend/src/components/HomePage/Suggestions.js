@@ -1,20 +1,75 @@
 import "../../style/suggestions.css";
 import ProfileForSug from "./ProfileForSug";
-import React from "react";
+import React, {useEffect, useState} from "react";
+import userService from "../../services/user.service";
+import toastService from "../../services/toast.service";
+import followersService from "../../services/followers.service";
+import {useSelector} from "react-redux";
 
 function Suggestions() {
+    const[recommendations,setRecommendations]=useState([])
+    const[users,setUsers]=useState([])
+    const store = useSelector(state => state);
+
+    useEffect(() => {
+        getRecommendations()
+    }, []);
+
+    async function getRecommendations() {
+        const response = await followersService.getRecommendations(
+            {
+                id:store.user.id,
+                jwt: store.user.jwt
+            })
+
+        if (response.status === 200) {
+           setRecommendations(response.data.recommendations)
+            getUsers(response.data.recommendations)
+        } else {
+            toastService.show("error", "GRESKAA!");
+        }
+    }
+
+    function getUsers(requests) {
+        requests.map((request, i) => {
+            if(users.some(item => item.id === request.userId)) {
+                return;
+            }
+            getUserById(request.userId)
+            }
+        );
+    }
+
+    async function getUserById(request) {
+        const response = await userService.getUserById({
+            id: request,
+            jwt: store.user.jwt,
+        })
+
+        if (response.status === 200) {
+
+            setUsers(users=>[...users,response.data])
+        } else {
+            console.log("getuserbyid error")
+        }
+    }
     return (
         <div className="suggestions">
             <div className="titleContainer">
                 <div className="title">Suggestions For You</div>
-                <a href="/">See All</a>
             </div>
-
-            <ProfileForSug username="maki" firstName="Marko" lastName="Markovic"  caption="Health" urlText="Follow" iconSize="medium" captionSize="small"  storyBorder={true} />
-            <ProfileForSug username="joca" firstName="Jovan" lastName="Petrovic"  caption="Sport" urlText="Follow"  iconSize="medium" captionSize="small" />
-            <ProfileForSug username="boki123" firstName="Bojana" lastName="Zoric" caption="Follows you" urlText="Follow"  iconSize="medium" captionSize="small" />
-            <ProfileForSug username="majanokti123" firstName="Maja" lastName="Lazic" caption="Baby"  urlText="Follow" iconSize="medium"  captionSize="small" storyBorder={true} />
-            <ProfileForSug username="lola" firstName="Jovana" lastName="Jokic" caption="Sport" urlText="Follow" iconSize="medium"  captionSize="small" />
+            {users.map((result,index) =>
+               <div><ProfileForSug
+                        username={result.username}
+                        firstName={result.firstName}
+                        lastName={result.lastName}
+                        caption="suggestion"
+                        urlText="Follow"
+                        iconSize="big"
+                        captionSize="small"
+                        image={result.profilePhoto} storyBorder={false} />
+               </div>
+            )}
         </div>
     );
 }

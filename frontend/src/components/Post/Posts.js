@@ -16,7 +16,8 @@ const Posts = (props) => {
         postService.getHomepagePosts({ jwt: store.user.jwt })
             .then(response => {
                 if(response.status === 200) {
-                    setPosts(response.data.posts)
+                    console.log(response.data)
+                    setPosts([...response.data.posts, ...response.data.ads])
                     setLoading(false);
                 }
             })
@@ -29,7 +30,7 @@ const Posts = (props) => {
         <div className={`Posts ${loading ? "loading" : ""}`}>
             { loading ? 
                 <Spinner type="MutatingDots" height="100" width="100" /> : 
-                posts && posts.map((post) => <Post post={post} postUser={{ id: post.userId }}/> )
+                posts && posts.map((post) => <Post post={post} isAd={post.link ? true : false} /> )
             }
         </div>
 

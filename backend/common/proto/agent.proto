@@ -95,6 +95,20 @@ service Agent {
     };
   }
 
+  /* API KEY */
+  rpc GetKeyByUserId(RequestIdAgent) returns (ApiTokenAgent) {
+    option(google.api.http) = {
+      get: "/apiKey/{id}",
+    };
+  }
+
+  rpc UpdateKey(ApiTokenAgent) returns (EmptyResponseAgent) {
+    option(google.api.http) = {
+      post: "/apiKey/update",
+      body : "*"
+    };
+  }
+
 }
 
 /*    Posts    */
@@ -152,6 +166,15 @@ message LoginResponseAgentApp {
 
 message RequestUsernameAgent {
   string username = 1;
+}
+
+message RequestIdAgent {
+  string id = 1;
+}
+
+message ApiTokenAgent {
+  string id = 1;
+  string token = 2;
 }
 
 message Order {

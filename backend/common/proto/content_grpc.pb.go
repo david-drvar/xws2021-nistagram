@@ -11,6 +11,7 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
+// Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
 // ContentClient is the client API for Content service.
@@ -69,9 +70,11 @@ type ContentClient interface {
 	//   Ads
 	GetAds(ctx context.Context, in *EmptyRequestContent, opts ...grpc.CallOption) (*AdArray, error)
 	CreateAd(ctx context.Context, in *Ad, opts ...grpc.CallOption) (*EmptyResponseContent, error)
+	IncrementLinkClicks(ctx context.Context, in *RequestId, opts ...grpc.CallOption) (*EmptyResponseContent, error)
 	//   Campaigns
 	GetCampaigns(ctx context.Context, in *EmptyRequestContent, opts ...grpc.CallOption) (*CampaignArray, error)
 	GetCampaign(ctx context.Context, in *RequestId, opts ...grpc.CallOption) (*Campaign, error)
+	GetCampaignStats(ctx context.Context, in *RequestId, opts ...grpc.CallOption) (*CampaignStats, error)
 	CreateCampaign(ctx context.Context, in *Campaign, opts ...grpc.CallOption) (*EmptyResponseContent, error)
 	UpdateCampaign(ctx context.Context, in *Campaign, opts ...grpc.CallOption) (*EmptyResponseContent, error)
 	DeleteCampaign(ctx context.Context, in *RequestId, opts ...grpc.CallOption) (*EmptyResponseContent, error)
@@ -81,6 +84,9 @@ type ContentClient interface {
 	//   Ad Categories
 	GetAdCategories(ctx context.Context, in *EmptyRequestContent, opts ...grpc.CallOption) (*AdCategoryArray, error)
 	CreateAdCategory(ctx context.Context, in *AdCategory, opts ...grpc.CallOption) (*EmptyResponseContent, error)
+	GetUsersAdCategories(ctx context.Context, in *EmptyRequestContent, opts ...grpc.CallOption) (*AdCategoryArray, error)
+	CreateUserAdCategories(ctx context.Context, in *RequestId, opts ...grpc.CallOption) (*EmptyResponseContent, error)
+	UpdateUsersAdCategories(ctx context.Context, in *AdCategoryArray, opts ...grpc.CallOption) (*EmptyResponseContent, error)
 }
 
 type contentClient struct {
@@ -469,6 +475,15 @@ func (c *contentClient) CreateAd(ctx context.Context, in *Ad, opts ...grpc.CallO
 	return out, nil
 }
 
+func (c *contentClient) IncrementLinkClicks(ctx context.Context, in *RequestId, opts ...grpc.CallOption) (*EmptyResponseContent, error) {
+	out := new(EmptyResponseContent)
+	err := c.cc.Invoke(ctx, "/proto.Content/IncrementLinkClicks", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *contentClient) GetCampaigns(ctx context.Context, in *EmptyRequestContent, opts ...grpc.CallOption) (*CampaignArray, error) {
 	out := new(CampaignArray)
 	err := c.cc.Invoke(ctx, "/proto.Content/GetCampaigns", in, out, opts...)
@@ -481,6 +496,15 @@ func (c *contentClient) GetCampaigns(ctx context.Context, in *EmptyRequestConten
 func (c *contentClient) GetCampaign(ctx context.Context, in *RequestId, opts ...grpc.CallOption) (*Campaign, error) {
 	out := new(Campaign)
 	err := c.cc.Invoke(ctx, "/proto.Content/GetCampaign", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *contentClient) GetCampaignStats(ctx context.Context, in *RequestId, opts ...grpc.CallOption) (*CampaignStats, error) {
+	out := new(CampaignStats)
+	err := c.cc.Invoke(ctx, "/proto.Content/GetCampaignStats", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -559,6 +583,33 @@ func (c *contentClient) CreateAdCategory(ctx context.Context, in *AdCategory, op
 	return out, nil
 }
 
+func (c *contentClient) GetUsersAdCategories(ctx context.Context, in *EmptyRequestContent, opts ...grpc.CallOption) (*AdCategoryArray, error) {
+	out := new(AdCategoryArray)
+	err := c.cc.Invoke(ctx, "/proto.Content/GetUsersAdCategories", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *contentClient) CreateUserAdCategories(ctx context.Context, in *RequestId, opts ...grpc.CallOption) (*EmptyResponseContent, error) {
+	out := new(EmptyResponseContent)
+	err := c.cc.Invoke(ctx, "/proto.Content/CreateUserAdCategories", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *contentClient) UpdateUsersAdCategories(ctx context.Context, in *AdCategoryArray, opts ...grpc.CallOption) (*EmptyResponseContent, error) {
+	out := new(EmptyResponseContent)
+	err := c.cc.Invoke(ctx, "/proto.Content/UpdateUsersAdCategories", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ContentServer is the server API for Content service.
 // All implementations must embed UnimplementedContentServer
 // for forward compatibility
@@ -615,9 +666,11 @@ type ContentServer interface {
 	//   Ads
 	GetAds(context.Context, *EmptyRequestContent) (*AdArray, error)
 	CreateAd(context.Context, *Ad) (*EmptyResponseContent, error)
+	IncrementLinkClicks(context.Context, *RequestId) (*EmptyResponseContent, error)
 	//   Campaigns
 	GetCampaigns(context.Context, *EmptyRequestContent) (*CampaignArray, error)
 	GetCampaign(context.Context, *RequestId) (*Campaign, error)
+	GetCampaignStats(context.Context, *RequestId) (*CampaignStats, error)
 	CreateCampaign(context.Context, *Campaign) (*EmptyResponseContent, error)
 	UpdateCampaign(context.Context, *Campaign) (*EmptyResponseContent, error)
 	DeleteCampaign(context.Context, *RequestId) (*EmptyResponseContent, error)
@@ -627,6 +680,9 @@ type ContentServer interface {
 	//   Ad Categories
 	GetAdCategories(context.Context, *EmptyRequestContent) (*AdCategoryArray, error)
 	CreateAdCategory(context.Context, *AdCategory) (*EmptyResponseContent, error)
+	GetUsersAdCategories(context.Context, *EmptyRequestContent) (*AdCategoryArray, error)
+	CreateUserAdCategories(context.Context, *RequestId) (*EmptyResponseContent, error)
+	UpdateUsersAdCategories(context.Context, *AdCategoryArray) (*EmptyResponseContent, error)
 	mustEmbedUnimplementedContentServer()
 }
 
@@ -760,11 +816,17 @@ func (UnimplementedContentServer) GetAds(context.Context, *EmptyRequestContent) 
 func (UnimplementedContentServer) CreateAd(context.Context, *Ad) (*EmptyResponseContent, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateAd not implemented")
 }
+func (UnimplementedContentServer) IncrementLinkClicks(context.Context, *RequestId) (*EmptyResponseContent, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IncrementLinkClicks not implemented")
+}
 func (UnimplementedContentServer) GetCampaigns(context.Context, *EmptyRequestContent) (*CampaignArray, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCampaigns not implemented")
 }
 func (UnimplementedContentServer) GetCampaign(context.Context, *RequestId) (*Campaign, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCampaign not implemented")
+}
+func (UnimplementedContentServer) GetCampaignStats(context.Context, *RequestId) (*CampaignStats, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCampaignStats not implemented")
 }
 func (UnimplementedContentServer) CreateCampaign(context.Context, *Campaign) (*EmptyResponseContent, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateCampaign not implemented")
@@ -790,6 +852,15 @@ func (UnimplementedContentServer) GetAdCategories(context.Context, *EmptyRequest
 func (UnimplementedContentServer) CreateAdCategory(context.Context, *AdCategory) (*EmptyResponseContent, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateAdCategory not implemented")
 }
+func (UnimplementedContentServer) GetUsersAdCategories(context.Context, *EmptyRequestContent) (*AdCategoryArray, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUsersAdCategories not implemented")
+}
+func (UnimplementedContentServer) CreateUserAdCategories(context.Context, *RequestId) (*EmptyResponseContent, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateUserAdCategories not implemented")
+}
+func (UnimplementedContentServer) UpdateUsersAdCategories(context.Context, *AdCategoryArray) (*EmptyResponseContent, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateUsersAdCategories not implemented")
+}
 func (UnimplementedContentServer) mustEmbedUnimplementedContentServer() {}
 
 // UnsafeContentServer may be embedded to opt out of forward compatibility for this service.
@@ -799,8 +870,8 @@ type UnsafeContentServer interface {
 	mustEmbedUnimplementedContentServer()
 }
 
-func RegisterContentServer(s *grpc.Server, srv ContentServer) {
-	s.RegisterService(&_Content_serviceDesc, srv)
+func RegisterContentServer(s grpc.ServiceRegistrar, srv ContentServer) {
+	s.RegisterService(&Content_ServiceDesc, srv)
 }
 
 func _Content_CreatePost_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -1559,6 +1630,24 @@ func _Content_CreateAd_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Content_IncrementLinkClicks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestId)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContentServer).IncrementLinkClicks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Content/IncrementLinkClicks",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContentServer).IncrementLinkClicks(ctx, req.(*RequestId))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Content_GetCampaigns_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(EmptyRequestContent)
 	if err := dec(in); err != nil {
@@ -1591,6 +1680,24 @@ func _Content_GetCampaign_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ContentServer).GetCampaign(ctx, req.(*RequestId))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Content_GetCampaignStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestId)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContentServer).GetCampaignStats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Content/GetCampaignStats",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContentServer).GetCampaignStats(ctx, req.(*RequestId))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1739,7 +1846,64 @@ func _Content_CreateAdCategory_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-var _Content_serviceDesc = grpc.ServiceDesc{
+func _Content_GetUsersAdCategories_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EmptyRequestContent)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContentServer).GetUsersAdCategories(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Content/GetUsersAdCategories",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContentServer).GetUsersAdCategories(ctx, req.(*EmptyRequestContent))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Content_CreateUserAdCategories_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestId)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContentServer).CreateUserAdCategories(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Content/CreateUserAdCategories",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContentServer).CreateUserAdCategories(ctx, req.(*RequestId))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Content_UpdateUsersAdCategories_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdCategoryArray)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContentServer).UpdateUsersAdCategories(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Content/UpdateUsersAdCategories",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContentServer).UpdateUsersAdCategories(ctx, req.(*AdCategoryArray))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// Content_ServiceDesc is the grpc.ServiceDesc for Content service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var Content_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "proto.Content",
 	HandlerType: (*ContentServer)(nil),
 	Methods: []grpc.MethodDesc{
@@ -1912,12 +2076,20 @@ var _Content_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Content_CreateAd_Handler,
 		},
 		{
+			MethodName: "IncrementLinkClicks",
+			Handler:    _Content_IncrementLinkClicks_Handler,
+		},
+		{
 			MethodName: "GetCampaigns",
 			Handler:    _Content_GetCampaigns_Handler,
 		},
 		{
 			MethodName: "GetCampaign",
 			Handler:    _Content_GetCampaign_Handler,
+		},
+		{
+			MethodName: "GetCampaignStats",
+			Handler:    _Content_GetCampaignStats_Handler,
 		},
 		{
 			MethodName: "CreateCampaign",
@@ -1950,6 +2122,18 @@ var _Content_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateAdCategory",
 			Handler:    _Content_CreateAdCategory_Handler,
+		},
+		{
+			MethodName: "GetUsersAdCategories",
+			Handler:    _Content_GetUsersAdCategories_Handler,
+		},
+		{
+			MethodName: "CreateUserAdCategories",
+			Handler:    _Content_CreateUserAdCategories_Handler,
+		},
+		{
+			MethodName: "UpdateUsersAdCategories",
+			Handler:    _Content_UpdateUsersAdCategories_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

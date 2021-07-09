@@ -6,6 +6,8 @@ import (
 	"github.com/david-drvar/xws2021-nistagram/common/tracer"
 	"github.com/david-drvar/xws2021-nistagram/recommendation_service/model"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"strconv"
+
 )
 
 type FollowersRepository interface {
@@ -20,6 +22,10 @@ type FollowersRepository interface {
 	GetFollowersConnection(context.Context, model.Follower) (*model.Follower, error)
 	GetCloseFriends(context.Context, string) ([]model.User, error)
     GetUsersForNotificationEnabled( context.Context,  string, string) ([]model.User, error)
+	GetLimitedFriends( context.Context,  string, int) ([]model.User, error)
+	GetUsersWithCommonConnectionsLimited(context.Context, string , string, int) ([]model.User, error)
+	GetNumberOfCommonFriends( context.Context,  string,  string) (int, error)
+	GetRandomUsers(ctx context.Context, limit int) ([]model.User, error)
 
 }
 
@@ -68,6 +74,61 @@ func (repository *followersRepository) GetUsers(ctx context.Context, userId stri
 	}
 	return users, nil
 }
+
+func (repository *followersRepository) GetRandomUsers(ctx context.Context, limit int) ([]model.User, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "GetRandomUsers")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	session := repository.driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close()
+	var users []model.User
+
+	result , err := session.WriteTransaction(func(transaction neo4j.Transaction) (interface{}, error) {
+		result, err := transaction.Run(
+			"MATCH (a:User) RETURN a.id LIMIT " + strconv.Itoa(limit) ,
+			map[string]interface{}{
+			})
+
+		if err != nil {
+			return nil, err
+		}
+		for result.Next() {
+			user := result.Record().Values[0].(string)
+			users = append(users, model.User{
+				UserId: user,
+			})
+
+		}
+		return false, errors.New("error: can not create user ")
+	})
+	if err != nil || result == nil {
+		return nil, err
+	}
+	return users, nil
+}
+
+func (repository *followersRepository) GetLimitedFriends(ctx context.Context, userId  string, limit int) ([]model.User, error) {
+	query := "MATCH (a:User {id : $UserId})-[r:Follows]->(b:User) WHERE r.IsApprovedRequest = true RETURN b.id LIMIT " + strconv.Itoa(limit)
+
+	return repository.GetUsers(ctx, userId, query)
+}
+
+func (repository *followersRepository) GetUsersWithCommonConnectionsLimited(ctx context.Context, followerId string ,userId string, limit int) ([]model.User, error){
+	query :=  "MATCH (a:User {id : "+"\""+followerId+"\""+ "})-[r:Follows]->(b:User) WHERE NOT (:User {id : $UserId})-[:Follows]->(b:User) RETURN b.id LIMIT "+ strconv.Itoa(limit)
+
+	return repository.GetUsers(ctx, userId, query)
+}
+
+func (repository *followersRepository) GetNumberOfCommonFriends(ctx context.Context, randomFriendId string, userId string) (int, error) {
+	query := "MATCH (a:User {id : " +"\""+randomFriendId +"\""+ "})-[r:Follows]-(b:User) WHERE (:User {id : $UserId})-[:Follows]->(b:User) RETURN b.id"
+
+	users, err := repository.GetUsers(ctx, userId, query)
+	return len(users), err
+}
+
+
+
 
 func (repository *followersRepository) GetAllFollowing(ctx context.Context, userId string) ([]model.User, error){
 	query := "MATCH (a:User {id : $UserId})-[r:Follows]->(b:User) WHERE r.IsApprovedRequest = true RETURN b.id"

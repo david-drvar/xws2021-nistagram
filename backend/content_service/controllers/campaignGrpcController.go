@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"errors"
 	"github.com/david-drvar/xws2021-nistagram/common"
 	protopb "github.com/david-drvar/xws2021-nistagram/common/proto"
 	"github.com/david-drvar/xws2021-nistagram/common/tracer"
@@ -78,11 +79,15 @@ func (controller *CampaignGrpcController) CreateCampaign(ctx context.Context, in
 func (controller *CampaignGrpcController) UpdateCampaign(ctx context.Context, in *protopb.Campaign) (*protopb.EmptyResponseContent, error) {
 	span := tracer.StartSpanFromContextMetadata(ctx, "UpdateCampaign")
 	defer span.Finish()
-	// claims, _ := controller.jwtManager.ExtractClaimsFromMetadata(ctx)
+	claims, _ := controller.jwtManager.ExtractClaimsFromMetadata(ctx)
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	var campaign domain.Campaign
 	campaign = campaign.ConvertFromGrpc(in)
+
+	if campaign.AgentId != claims.UserId {
+		return &protopb.EmptyResponseContent{}, errors.New("cant update other agent's campaign")
+	}
 
 	err := controller.service.UpdateCampaign(ctx, campaign)
 	if err != nil { return &protopb.EmptyResponseContent{}, err }
@@ -100,6 +105,19 @@ func (controller *CampaignGrpcController) DeleteCampaign(ctx context.Context, in
 	if err != nil { return &protopb.EmptyResponseContent{}, err }
 
 	return &protopb.EmptyResponseContent{}, nil
+}
+
+
+func (controller *CampaignGrpcController) GetCampaignStats(ctx context.Context, in *protopb.RequestId) (*protopb.CampaignStats, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "GetCampaignStats")
+	defer span.Finish()
+	claims, _ := controller.jwtManager.ExtractClaimsFromMetadata(ctx)
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	stats, err := controller.service.GetCampaignStatistics(ctx, claims.UserId, in.Id)
+	if err != nil { return &protopb.CampaignStats{}, err }
+
+	return stats.ConvertToGrpc(), nil
 }
 
 func (controller *CampaignGrpcController) CreateCampaignRequest(ctx context.Context, in *protopb.CampaignInfluencerRequest) (*protopb.EmptyResponseContent, error) {

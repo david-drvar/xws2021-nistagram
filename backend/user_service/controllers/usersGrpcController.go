@@ -45,9 +45,10 @@ func (s *UserGrpcController) CreateAgentUser(ctx context.Context, in *protopb.Cr
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 	in.User.Role = "Agent"
 	user, err := s.CreateUser(ctx, in)
-	if err != nil {
-		return user, err
-	}
+	if err != nil { return user, err }
+
+	err = grpc_common.CreateUserAdCategories(ctx, user.Id)
+	if err != nil { return user, err }
 
 	err = s.requestService.CreateRegistrationRequest(ctx, user.Id)
 	if err != nil {
@@ -80,7 +81,9 @@ func (s *UserGrpcController) CreateUser(ctx context.Context, in *protopb.CreateU
 		return &protopb.UsersDTO{}, status.Errorf(codes.Unknown, err.Error())
 	}
 
-	s.logger.ToStdoutAndFile("CreateUser", "User registration successful: "+in.User.Email, logger.Info)
+	grpc_common.CreateUserAdCategories(ctx, userDomain.Id)
+
+	s.logger.ToStdoutAndFile("CreateUser", "User registration successful: " +in.User.Email, logger.Info)
 	userProto := userDomain.ConvertToGrpc()
 	return userProto, nil
 }

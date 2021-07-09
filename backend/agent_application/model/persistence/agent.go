@@ -17,6 +17,11 @@ type Product struct {
 	AgentId  string
 }
 
+type APIKey struct {
+	UserId string `gorm:"primaryKey"`
+	APIKey string
+}
+
 type PaymentType string
 
 //const (

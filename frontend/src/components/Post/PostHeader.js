@@ -21,7 +21,7 @@ const PostHeader = (props) => {
           image={image}
         />
         {(username || caption) && !hideUsername && (
-          <div className="textContainer">
+          <div className="textContainer" style={{minWidth: "26em"}}>
             {/* Make username clickable */}
             <span> <NavLink className="username" to={{pathname: `/profile/${username}`,}}>{username}</NavLink> {isAd ? "· Sponsored" : ""} </span>
             <span className={`caption ${captionSize}`}>{caption}</span>

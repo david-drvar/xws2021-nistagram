@@ -18,7 +18,7 @@ func SetupAgentsRBAC(db *gorm.DB) error {
 
 		permissions := []Permission{
 			createProduct, getUserByUsernameAgent, getAllProductsByAgentId, getAllProducts,
-			getProductById, deleteProduct, updateProduct, orderProduct, getOrdersByUser, getOrdersByAgent,
+			getProductById, deleteProduct, updateProduct, orderProduct, getOrdersByUser, getOrdersByAgent, getKeyByUserIdAgent, updateKey,
 		}
 		result = db.Create(&permissions)
 		if result.Error != nil {
@@ -36,6 +36,8 @@ func SetupAgentsRBAC(db *gorm.DB) error {
 			basicOrderProduct,
 			basicGetOrdersByUser,
 			agentGetOrdersByAgent,
+			agentGetKeyByUserIdAgent,
+			agentUpdateKey,
 		}
 		result = db.Create(&rolePermissions)
 		if result.Error != nil {
@@ -71,6 +73,8 @@ var (
 	orderProduct            = Permission{Id: "466b2260-fafd-4384-a304-d60bb77838a3", Name: "OrderProduct"}
 	getOrdersByUser         = Permission{Id: "e8e64a61-a63d-4cad-a039-ef417603b91d", Name: "GetOrdersByUser"}
 	getOrdersByAgent        = Permission{Id: "ee1a39fc-a246-41fc-976b-5b12e2a1319a", Name: "GetOrdersByAgent"}
+	getKeyByUserIdAgent     = Permission{Id: "270be199-1363-4cff-b097-eda20b22d29e", Name: "GetKeyByUserId"}
+	updateKey               = Permission{Id: "7b8d59ee-3fc5-4773-acb8-fae32fcde531", Name: "UpdateKey"}
 )
 
 var (
@@ -97,4 +101,8 @@ var (
 	basicGetOrdersByUser = RolePermission{RoleId: basic.Id, PermissionId: getOrdersByUser.Id}
 
 	agentGetOrdersByAgent = RolePermission{RoleId: agent.Id, PermissionId: getOrdersByAgent.Id}
+
+	agentGetKeyByUserIdAgent = RolePermission{RoleId: agent.Id, PermissionId: getKeyByUserIdAgent.Id}
+
+	agentUpdateKey = RolePermission{RoleId: agent.Id, PermissionId: updateKey.Id}
 )

@@ -11,6 +11,7 @@ import Home from "./components/HomePage/Home";
 import UnauthorizedPage from "./helpers/UnauthorizedPage";
 
 import ProfileInfo from "./components/UserData/ProfileInfo";
+import APIKey from "./components/UserData/APIKey";
 import EditProfile from "./components/UserData/EditProfile";
 import ChangePassword from "./components/UserData/ChangePassword";
 
@@ -21,6 +22,9 @@ import AuthenticatedRoute from './AuthenticatedRoute';
 import AdminRoute from './AdminRoute';
 import Product from "./components/Product/Product";
 import Orders from "./components/UserData/Orders";
+import CampaignsHome from "./components/Campaigns/CampaignsHome";
+import CreateCampaign from "./components/Campaigns/CreateCampaign";
+import CampaignPreview from "./components/Campaigns/CampaignPreview";
 
 const App = () => {
     return (
@@ -32,11 +36,15 @@ const App = () => {
                 <Route path='/forgotten' exact={true} component={ForgotPasswordPage}/>
                 <Route path='/registration' exact={true} component={RegistrationPage}/>
                 <Route path='/info' exact component={ProfileInfo}/>
+                <Route path='/api-key' exact component={APIKey}/>
                 <Route path='/newproduct' exact component={NewProduct}/>
                 <Route path='/profile/:username' exact component={Profile}/>
                 <Route path='/product/:id' exact component={Product}/>
                 <Route path='/my-orders' exact component={Orders}/>
 
+                <Route path="/campaigns" exact component={CampaignsHome} />
+                <Route path="/campaigns/create" exact component={CreateCampaign} />
+                <Route path="/campaigns/preview/:id" component={CampaignPreview} />
 
                 <AuthenticatedRoute path='/edit_profile' exact component={EditProfile} />
                 <AuthenticatedRoute path='/password' exact component={ChangePassword} />

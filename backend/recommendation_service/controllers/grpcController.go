@@ -15,16 +15,19 @@ type Server struct {
 	tracer otgo.Tracer
 	protopb.UnimplementedFollowersServer
 	followerController *FollowersGrpcController
+	recommendationController *RecommendationGrpcController
 }
 
 func NewServer(driver neo4j.Driver, logger *logger.Logger) (*Server, error) {
 	followerController, _ := NewFollowersController(driver, logger)
 	tracer, closer := tracer.Init("recommendationService")
+	recommendationController, _ := NewRecommendationGrpcController(driver, logger)
 	otgo.SetGlobalTracer(tracer)
 	return &Server{
 		tracer:             tracer,
 		closer:             closer,
 		followerController: followerController,
+		recommendationController: &recommendationController,
 	}, nil
 }
 
@@ -82,4 +85,8 @@ func (s *Server)  AcceptFollowRequest(ctx context.Context,in *protopb.CreateFoll
 
 func (s *Server) GetUsersForNotificationEnabled(ctx context.Context, in *protopb.RequestForNotification) (*protopb.CreateUserResponse, error) {
 	return s.followerController.GetUsersForNotificationEnabled(ctx, in)
+}
+
+func (s *Server) RecommendationPattern(ctx context.Context, in *protopb.RequestIdFollowers) (*protopb.RecommendationResponse, error) {
+	return s.recommendationController.RecommendationPattern(ctx, in)
 }

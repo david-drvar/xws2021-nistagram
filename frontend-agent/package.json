@@ -11,6 +11,7 @@
     "bootstrap": "^4.6.0",
     "dompurify": "^2.2.9",
     "i": "^0.3.6",
+    "jwt-decode": "^3.1.2",
     "localforage": "^1.9.0",
     "moment": "^2.29.1",
     "npm": "^7.18.1",

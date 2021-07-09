@@ -295,6 +295,13 @@ service Content {
       body: "*"
     };
   }
+
+  rpc IncrementLinkClicks (RequestId) returns (EmptyResponseContent) {
+    option(google.api.http) = {
+      put: "/ads/clicks",
+      body: "*"
+    };
+  }
   /* * * * * * * * * * * * */
 
   /*   Campaigns   */
@@ -307,6 +314,12 @@ service Content {
   rpc GetCampaign (RequestId) returns (Campaign) {
     option(google.api.http) = {
       get: "/campaigns/{id}"
+    };
+  }
+
+  rpc GetCampaignStats (RequestId) returns (CampaignStats) {
+    option(google.api.http) = {
+      get: "/campaigns/stats/{id}"
     };
   }
 
@@ -366,6 +379,27 @@ service Content {
       body: "*"
     };
   }
+
+  rpc GetUsersAdCategories (EmptyRequestContent) returns (AdCategoryArray) {
+    option(google.api.http) = {
+      get: "/ads/categories/user"
+    };
+  }
+
+  rpc CreateUserAdCategories (RequestId) returns (EmptyResponseContent) {
+    option(google.api.http) = {
+      post: "/ads/categories/user",
+      body: "*"
+    };
+  }
+
+  rpc UpdateUsersAdCategories (AdCategoryArray) returns (EmptyResponseContent) {
+    option(google.api.http) = {
+      put: "/ads/categories/user",
+      body: "*"
+    };
+  }
+
   /* * * * * * * * * * * * */
 
 }
@@ -431,6 +465,7 @@ message ReducedPostArray {
 
 message PostArray {
   repeated Post posts = 1;
+  repeated Ad ads = 2;
 }
 /* * * * * * * * * * * * */
 
@@ -461,6 +496,12 @@ message StoryHome {
 
 message StoriesHome {
   repeated StoryHome stories = 1;
+  repeated StoryAdHome ads = 2;
+}
+
+message StoryAdHome{
+  bool ownerHasStories = 1;
+  Ad ad = 2;
 }
 
 /* * * * * * * * * * * * */
@@ -489,12 +530,14 @@ message Campaign{
   bool   isOneTime = 3;
   google.protobuf.Timestamp startDate = 4;
   google.protobuf.Timestamp endDate = 5;
-  int32  placements = 6;
-  string agentId = 7;
-  AdCategory category = 8;
-  google.protobuf.Timestamp lastUpdated = 9;
-  repeated Ad ads = 10;
-  string   type = 11;
+  int32 startTime	= 6;
+  int32 endTime =	7;
+  int32  placements = 8;
+  string agentId = 9;
+  AdCategory category = 10;
+  google.protobuf.Timestamp lastUpdated = 11;
+  repeated Ad ads = 12;
+  string   type = 13;
 }
 
 message CampaignArray {
@@ -510,7 +553,47 @@ message AdCategoryArray{
   repeated AdCategory categories = 1;
 }
 
-message  CampaignInfluencerRequest {
+// Statistics
+message CampaignStats {
+  string id = 1;
+  string name = 2;
+  bool isOneTime = 3;
+  google.protobuf.Timestamp startDate = 4;
+  google.protobuf.Timestamp endDate = 5;
+  int32  startTime	= 6;
+  int32  endTime =	7;
+  int32  placements = 8;
+  string category = 9;
+  string type = 10;
+  repeated InfluencerStats influencers = 11;
+  int32 likes = 12;
+  int32 dislikes = 13;
+  int32 comments = 14;
+  int32 clicks = 15;
+}
+
+message InfluencerStats {
+  string id = 1;
+  string username = 2;
+  repeated AdStats ads = 3;
+  int32 totalLikes = 4;
+  int32 totalDislikes = 5;
+  int32 totalComments = 6;
+  int32 totalClicks = 7;
+}
+
+message AdStats {
+  string id = 1;
+  repeated string media = 2;
+  string type = 3;
+  repeated string hashtags = 4;
+  string location = 5;
+  int32 likes = 6;
+  int32 dislikes = 7;
+  int32 comments = 8;
+  int32 clicks = 9;
+}
+  message  CampaignInfluencerRequest {
   string id=1;
   string agentId=2;
   string influencerId=3;

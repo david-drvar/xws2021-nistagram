@@ -8,6 +8,7 @@ import { ReactComponent as StoryArchive } from "../../images/icons/story-archive
 import { ReactComponent as Plus } from "../../images/icons/plus.svg";
 import { ReactComponent as Explore } from "../../images/icons/more.svg";
 import { ReactComponent as VerificationSymbol } from "../../images/icons/verification-symbol.svg";
+import { ReactComponent as Ad } from "../../images/icons/ad.svg";
 
 import ProfileIcon from "../ProfileComponent/ProfileIcon";
 import { NavLink, useHistory } from "react-router-dom";
@@ -50,12 +51,25 @@ function Menu() {
             {store.user.role === 'Agent' && store.user.jwt !== "" && (<NavLink to={{pathname: "/newproduct"}}> <Plus className="icon" />  </NavLink>) }
             <NavLink to={{pathname: "/info"}}> <Explore className="icon"/> </NavLink>
 
+            {
+                store.user.jwt !== "" && store.user.role === "Agent" &&
+                (<NavLink to={"/campaigns"}>
+                    <Ad className="icon" />
+                </NavLink>)
+            }
+            <span style={{marginLeft: "20px"}}/>
+
             {store.user.role === 'Agent' && store.user.jwt !== "" && (<NavLink to={"/profile/" + store.user.username}>
                 <ProfileIcon iconSize="medium"
                     image={store.user.photo ? store.user.photo : 'https://i.pravatar.cc/150?img=1'}/>
             </NavLink>
             )}
+
+
+
             <span style={{marginLeft: "20px"}}/>
+
+            
 
             {store.user.jwt !== "" ? 
                 <Button variant="outline-danger" onClick={logout} style={{width: "220px", display: "block"}}>Logout</Button> :

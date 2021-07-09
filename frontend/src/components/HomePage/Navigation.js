@@ -3,6 +3,7 @@ import {Button} from "react-bootstrap";
 import {useHistory} from "react-router-dom";
 import Menu from "./Menu";
 import "../../style/navigation.css";
+import Sidebar from "./Sidebar";
 
 function Navigation() {
     const history = useHistory()
@@ -20,6 +21,7 @@ function Navigation() {
                 <Button variant="outline-dark" style={{marginRight:'25em'}} onClick={redirectToSearch}>Search...</Button>
             </div>
             <Menu className="menu" />
+
         </div>
     );
 

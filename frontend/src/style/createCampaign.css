@@ -18,6 +18,19 @@
     max-width: 50em;
 }
 
+.CreateCampaign__Wrapper .exposureDates{
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    width: 80%;
+    margin-left: 10em;
+}
+
+.CreateCampaign__Wrapper .exposureDates input{
+    width: 29em;
+    margin-left: -50px;
+}
+
 .CreateCampaign__Wrapper .dropdown{
     max-width: 59em;
 }

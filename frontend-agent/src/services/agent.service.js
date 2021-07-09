@@ -152,8 +152,34 @@ class AgentService extends RootService {
         return response
     }
 
+    async GetKeyByUserId(data){
+        const { id,jwt} = data
+        const headers=this.setupHeaders(jwt)
+        return await axios.get('http://localhost:8080/api/agent/apiKey/'+id,{
+            headers: headers
+        }).then(res => {
+            return res
+        }).catch(err => {
+            return err
+        })
+    }
+
+    async UpdateKey(data){
+        const { id,token, jwt} = data
+        const headers=this.setupHeaders(jwt)
+        return await axios.post('http://localhost:8080/api/agent/apiKey/update',{
+            id, token
+        },{
+            headers: headers
+        }).then(res => {
+            return res
+        }).catch(err => {
+            return err
+        })
+    }
+
 }
 
-const userService = new AgentService()
+const userServiceForAgentApp = new AgentService()
 
-export default userService;
+export default userServiceForAgentApp;

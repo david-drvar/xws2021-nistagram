@@ -70,3 +70,19 @@ func (service *UserService) GetUserByUsername(ctx context.Context, username stri
 
 	return service.userRepository.GetUserByUsername(ctx, username)
 }
+
+func (service *UserService) GetKeyByUserId(ctx context.Context, id string) (persistence.APIKey, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "GetKeyByUserId")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.userRepository.GetKeyByUserId(ctx, id)
+}
+
+func (service *UserService) UpdateKey(ctx context.Context, key persistence.APIKey) error {
+	span := tracer.StartSpanFromContextMetadata(ctx, "UpdateKey")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.userRepository.UpdateKey(ctx, key)
+}

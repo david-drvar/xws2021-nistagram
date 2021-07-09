@@ -6,6 +6,7 @@ import PasswordStrengthBar from "react-password-strength-bar";
 import { useDispatch, useSelector } from 'react-redux';
 import userService from "../../services/user.service";
 import "../../style/home.css";
+import Sidebar from "./Sidebar";
 
 const Home = () => {
     const [showModal, setModal] = useState(false);
@@ -164,8 +165,11 @@ const Home = () => {
         <div className="App">
             <Navigation/>
             <main>
+                <div className="container">
                 <Feed />
                 { /*showModalDialog()*/ }
+                <Sidebar/>
+                </div>
             </main>
         </div>
     );

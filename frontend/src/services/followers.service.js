@@ -137,6 +137,19 @@ class FollowersService extends RootService {
         return response
     }
 
+    async getRecommendations(data){
+        const { id,jwt} = data
+        const headers=this.setupHeaders(jwt)
+        const response = this.apiClient.get('/recommendation/'+id,{
+            headers:headers
+        }).then(res => {
+            return res
+        }).catch(err => {
+            return err
+        })
+        return response
+    }
+
 }const followersService = new FollowersService()
 
 export default followersService;

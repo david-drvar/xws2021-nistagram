@@ -104,3 +104,37 @@ func (s *UserGrpcController) GetUserByUsername(ctx context.Context, in *protopb.
 
 	return userResponse, nil
 }
+
+func (s *UserGrpcController) GetKeyByUserId(ctx context.Context, in *protopb.RequestIdAgent) (*protopb.ApiTokenAgent, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "GetKeyByUserId")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	token, err := s.service.GetKeyByUserId(ctx, in.Id)
+
+	if err != nil {
+		return &protopb.ApiTokenAgent{}, err
+	}
+
+	return &protopb.ApiTokenAgent{
+		Id:    in.Id,
+		Token: token.APIKey,
+	}, nil
+}
+
+func (s *UserGrpcController) UpdateKey(ctx context.Context, in *protopb.ApiTokenAgent) (*protopb.EmptyResponseAgent, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "UpdateKey")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	err := s.service.UpdateKey(ctx, persistence.APIKey{
+		UserId: in.Id,
+		APIKey: in.Token,
+	})
+
+	if err != nil {
+		return &protopb.EmptyResponseAgent{}, err
+	}
+
+	return &protopb.EmptyResponseAgent{}, nil
+}

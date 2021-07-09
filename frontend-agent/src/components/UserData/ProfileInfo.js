@@ -26,6 +26,9 @@ function  ProfileInfo(){
                         <MenuItem icon={<IoMdSettings/>}>Edit profile info  <Link to="/edit_profile" /> </MenuItem>
                         <MenuItem icon={<RiLockPasswordLine/>}>Edit password  <Link to="/password" /> </MenuItem>
                         <MenuItem icon={<HiOutlinePhotograph/>}>Edit profile photo  <Link to="/edit_photo" /> </MenuItem>
+                        {store.user.role === "Agent" &&
+                            <MenuItem icon={<HiOutlinePhotograph/>}>API key <Link to="/api-key"/> </MenuItem>
+                        }
                     </Menu>
                 </ProSidebar>
             </div>

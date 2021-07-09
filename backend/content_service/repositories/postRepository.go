@@ -23,10 +23,10 @@ type PostRepository interface {
 }
 
 type postRepository struct {
-	DB                *gorm.DB
-	mediaRepository   MediaRepository
-	tagRepository     TagRepository
-	hashtagRepository HashtagRepository
+	DB                  *gorm.DB
+	mediaRepository     MediaRepository
+	tagRepository       TagRepository
+	hashtagRepository   HashtagRepository
 	complaintRepository ComplaintRepository
 }
 
@@ -41,10 +41,10 @@ func NewPostRepo(db *gorm.DB) (*postRepository, error) {
 	complaintRepository, _ := NewComplaintRepo(db)
 
 	return &postRepository{
-		DB:                db,
-		mediaRepository:   mediaRepository,
-		tagRepository:     tagRepository,
-		hashtagRepository: hashtagRepository,
+		DB:                  db,
+		mediaRepository:     mediaRepository,
+		tagRepository:       tagRepository,
+		hashtagRepository:   hashtagRepository,
 		complaintRepository: complaintRepository,
 	}, nil
 }
@@ -55,7 +55,8 @@ func (repository *postRepository) GetAllPosts(ctx context.Context, followings []
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	posts := []persistence.Post{}
-	result := repository.DB.Order("created_at desc").Where("is_ad = false AND user_id IN (?)", followings).Find(&posts)
+	result := repository.DB.Order("created_at desc").
+		Where("is_ad = false AND created_at <= ? AND user_id IN (?)", time.Now(), followings).Find(&posts)
 	if result.Error != nil {
 		return posts, result.Error
 	}
@@ -98,6 +99,9 @@ func (repository *postRepository) CreatePost(ctx context.Context, post *domain.P
 
 	var postToSave persistence.Post
 	postToSave = postToSave.ConvertToPersistence(*post)
+	if postToSave.CreatedAt.IsZero() {
+		postToSave.CreatedAt = time.Now()
+	}
 	err := repository.DB.Transaction(func(tx *gorm.DB) error {
 		result := repository.DB.Create(&postToSave)
 		if result.Error != nil || result.RowsAffected != 1 {
@@ -142,7 +146,9 @@ func (repository *postRepository) CreatePost(ctx context.Context, post *domain.P
 		return nil
 	})
 
-	if err != nil { return persistence.Post{}, err }
+	if err != nil {
+		return persistence.Post{}, err
+	}
 	return postToSave, nil
 }
 
@@ -152,8 +158,10 @@ func (repository *postRepository) RemovePost(ctx context.Context, postId string,
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	err := repository.DB.Transaction(func(tx *gorm.DB) error {
-		post := &persistence.Post{ Id: postId }
-		if userId != "" { post.UserId = userId }	// Removing post from campaign/ad repo won't contain userId
+		post := &persistence.Post{Id: postId}
+		if userId != "" {
+			post.UserId = userId
+		} // Removing post from campaign/ad repo won't contain userId
 		result := repository.DB.First(&post)
 
 		if result.Error != nil || result.RowsAffected != 1 {
@@ -249,13 +257,15 @@ func (repository *postRepository) GetPostsByLocation(ctx context.Context, locati
 	return posts, nil
 }
 
-func (repository *postRepository) UpdateCreatedAt(ctx context.Context, id string, createdAt time.Time) error{
+func (repository *postRepository) UpdateCreatedAt(ctx context.Context, id string, createdAt time.Time) error {
 	span := tracer.StartSpanFromContextMetadata(ctx, "UpdateCreatedAt")
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	result := repository.DB.Model(&persistence.Post{}).Where("id = ?", id).Update("created_at", createdAt)
-	if result.Error != nil { return result.Error }
+	if result.Error != nil {
+		return result.Error
+	}
 
 	return nil
 }

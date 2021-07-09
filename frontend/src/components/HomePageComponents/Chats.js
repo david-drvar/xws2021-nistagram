@@ -5,8 +5,7 @@ import userService from "../../services/user.service";
 import UserAutocomplete from "../Post/UserAutocomplete";
 import {Button, Dropdown, DropdownButton, InputGroup, Modal} from "react-bootstrap";
 
-//import "./../../style/chat.css"
-import verificationRequestService from "../../services/verificationRequest.service";
+import "./../../style/chat.css"
 import toastService from "../../services/toast.service";
 import chatService from "../../services/chat.service";
 import postService from "../../services/post.service";
@@ -28,6 +27,7 @@ function Chats() {
     const [renderMessages, setRenderMessages] = useState([]);
     const [messageCategory, setMessageCategory] = useState("Message category");
     const [showModalPost, setShowModalPost] = useState(false);
+    const [showModalStory, setShowModalStory] = useState(false);
     const [selectedPost, setSelectedPost] = useState({});
     const [showModal, setShowModal] = useState(false);
     const [modalImage, setModalImage] = useState({});
@@ -36,9 +36,12 @@ function Chats() {
         getAllUsers();
     }, []);
 
-    const openPost = (post) => {
-        setSelectedPost(post);
-        setShowModalPost(true);
+    const openPost = async (postId) => { //samo postId dobijes
+        const response = await postService.getPostById({id : postId, jwt: store.user.jwt});
+        if (response.status === 200) {
+            setSelectedPost(response.data)
+            setShowModalPost(true);
+        }
     }
 
     useEffect(() => {
@@ -46,7 +49,12 @@ function Chats() {
             // conn.onmessage()
             // gledaj da budu javan i da su follow
             conn.onmessage = function(event) {
-                updateChatBox(event);
+                let eventData = JSON.parse(event.data);
+                if (eventData.ContentType === "Image") { //mora zbog slike za pravilno seenovanje, jer slika nema Id ako se ne getuje
+                    getMessagesForChatRoom(chatRoom.Id);
+                }
+                else
+                    updateChatBox(event);
             };
         }
     }, [conn, renderMessages]);
@@ -57,23 +65,31 @@ function Chats() {
     }
 
     async function updateChatBox(event) {
-        const response = await chatService.GetMessagesForChatRoom({
-            roomId : chatRoom.Id,
-            jwt : store.user.jwt
-        });
-        if (response.status === 200) {
-            let temp = response.data;
-            temp.push(event)
-            await setMessages(temp)
-            updateRenderMessages();
-        }
-        else
-            toastService.show("error", "Something went wrong. Try again")
+        console.log("event")
+        console.log(JSON.parse(event.data))
+
+        let temp = messages;
+        temp.push(JSON.parse(event.data));
+        await setMessages(temp);
+        await updateRenderMessages(temp);
+
+        // const response = await chatService.GetMessagesForChatRoom({
+        //     roomId : chatRoom.Id,
+        //     jwt : store.user.jwt
+        // });
+        // if (response.status === 200) {
+        //     let temp = response.data;
+        //     temp.push(event)
+        //     await setMessages(temp)
+        //     await updateRenderMessages(temp);
+        // }
+        // else
+        //     toastService.show("error", "Something went wrong. Try again")
     }
 
-    async function getMessagesForChatRoom() {
+    async function getMessagesForChatRoom(roomId) {
         const response = await chatService.GetMessagesForChatRoom({
-            roomId : chatRoom.Id,
+            roomId : roomId,
             jwt : store.user.jwt
         });
         if (response.status === 200) {
@@ -81,28 +97,34 @@ function Chats() {
             console.log(response.data);
             toastService.show("success", "Chat room messages retrieved successfully")
             await setMessages(response.data);
-            await updateRenderMessages();
+            await updateRenderMessages(response.data);
         }
         else
             toastService.show("error", "Something went wrong. Try again")
     }
 
-    async function updateRenderMessages() {
+    async function updateRenderMessages(messages) {
         await setRenderMessages([]);
         let tempList = [];
         for (const message of messages) {
             let tempMessage = message;
             if (message.ContentType === "Post") {
                 const response = await postService.getPostById({id : message.Content, jwt: store.user.jwt});
-                tempMessage.Content = response.data;
+                if (response.status === 200)
+                    tempMessage.Content = response.data;
+                else
+                    tempMessage.Content = "Cannot view this post";
             }
             else if (message.ContentType === "Story") {
                 const response = await storyService.getStoryById({id : message.Content, jwt: store.user.jwt});
-                let story = [response.data];
-                let idk = {
-                    stories : story
+                if (response.status === 200) {
+                    let story = [response.data];
+                    tempMessage.Content =  {
+                        stories: story
+                    };
                 }
-                tempMessage.Content =  idk;
+                else
+                    tempMessage.Content = "Cannot view this story";
             }
             tempList.push(tempMessage)
         }
@@ -122,15 +144,21 @@ function Chats() {
         });
         if (response.status === 200) {
             toastService.show("success", "Chat room retrieved successfully")
+            console.log("chat room")
+            console.log(response.data)
             await setChatRoom(response.data)
             await setConn(new WebSocket("ws://localhost:8003" + "/ws/" + response.data.Id));
-            getMessagesForChatRoom()
+            await getMessagesForChatRoom(response.data.Id)
         }
         else
             toastService.show("error", "Something went wrong. Try again")
     }
 
     function sendMessage() {
+        if (messageCategory === "Message category") {
+            toastService.show("error", "Cannot send empty message");
+            return;
+        }
         conn.send(JSON.stringify({SenderId : store.user.id, ReceiverId : selectedUser.id, RoomId : chatRoom.Id, Content : messageText, ContentType : messageCategory}));
         setMessageCategory("Message category");
         setMessageText("");
@@ -160,12 +188,17 @@ function Chats() {
     }
 
     async function seenPhoto(data) {
+        //ako sam ja poslao i otvorio onda ne treba to da se desi
+        console.log(data);
+        if (data.SenderId === store.user.id)
+            return;
+
         const response = await chatService.seenPhoto({
             Id: data.Id,
             jwt: store.user.jwt
         });
         if (response.status === 200) {
-            console.log("BRAVOOO")
+            getMessagesForChatRoom(chatRoom.Id);
 
         } else
             toastService.show("error", "Something went wrong. Try again")
@@ -185,59 +218,80 @@ function Chats() {
 
             <br/><br/><br/>
 
-            <div style={{overflow: "scroll", height:"400px"}}>
+            <div style={{overflow: "scroll", height:"600px"}}>
                 {renderMessages.map((message) => {
                     return (
                         <div>
-                            {message.SenderId === store.user.id && <div className="container">
-                                {<img src="" alt="Avatar"/>
-                                }                                {message.ContentType === "String" && <p>{message.Content}</p>}
-                                {message.ContentType === "Image" && <Button disabled={message.IsMediaOpened }
-                                    style={{marginLeft: '5px', marginTop: '22px', height: '32px', fontSize: '15px'}}
-                                    variant="success"  onClick={() => handleModal(message)}>Photo </Button>}
+                            {message.SenderId === store.user.id && <div className="containerChat">
+                                {message.ContentType === "String" && <p>{message.Content}</p>}
 
-                                {message.ContentType === "Link" && <p style={{color : "powderblue"}} onClick={(e) => alert("namesti link click")}>{message.Content}</p>}
-                                {message.ContentType === "Post" &&
+                                {message.ContentType === "Image" && <Button disabled={message.SenderId === store.user.id ? false : message.IsMediaOpened}
+                                    style={{marginLeft: '5px', marginTop: '22px', height: '32px', fontSize: '15px'}}
+                                    variant="success"  onClick={() => handleModal(message)}>Photo </Button>
+                                }
+
+                                {message.ContentType === "Post" && message.Content !== "Cannot view this post" &&
                                     <PostPreviewThumbnail post={message.Content} openPost={openPost} />
                                 }
-                                {message.ContentType === "Story" &&
+                                {message.ContentType === "Post" && message.Content === "Cannot view this post" &&
+                                <p style={{color : "red"}}>{message.Content}</p>
+                                }
+
+
+                                {message.ContentType === "Story" && message.Content !== "Cannot view this story" &&
                                 <Story story={message.Content} iconSize={"xxl"} hideUsername={true} />
                                 }
-                                <span style={{marginLeft: "20px"}} className="time-right">{message.DateCreated}</span>
+                                {message.ContentType === "Story" && message.Content === "Cannot view this story" &&
+                                <p style={{color : "red"}}>{message.Content}</p>
+                                }
+
+                                <span style={{marginLeft: "20px"}} className="time-rightChat">{message.DateCreated}</span>
                             </div>
                             }
 
-                            {message.ReceiverId === store.user.id && <div className="container darker">
-                                {<img src="" alt="Avatar"/>
-                                }                                {message.ContentType === "String" && <p>{message.Content}</p>}
-                                {message.ContentType === "Image" && <img src={message.Content} alt="Avatar"/>}
-                                {message.ContentType === "Link" && <p style={{color : "powderblue"}} onClick={(e) => alert("namesti link click")}>{message.Content}</p>}
-                                <span style={{marginLeft: "20px"}} className="time-right">{message.DateCreated}</span>
-                            </div>}
+
+
+
+                            {message.ReceiverId === store.user.id && <div className="containerChat darkerChat">
+
+                                {message.ContentType === "String" && <p>{message.Content}</p>}
+
+                                {message.ContentType === "Image" && <Button disabled={message.SenderId === store.user.id ? false : message.IsMediaOpened}
+                                                                            style={{marginLeft: '5px', marginTop: '22px', height: '32px', fontSize: '15px'}}
+                                                                            variant="success"  onClick={() => handleModal(message)}>Photo </Button>
+                                }
+
+                                {message.ContentType === "Post" && message.Content !== "Cannot view this post" &&
+                                <PostPreviewThumbnail post={message.Content} openPost={openPost} />
+                                }
+                                {message.ContentType === "Post" && message.Content === "Cannot view this post" &&
+                                <p style={{color : "red"}}>{message.Content}</p>
+                                }
+
+
+                                {message.ContentType === "Story" && message.Content !== "Cannot view this story" &&
+                                <Story story={message.Content} iconSize={"xxl"} hideUsername={true} />
+                                }
+                                {message.ContentType === "Story" && message.Content === "Cannot view this story" &&
+                                <p style={{color : "red"}}>{message.Content}</p>
+                                }
+
+                                <span style={{marginLeft: "20px"}} className="time-leftChat">{message.DateCreated}</span>
+                            </div>
+                            }
+
+
                         </div>
                     )
                 })}
-
-                {/*<div className="container">*/}
-                {/*    <img src="" alt="Avatar"/>*/}
-                {/*        <p>Hello. How are you today?</p>*/}
-                {/*        <span className="time-right">11:00</span>*/}
-                {/*</div>*/}
-
-                {/*<div className="container darker">*/}
-                {/*    <img src="" alt="Avatar" className="right"/>*/}
-                {/*        <p>Hey! I'm fine. Thanks for asking!</p>*/}
-                {/*        <span className="time-left">11:01</span>*/}
-                {/*</div>*/}
             </div>
 
             <DropdownButton onSelect={(event) => handleMessageCategoryChange(event) } as={InputGroup.Append}  variant="outline-secondary" title={messageCategory} id="input-group-dropdown-2" >
                 <Dropdown.Item eventKey={"String"} >String</Dropdown.Item>
                 <Dropdown.Item eventKey={"Image"} >Image</Dropdown.Item>
-                <Dropdown.Item eventKey={"Link"} >Link</Dropdown.Item>
             </DropdownButton>
 
-            {(messageCategory === "String" || messageCategory === "Link") &&
+            {(messageCategory === "String") &&
                 <input type={"text"} value={messageText} onChange={(e) => setMessageText(e.target.value)}/>
             }
             {messageCategory === "Image" &&
@@ -258,14 +312,14 @@ function Chats() {
             /> }
 
 
-                    <Modal show={showModal} onHide={closeModal}>
-                    <Modal.Header closeButton>
-                    <Modal.Title>Photo</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                    <img src={modalImage}  style={{width:'400px', height: '400px'}}/>
-                    </Modal.Body>
-                    </Modal>
+            <Modal show={showModal} onHide={closeModal}>
+            <Modal.Header closeButton>
+            <Modal.Title>Photo</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+            <img src={modalImage}  style={{width:'400px', height: '400px'}}/>
+            </Modal.Body>
+            </Modal>
         </div>
     );
 }

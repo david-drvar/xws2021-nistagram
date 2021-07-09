@@ -5,11 +5,12 @@ import ReCAPTCHA from "react-google-recaptcha";
 import axios from "axios";
 import { useHistory } from 'react-router-dom';
 import GoogleLogin from 'react-google-login';
-import { userActions } from './../store/actions/user.actions'
+import { userActions } from '../store/actions/user.actions'
 
-import userService from '../services/agent.service'
+import agentService from '../services/agent.service'
 
 import RegistrationPage from "./RegistrationPage";
+import userService from "../services/nistagram api/user.service";
 const TEST_SITE_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI";
 
 const IndexPage = () => {
@@ -26,7 +27,7 @@ const IndexPage = () => {
     const store = useSelector(state => state)
 
     async function sendParams(){
-        const response = await userService.login({
+        const response = await agentService.login({
             email: details.email,
             password: details.password
         })
@@ -34,14 +35,29 @@ const IndexPage = () => {
         //console.log(response)
 
         if(response.status === 200) {
-            dispatch(userActions.loginRequest({
+            await dispatch(userActions.loginRequest({
                 jwt: response.data.accessToken,
                 id: response.data.userId,
                 role: response.data.role,
                 isSSO: response.data.isSSO,
                 username: response.data.username,
                 photo: response.data.photo,
-            }))
+            }));
+            if (response.data.role === "Agent") {
+                const responseToken = await agentService.GetKeyByUserId({
+                    id : response.data.userId,
+                    jwt: response.data.accessToken,
+                });
+                let responseUser = await userService.getUserById({id : store.apiKey.id, jwt : response.data.accessToken});
+                await dispatch(userActions.submitApiToken({
+                    token : responseToken.data.token,
+                    role : responseUser.role,
+                    username : responseUser.username,
+                    photo : responseUser.profilePhoto
+                }));
+            }
+
+
             history.push({ pathname: '/' })
         }else{
             if (reCaptcha >= 2) {

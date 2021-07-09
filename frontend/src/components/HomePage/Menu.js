@@ -193,7 +193,7 @@ function Menu() {
                 <NavLink style={{maxWidth: '35px'}} to={{pathname: "/complaints"}}> <Complaint className="icon"/>
                 </NavLink>)}
 
-            {store.user.jwt !== "" && store.user.role != "Agent" && (
+            {store.user.jwt !== "" && store.user.role !== "Agent" && (
 
                 <Dropdown>
                     <Dropdown.Toggle variant="link" id="dropdown-basic">

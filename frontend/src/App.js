@@ -30,14 +30,17 @@ import Notifications from "./components/Notifications/Notifications";
 import CampaignsHome from './components/Campaigns/CampaignsHome'
 import CampaignPreview from './components/Campaigns/CampaignPreview'
 import CreateCampaign from './components/Campaigns/CreateCampaign';
-import AuthenticatedRoute from "./routes/AuthenticatedRoute";
-import AgentRoute from "./routes/AgentRoute";
 import CampaignRequests from "./components/AgentComponents/CampaignRequests";
 import Influencers from "./components/AgentComponents/Influencers";
 import ComplaintPreview from "./components/AdminComponents/ComplaintPreview";
 import AgentCheck from "./components/AdminComponents/AgentCheck";
 import AgentReg from "./components/AdminComponents/AgentReg";
+import AdCategories from './components/Campaigns/AdCategories'
+
+import AuthenticatedRoute from "./routes/AuthenticatedRoute";
+import AgentRoute from "./routes/AgentRoute";
 import AdminRoute from "./routes/AdminRoute";
+import APIKey from "./components/UserData/APIKey";
 
 
 const App = () => {
@@ -72,6 +75,8 @@ const App = () => {
                 <AuthenticatedRoute path='/password' exact component={ChangePassword} />
                 <AuthenticatedRoute path='/privacy' exact component={EditUserPrivacy} />
                 <AuthenticatedRoute path='/edit_photo' exact component={EditProfileImage} />
+                <AuthenticatedRoute path='/api-key' exact component={APIKey} />
+                <AuthenticatedRoute path='/ads/categories' exact component={AdCategories} />
                 <Route path='/agent_registration' exact component={AgentReg} />
                 <AuthenticatedRoute path='/agent_check' exact component={AgentCheck} />
                 <AuthenticatedRoute path='/complaints' exact component={ComplaintPreview} />

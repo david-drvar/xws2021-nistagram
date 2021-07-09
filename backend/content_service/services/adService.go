@@ -39,70 +39,12 @@ func NewAdService(db *gorm.DB) (*AdService, error){
 }
 
 
-func (service *AdService) GetAds(ctx context.Context, userId string) ([]domain.Ad, error){
-	span := tracer.StartSpanFromContextMetadata(ctx, "GetAds")
-	defer span.Finish()
-	ctx = tracer.ContextWithSpan(context.Background(), span)
-
-	// TODO Check if current user has blocked/muted this user's Ads
-	dbAds, err := service.adRepository.GetAds(ctx, userId)
-	if err != nil { return []domain.Ad{}, err }
-
-	ads := []domain.Ad{}
-	campaignIds := []string{}
-	for _, dbAd := range dbAds {
-		if dbAd.Type == model.TypePost.String(){
-			post, err := service.postService.GetPostById(ctx, dbAd.PostId)
-			if err != nil {
-				rollback := service.rollbackPlacementNums(ctx, campaignIds)
-				if rollback != nil { return []domain.Ad{}, rollback }
-				return []domain.Ad{}, err
-			}
-			ads = append(ads, dbAd.ConvertToDomain(post.Comments, post.Likes, post.Dislikes, post.Objava))
-		}else if dbAd.Type == model.TypeStory.String(){
-			story, err := service.storyService.GetStoryById(ctx, dbAd.PostId)
-			if err != nil {
-				rollback := service.rollbackPlacementNums(ctx, campaignIds)
-				if rollback != nil { return []domain.Ad{}, rollback }
-				return []domain.Ad{}, err
-			}
-			ads = append(ads, dbAd.ConvertToDomain([]domain.Comment{}, []domain.Like{}, []domain.Like{}, story.Objava))
-		}else{
-			continue
-		}
-
-		campaignIds = append(campaignIds, dbAd.CampaignId)
-		// Increment placement num
-		err = service.campaignRepository.ChangePlacementsNum(ctx, dbAd.CampaignId, true)
-		if err != nil {
-			rollback := service.rollbackPlacementNums(ctx, campaignIds)
-			if rollback != nil { return []domain.Ad{}, rollback }
-			return []domain.Ad{}, err
-		}
-	}
-
-	return ads, nil
-}
-
 func (service *AdService) CreateAd(ctx context.Context, ad domain.Ad) error{
 	span := tracer.StartSpanFromContextMetadata(ctx, "CreateAd")
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	return service.adRepository.CreateAd(ctx, ad)
-}
-
-func (service *AdService) rollbackPlacementNums(ctx context.Context, campaignIds []string) error{
-	span := tracer.StartSpanFromContextMetadata(ctx, "CreateAd")
-	defer span.Finish()
-	ctx = tracer.ContextWithSpan(context.Background(), span)
-
-	for _, campaignId := range campaignIds{
-		err := service.campaignRepository.ChangePlacementsNum(ctx, campaignId, false)
-		if err != nil { return errors.New("could not rollback placement numbers, stopped at " + campaignId) }
-	}
-
-	return nil
 }
 
 func (service *AdService) GetAdsFromCampaign(ctx context.Context, campaignId string) ([]domain.Ad, error) {
@@ -164,6 +106,73 @@ func (service *AdService) CreateAdCategory(ctx context.Context, category domain.
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	err := service.adRepository.CreateAdCategory(ctx, category)
+	if err != nil { return err }
+
+	return nil
+}
+
+func (service *AdService) GetUserAdCategories(ctx context.Context, userId string) ([]domain.AdCategory, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "GetUserAdCategories")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	dbCategories, err := service.adRepository.GetUserAdCategories(ctx, userId)
+	if err != nil { return []domain.AdCategory{}, err }
+
+	categories := []domain.AdCategory{}
+	for _, dbCategory := range dbCategories{
+		categories = append(categories, dbCategory.ConvertToDomain())
+	}
+
+	return categories, nil
+}
+
+func (service *AdService) CreateUserAdCategories(ctx context.Context, id string) error {
+	span := tracer.StartSpanFromContextMetadata(ctx, "CreateUserAdCategories")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	err := service.adRepository.CreateUserAdCategories(ctx, id)
+	if err != nil { return err }
+
+	return nil
+}
+
+func (service *AdService) IncrementLinkClicks(ctx context.Context, id string) error {
+	span := tracer.StartSpanFromContextMetadata(ctx, "IncrementLinkClicks")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	err := service.adRepository.IncrementLinkClicks(ctx, id)
+	if err != nil { return err }
+
+	return nil
+}
+
+func (service *AdService) GetUsersAdCategories(ctx context.Context, id string) ([]domain.AdCategory, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "GetUsersAdCategories")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	dbCategories, err := service.adRepository.GetUsersAdCategories(ctx, id)
+	if err != nil { return nil, err }
+
+	categories := []domain.AdCategory{}
+	for _, dbCategory := range dbCategories{
+		categories = append(categories, dbCategory.ConvertToDomain())
+	}
+
+	return categories, nil
+}
+
+func (service *AdService) UpdateUsersAdCategories(ctx context.Context, id string, categories []domain.AdCategory) error {
+	span := tracer.StartSpanFromContextMetadata(ctx, "UpdateUsersAdCategories")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	if len(categories) < 2 { return errors.New("cannot have less that 2 ad categories") }
+
+	err := service.adRepository.UpdateUsersAdCategories(ctx, id, categories)
 	if err != nil { return err }
 
 	return nil

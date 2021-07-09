@@ -1,0 +1,41 @@
+.CampaignsHome__Wrapper{
+    margin: 70px 21em;
+}
+
+.myCampaigns{
+    display: flex;
+    flex-direction: column;
+    row-gap: 1.5em;
+}
+
+.myCampaigns .title{
+    font-size: 32px;
+    font-weight: 500;
+}
+
+.myCampaigns .list{
+    display: flex;
+    flex-direction: column;
+    width: 30em;
+}
+
+.campaignCard{
+    display: flex;
+    flex-direction: column;
+}
+
+.campaignCard .name{
+    font-size: 24px !important;
+    font-weight: 500;
+}
+
+.homeHeader{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.homeHeader .homeButtons{
+    margin-top: 10px;
+}

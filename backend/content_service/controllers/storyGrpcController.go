@@ -7,6 +7,7 @@ import (
 	"github.com/david-drvar/xws2021-nistagram/common/logger"
 	protopb "github.com/david-drvar/xws2021-nistagram/common/proto"
 	"github.com/david-drvar/xws2021-nistagram/common/tracer"
+	"github.com/david-drvar/xws2021-nistagram/content_service/model"
 	"github.com/david-drvar/xws2021-nistagram/content_service/model/domain"
 	"github.com/david-drvar/xws2021-nistagram/content_service/services"
 	"google.golang.org/grpc/codes"
@@ -15,9 +16,10 @@ import (
 )
 
 type StoryGrpcController struct {
-	service    *services.StoryService
-	jwtManager *common.JWTManager
-	logger	   *logger.Logger
+	campaignService *services.CampaignService
+	service    		*services.StoryService
+	jwtManager 		*common.JWTManager
+	logger	   		*logger.Logger
 }
 
 func NewStoryController(db *gorm.DB, jwtManager *common.JWTManager, logger *logger.Logger) (*StoryGrpcController, error) {
@@ -26,7 +28,11 @@ func NewStoryController(db *gorm.DB, jwtManager *common.JWTManager, logger *logg
 		return nil, err
 	}
 
+	campaignService, err := services.NewCampaignService(db)
+	if err != nil { return nil, err }
+
 	return &StoryGrpcController{
+		campaignService,
 		service,
 		jwtManager,
 		logger,
@@ -118,23 +124,25 @@ func (c *StoryGrpcController) GetAllStories(ctx context.Context, in *protopb.Emp
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	allStories := domain.StoriesHome{}
+	userIds := []string{}	// all user ids that user can access, regardless if they are close friends or not, used for ads
 	if claims.UserId == "" {
-		userIds, err := grpc_common.GetPublicUsers(ctx)
+		publicUserIds, err := grpc_common.GetPublicUsers(ctx)
 		if err != nil { return &protopb.StoriesHome{}, err }
 
-		stories, err := c.service.GetAllHomeStories(ctx, userIds, false)
+		stories, err := c.service.GetAllHomeStories(ctx, publicUserIds, false)
 		if err != nil { return &protopb.StoriesHome{}, err }
 
 		allStories.Stories = stories.Stories
+		userIds = publicUserIds
 	}else {
-		userIds, err := grpc_common.GetHomepageUsers(ctx, claims.UserId)
+		publicUserIds, err := grpc_common.GetHomepageUsers(ctx, claims.UserId)
 		if err != nil {
 			return &protopb.StoriesHome{}, status.Errorf(codes.Unknown, err.Error())
 		}
 
 		closeFriends, err := grpc_common.GetCloseFriends(ctx, claims.UserId)
 		nonCloseFriends := []string{}
-		for _, userId := range userIds {
+		for _, userId := range publicUserIds {
 			found := false
 			for _, closeFriends := range closeFriends {
 				if closeFriends == userId {
@@ -142,8 +150,9 @@ func (c *StoryGrpcController) GetAllStories(ctx context.Context, in *protopb.Emp
 					break
 				}
 			}
-			// My stories will be counter as closefriends+nonclosefriends in the loop below
+			// My stories will be counted as closefriends+nonclosefriends in the loop below
 			if !found && userId != claims.UserId { nonCloseFriends = append(nonCloseFriends, userId) }
+			userIds = append(userIds, userId)
 		}
 
 		nonCloseFriendsStories, err := c.service.GetAllHomeStories(ctx, nonCloseFriends, false)
@@ -166,6 +175,10 @@ func (c *StoryGrpcController) GetAllStories(ctx context.Context, in *protopb.Emp
 		}
 	}
 
+	ads, err := c.campaignService.GetOngoingCampaignsAds(ctx, userIds, claims.UserId, model.TypeStory)
+	if err != nil { return &protopb.StoriesHome{}, status.Errorf(codes.Unknown, err.Error()) }
+
+	responseAds := []*protopb.StoryAdHome{}
 	// Get usernames
 	for index, story := range allStories.Stories {
 		username, err := grpc_common.GetUsernameById(ctx, story.UserId)
@@ -180,11 +193,37 @@ func (c *StoryGrpcController) GetAllStories(ctx context.Context, in *protopb.Emp
 		}
 		allStories.Stories[index].UserPhoto = photo
 
-		// Get usernames for tags
-
+		// If owner of the ad doesnt have any other stories, we will have to retrieve his info
+		// just to display that ad as a standalone story. With this, we can know which story ads will have
+		// their owners, so that we do not retrieve user data for them.
+		for _, ad := range ads {
+			if story.UserId == ad.Post.UserId{
+				storyAdHome := &protopb.StoryAdHome{Ad: ad.ConvertToGrpc()}
+				storyAdHome.OwnerHasStories = true
+				responseAds = append(responseAds, storyAdHome)
+				break
+			}
+		}
 	}
 
-	responseStories := allStories.ConvertToGrpc()
+	// Fill responseAds with remaining stories that do not have their users
+	// and which we will process on frontend
+	for _, ad := range ads{
+		found := false
+		for _, responseAd := range responseAds {
+			if responseAd.Ad.Id == ad.Id {
+				found = true
+				break
+			}
+		}
+		if found { continue }
+		responseAds = append(responseAds, &protopb.StoryAdHome{
+			OwnerHasStories: false,
+			Ad: ad.ConvertToGrpc(),
+		})
+	}
+
+	responseStories := allStories.ConvertToGrpc(responseAds)
 	return responseStories, nil
 }
 

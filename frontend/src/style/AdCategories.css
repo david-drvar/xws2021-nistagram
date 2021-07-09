@@ -1,0 +1,44 @@
+.AdCategories__Wrapper{
+    padding: 80px 15em;
+    --category-width: 20px;
+    display: flex;
+    flex-direction: column;
+    row-gap: 1em;
+}
+
+.AdCategories__Wrapper .title{
+    font-size: 32px;
+    font-weight: 500;
+}
+
+.AdCategories__Wrapper .category{
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    width: fit-content;
+    height: var(--category-width);
+    column-gap: 0.5em;
+}
+
+.AdCategories__Wrapper .category input[type=checkbox]{
+    height: var(--category-width);
+    width: var(--category-width);
+    border-radius: 10px !important;
+}   
+
+.AdCategories__Wrapper .category label{
+    font-size: var(--category-width);
+    margin: 0;
+}
+
+.AdCategories__Wrapper .category:hover, 
+.AdCategories__Wrapper .category label:hover, 
+.AdCategories__Wrapper .category input[type=checkbox]:hover{
+    cursor: pointer;
+}
+
+.AdCategories__Wrapper .submit{
+    width: 10em;
+    margin: 1em 5em;
+}

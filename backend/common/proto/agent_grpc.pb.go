@@ -32,6 +32,9 @@ type AgentClient interface {
 	LoginUserInAgentApp(ctx context.Context, in *LoginRequestAgentApp, opts ...grpc.CallOption) (*LoginResponseAgentApp, error)
 	CreateUserInAgentApp(ctx context.Context, in *CreateUserRequestAgentApp, opts ...grpc.CallOption) (*EmptyResponseAgent, error)
 	GetUserByUsername(ctx context.Context, in *RequestUsernameAgent, opts ...grpc.CallOption) (*UserAgentApp, error)
+	// API KEY
+	GetKeyByUserId(ctx context.Context, in *RequestIdAgent, opts ...grpc.CallOption) (*ApiTokenAgent, error)
+	UpdateKey(ctx context.Context, in *ApiTokenAgent, opts ...grpc.CallOption) (*EmptyResponseAgent, error)
 }
 
 type agentClient struct {
@@ -150,6 +153,24 @@ func (c *agentClient) GetUserByUsername(ctx context.Context, in *RequestUsername
 	return out, nil
 }
 
+func (c *agentClient) GetKeyByUserId(ctx context.Context, in *RequestIdAgent, opts ...grpc.CallOption) (*ApiTokenAgent, error) {
+	out := new(ApiTokenAgent)
+	err := c.cc.Invoke(ctx, "/proto.Agent/GetKeyByUserId", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *agentClient) UpdateKey(ctx context.Context, in *ApiTokenAgent, opts ...grpc.CallOption) (*EmptyResponseAgent, error) {
+	out := new(EmptyResponseAgent)
+	err := c.cc.Invoke(ctx, "/proto.Agent/UpdateKey", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AgentServer is the server API for Agent service.
 // All implementations must embed UnimplementedAgentServer
 // for forward compatibility
@@ -169,6 +190,9 @@ type AgentServer interface {
 	LoginUserInAgentApp(context.Context, *LoginRequestAgentApp) (*LoginResponseAgentApp, error)
 	CreateUserInAgentApp(context.Context, *CreateUserRequestAgentApp) (*EmptyResponseAgent, error)
 	GetUserByUsername(context.Context, *RequestUsernameAgent) (*UserAgentApp, error)
+	// API KEY
+	GetKeyByUserId(context.Context, *RequestIdAgent) (*ApiTokenAgent, error)
+	UpdateKey(context.Context, *ApiTokenAgent) (*EmptyResponseAgent, error)
 	mustEmbedUnimplementedAgentServer()
 }
 
@@ -211,6 +235,12 @@ func (UnimplementedAgentServer) CreateUserInAgentApp(context.Context, *CreateUse
 }
 func (UnimplementedAgentServer) GetUserByUsername(context.Context, *RequestUsernameAgent) (*UserAgentApp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserByUsername not implemented")
+}
+func (UnimplementedAgentServer) GetKeyByUserId(context.Context, *RequestIdAgent) (*ApiTokenAgent, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetKeyByUserId not implemented")
+}
+func (UnimplementedAgentServer) UpdateKey(context.Context, *ApiTokenAgent) (*EmptyResponseAgent, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateKey not implemented")
 }
 func (UnimplementedAgentServer) mustEmbedUnimplementedAgentServer() {}
 
@@ -441,6 +471,42 @@ func _Agent_GetUserByUsername_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Agent_GetKeyByUserId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestIdAgent)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentServer).GetKeyByUserId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Agent/GetKeyByUserId",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentServer).GetKeyByUserId(ctx, req.(*RequestIdAgent))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Agent_UpdateKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ApiTokenAgent)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentServer).UpdateKey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Agent/UpdateKey",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentServer).UpdateKey(ctx, req.(*ApiTokenAgent))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Agent_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "proto.Agent",
 	HandlerType: (*AgentServer)(nil),
@@ -492,6 +558,14 @@ var _Agent_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserByUsername",
 			Handler:    _Agent_GetUserByUsername_Handler,
+		},
+		{
+			MethodName: "GetKeyByUserId",
+			Handler:    _Agent_GetKeyByUserId_Handler,
+		},
+		{
+			MethodName: "UpdateKey",
+			Handler:    _Agent_UpdateKey_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

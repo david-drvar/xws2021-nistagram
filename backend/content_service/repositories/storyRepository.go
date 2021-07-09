@@ -125,7 +125,8 @@ func (repository *storyRepository) CreateStory(ctx context.Context, story *domai
 
 	var storyToSave persistence.Story
 	storyToSave = storyToSave.ConvertToPersistence(*story)
-	storyToSave.CreatedAt=time.Now()
+	storyToSave.CreatedAt = time.Now()
+
 	err := repository.DB.Transaction(func (tx *gorm.DB) error {
 		result := repository.DB.Create(&storyToSave)
 		if result.Error != nil || result.RowsAffected != 1 {

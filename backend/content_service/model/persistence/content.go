@@ -102,7 +102,9 @@ type Campaign struct {
 	IsOneTime    bool
 	StartDate    time.Time
 	EndDate      time.Time
-	Placements    int
+	StartTime	 int
+	EndTime		 int
+	Placements   int
 	AgentId      string
 	AdCategoryId string
 	LastUpdated  time.Time
@@ -117,6 +119,8 @@ type CampaignChanges struct {
 	AdCategoryId string
 	StartDate    time.Time
 	EndDate      time.Time
+	StartTime	 int
+	EndTime		 int
 	Applied 	 bool
 	ValidFrom	 time.Time
 }

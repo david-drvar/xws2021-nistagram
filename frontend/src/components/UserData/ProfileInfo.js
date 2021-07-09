@@ -1,21 +1,17 @@
 import Navigation from "../HomePage/Navigation";
-import React, {useEffect} from "react";
-import {ProSidebar, Menu, MenuItem, SubMenu, SidebarHeader, SidebarContent, SidebarFooter} from 'react-pro-sidebar';
+import React from "react";
+import {ProSidebar, Menu, MenuItem } from 'react-pro-sidebar';
 import {
-    CgProfile,
-    FaBan,
-    FaGem,
-    FaHeart,
+    BsEye, FaBan, FaGem, FaHeart,
     FaHeartBroken, HiOutlinePhotograph,
     IoMdSettings, RiLockPasswordLine, SiGnuprivacyguard,
+    BiKey
 } from "react-icons/all";
 import 'react-pro-sidebar/dist/css/styles.css';
 import {Link} from "react-router-dom";
-import CloseFriends from "./CloseFriends";
-import {useDispatch, useSelector} from "react-redux";
+import { useSelector } from "react-redux";
 
 function  ProfileInfo(){
-    const dispatch = useDispatch()
     const store = useSelector(state => state);
 
     return(
@@ -32,6 +28,8 @@ function  ProfileInfo(){
                         <MenuItem icon={<RiLockPasswordLine/>}>Edit password  <Link to="/password" /> </MenuItem>
                         <MenuItem icon={<SiGnuprivacyguard/>} style={store.user.role !== 'Admin' ? {display : 'block'} : {display: 'none'}}>Edit privacy  <Link to="/privacy" /> </MenuItem>
                         <MenuItem icon={<HiOutlinePhotograph/>}>Edit profile photo  <Link to="/edit_photo" /> </MenuItem>
+                        {store.user.role === "Agent" && <MenuItem icon={<BiKey/>}>API key <Link to="/api-key"/> </MenuItem> }
+                        <MenuItem icon={<BsEye/>}>Ad categories  <Link to="/ads/categories" /> </MenuItem>
                     </Menu>
                 </ProSidebar>
             </div>

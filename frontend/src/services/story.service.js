@@ -97,16 +97,30 @@ class StoryService extends RootService {
 
     // Convert story with multiple media to multiple stories with single media, to comply with react-insta-stories
     convertStory(story){
-        if(story.media.length === 1) return [{
+        if(!story.link && story.media.length === 1) return [{
             ...story,
             orderNum: 1, // Important for our custom slider component 
         }]
         
+        if(story.link && story.post.media.length === 1) return [{
+            ...story,
+            orderNum: 1, // Important for our custom slider component 
+        }]
+
         const stories = [];
-        story.media.forEach(singleMedia => {
+        !story.link && story.media.forEach(singleMedia => {
             singleMedia.orderNum = 1;   // Important for our custom slider component
             stories.push({
                 ...story,
+                media: [singleMedia] // Must be an array
+            })
+        })
+
+        story.link && story.post.media.forEach(singleMedia => {
+            singleMedia.orderNum = 1;   // Important for our custom slider component
+            stories.push({
+                ...story.post,
+                link: story.link,
                 media: [singleMedia] // Must be an array
             })
         })

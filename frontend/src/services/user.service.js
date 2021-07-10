@@ -116,12 +116,13 @@ class UserService extends RootService {
             sex,
             website,
             biography,
+            birthdate,
             jwt,
             role
         } = data
         const headers = this.setupHeaders(jwt)
         const response = this.apiClient.post('/update_profile', {
-            user: {id, firstName, lastName, email, phoneNumber, username, profilePhoto, sex, website, biography, role}
+            user: {id, firstName, lastName, email, phoneNumber, username, profilePhoto, sex, website, biography, birthdate,role}
         }, {
             headers: headers
         }).then(res => {

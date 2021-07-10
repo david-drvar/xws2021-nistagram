@@ -39,6 +39,9 @@ function EditProfile () {
     }
 
     async function sendParams() {
+        console.log(user)
+        const jsonDate = user.birthdate + 'T' + '01:30:15.01Z';
+
         const response = await userService.editProfile({
             id: user.id,
             firstName: user.firstName,
@@ -47,6 +50,7 @@ function EditProfile () {
             phoneNumber: user.phoneNumber,
             username: user.username,
             profilePhoto: 'idk',
+            birthdate: jsonDate,
             sex: user.sex,
             website: user.website,
             biography: user.biography,

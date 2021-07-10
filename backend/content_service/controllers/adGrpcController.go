@@ -143,7 +143,7 @@ func (controller *AdGrpcController) UpdateUsersAdCategories(ctx context.Context,
 }
 
 func (controller *AdGrpcController) CreateUserAdCategories(ctx context.Context, in *protopb.RequestId) (*protopb.EmptyResponseContent, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "CreateAdCategory")
+	span := tracer.StartSpanFromContextMetadata(ctx, "CreateUserAdCategories")
 	defer span.Finish()
 	// claims, _ := controller.jwtManager.ExtractClaimsFromMetadata(ctx)
 	ctx = tracer.ContextWithSpan(context.Background(), span)

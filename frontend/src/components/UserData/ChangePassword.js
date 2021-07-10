@@ -32,6 +32,8 @@ function ChangePassword() {
             setOldErr('');
             toastService.show("success", "Successfully updated!");
         } else {
+            toastService.show("error", "Could not update image!");
+
             setOldErr('Please enter valid old password!');
         }
     }

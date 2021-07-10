@@ -191,7 +191,8 @@ const Product = () => {
             toastService.show("success", "Product successfully ordered")
             setShowOrderModal(!showOrderModal);
 
-            //todo push to all orders
+            history.push({ pathname: '/my-orders' })
+
 
         } else {
             console.log(response);
@@ -205,7 +206,8 @@ const Product = () => {
             <Navigation/>
             <div className="profileGrid">
                 <div className="card">
-                    {/*<img src={""} alt="product photo" style="width:100%"/>*/}
+                    {console.log(product)}
+                    <img src={product.photo} alt="product photo" style={{width: "50%"}}/>
                         <h1>{product.name}</h1>
 
                     {product.agentId === store.user.id && <Button style={{width: '250px'}} variant={"outline-primary"} onClick={handleEditModal}>Edit</Button>}

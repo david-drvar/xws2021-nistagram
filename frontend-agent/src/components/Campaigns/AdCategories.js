@@ -5,7 +5,7 @@ import Spinner from './../../helpers/spinner'
 import { Form, Button } from 'react-bootstrap'
 import './../../style/AdCategories.css'
 
-import adsService from './../../services/ads.service'
+import adsService from './../../services/nistagram api/ads.service'
 import toastService from '../../services/toast.service';
 import ProfileInfo from "../UserData/ProfileInfo";
 
@@ -17,7 +17,7 @@ const AdCategories = () => {
     const store = useSelector(state => state)
 
     useEffect(() => {
-        adsService.getAdCategories({ jwt: store.user.jwt })
+        adsService.getAdCategories({ jwt: store.apiKey.jwt })
             .then(response => {
                 response.data && setAllCategories([...response.data.categories])
             })
@@ -25,7 +25,7 @@ const AdCategories = () => {
                 toastService.show("err", "Could not retrieve ad categories.")
             })
             
-        adsService.getUsersAdCategories({ jwt: store.user.jwt })
+        adsService.getUsersAdCategories({ jwt: store.apiKey.jwt })
             .then(response => {
                 response.data && setUsersCategories([...response.data.categories])
                 setIsLoading(false)
@@ -61,7 +61,7 @@ const AdCategories = () => {
             return
         }
 
-        adsService.updateUsersAdCategories({ jwt: store.user.jwt, categories: usersCategories })
+        adsService.updateUsersAdCategories({ jwt: store.apiKey.jwt, categories: usersCategories })
             .then(response => {
                 toastService.show("success", "Successfully updated your ad categories.")
             })

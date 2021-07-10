@@ -26,7 +26,7 @@ function Suggestions() {
            setRecommendations(response.data.recommendations)
             getUsers(response.data.recommendations)
         } else {
-            toastService.show("error", "GRESKAA!");
+            toastService.show("error", "Something went wrong, please try again!");
         }
     }
 

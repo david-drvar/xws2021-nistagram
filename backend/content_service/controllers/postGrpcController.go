@@ -279,8 +279,10 @@ func (c *PostGrpcController) GetPostById(ctx context.Context, id string) (*proto
 			return &protopb.Post{}, status.Errorf(codes.Unknown, err.Error())
 		}
 
-		if (!following.IsApprovedRequest && !isPublic) || isBlocked {
-			return &protopb.Post{}, status.Errorf(codes.PermissionDenied, "cannot retrieve this post")
+		if(claims.Role!="Admin") {
+			if (!following.IsApprovedRequest && !isPublic) || isBlocked {
+				return &protopb.Post{}, status.Errorf(codes.PermissionDenied, "cannot retrieve this post")
+			}
 		}
 	}
 

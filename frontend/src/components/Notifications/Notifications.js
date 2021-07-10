@@ -20,10 +20,7 @@ function Notifications(props) {
             jwt: store.user.jwt,
         })
         if (response.status === 200) {
-            console.log(" nasao notifikacije")
-
             setNotifications(response.data.notifications)
-            console.log(response.data.notifications)
         } else {
             console.log("NIJE nasao notifikacije")
         }

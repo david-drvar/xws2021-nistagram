@@ -244,19 +244,21 @@ func (repository *adRepository) CreateUserAdCategories(ctx context.Context, id s
 	result := repository.DB.Find(&adCategories)
 	if result.Error != nil { return result.Error }
 
-	err := repository.DB.Transaction(func (tx *gorm.DB) error {
+	repository.DB.Transaction(func (tx *gorm.DB) error {
 		for _, category := range adCategories{
 			result := repository.DB.Create(persistence.UserAdCategories{
 				UserId:       id,
 				IdAdCategory: category.Id,
 			})
-			if result.Error != nil { return result.Error }
+			if result.Error != nil {
+				return result.Error
+			}
 		}
 
 		return nil
 	})
 
-	return err
+	return nil
 }
 
 func (repository *adRepository) IncrementLinkClicks(ctx context.Context, id string) error{

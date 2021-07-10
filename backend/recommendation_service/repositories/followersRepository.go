@@ -100,7 +100,7 @@ func (repository *followersRepository) GetRandomUsers(ctx context.Context, limit
 			})
 
 		}
-		return false, errors.New("error: can not create user ")
+		return users,nil
 	})
 	if err != nil || result == nil {
 		return nil, err

@@ -141,6 +141,13 @@ func (repository *userRepository) GetUserByUsername(ctx context.Context, usernam
 		return persistence.User{}, result.Error
 	}
 
+	//todo decode photo
+	photo, err := repository.GetUserPhoto(ctx, dbUser.Id)
+	if err != nil {
+		return persistence.User{}, err
+	}
+	dbUser.ProfilePhoto = photo
+
 	return dbUser, nil
 }
 
@@ -154,6 +161,12 @@ func (repository *userRepository) GetUserById(ctx context.Context, id string) (p
 	if result.Error != nil || result.RowsAffected != 1 {
 		return persistence.User{}, result.Error
 	}
+
+	photo, err := repository.GetUserPhoto(ctx, dbUser.Id)
+	if err != nil {
+		return persistence.User{}, err
+	}
+	dbUser.ProfilePhoto = photo
 
 	return dbUser, nil
 }

@@ -14,7 +14,7 @@ import campaignsService from "../../services/campaigns.service";
 import chatService from "../../services/chat.service";
 
 function Notification(props) {
-    const {id, creatorId, userId, text, type, createdAt, contentId} = props;
+    const {id, creatorId, userId, text, type, createdAt, contentId, isRead} = props;
     const [user, setUser] = useState({});
     const [privateFollow, setPrivateFollow] = useState(false);
     const [contentType, setContentType] = useState(false);
@@ -109,7 +109,7 @@ function Notification(props) {
         if (response.status === 200) {
             props.getUserNotifications()
         } else {
-            toastService.show("error", "Something went wrong, please try again!");
+            toastService.show("error", "ja puknem!");
         }
     }
 
@@ -150,6 +150,7 @@ function Notification(props) {
             jwt: store.user.jwt,
         })
         if (response.status === 200) {
+            deleteNotification(id)
             toastService.show("success", "Successfully accepted!");
         } else {
             toastService.show("error", "Something went wrong, please try again!");
@@ -165,6 +166,7 @@ function Notification(props) {
             jwt: store.user.jwt,
         })
         if (response.status === 200) {
+            deleteNotification(id)
             toastService.show("success", "Successfully rejected!");
         } else {
             toastService.show("error", "Something went wrong, please try again!");
@@ -178,8 +180,9 @@ function Notification(props) {
             jwt: store.user.jwt,
         })
         if (response.status === 200) {
-            props.getUserNotifications()
             toastService.show("success", "Successfully accepted!");
+            props.getUserNotifications()
+
         } else {
             toastService.show("error", "Something went wrong, please try again!");
         }
@@ -192,8 +195,8 @@ function Notification(props) {
             jwt: store.user.jwt,
         })
         if (response.status === 200) {
-            props.getUserNotifications()
             toastService.show("success", "Successfully accepted!");
+            props.getUserNotifications()
         } else {
             toastService.show("error", "Something went wrong, please try again!");
         }

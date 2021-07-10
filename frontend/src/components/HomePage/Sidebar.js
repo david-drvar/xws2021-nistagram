@@ -8,11 +8,14 @@ function Sidebar() {
     const dispatch = useDispatch()
     const store = useSelector(state => state);
     return (
-        <Sticky topOffset={-20} >
+        <div style={{marginLeft:'0%'}}>
+        <Sticky topOffset={-20}>
             <div className="sidebar" style={{display:'block'}}>{/*style={store.user.role !== 'Admin' ? {display : 'block'} : {display: 'none'}}>*/}
                 <Suggestions/>
+
             </div>
         </Sticky>
+        </div>
     );
 }
 

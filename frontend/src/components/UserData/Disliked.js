@@ -36,7 +36,9 @@ function Disliked() {
         <div  style={{display: 'flex'}}>
             <ProfileInfo />
             {loading ?
-                <Spinner type="MutatingDots" height="100" width="100"/> :
+                <div style={{marginRight: '30%', marginTop: '5%', display: 'flex', flexDirection: 'column'}}>
+                <Spinner type="MutatingDots" height="100" width="100"/>
+                </div>:
                 <div style={{marginRight: '30%', marginTop: '5%', display: 'flex', flexDirection: 'column'}}>
                     <PostPreviewGrid posts={posts}/>
 

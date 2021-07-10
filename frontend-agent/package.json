@@ -68,6 +68,7 @@
     ]
   },
   "devDependencies": {
+    "react-datepicker": "^4.1.1",
     "react-sticky-el": "^2.0.9"
   }
 }

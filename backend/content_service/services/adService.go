@@ -133,7 +133,9 @@ func (service *AdService) CreateUserAdCategories(ctx context.Context, id string)
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	err := service.adRepository.CreateUserAdCategories(ctx, id)
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

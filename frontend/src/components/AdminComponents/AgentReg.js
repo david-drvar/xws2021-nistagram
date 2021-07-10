@@ -222,6 +222,7 @@ const AgentReg = (props) => {
             toastService.show("success", "Successfully registered!Please log-in.")
             setDisabled(!disabled);
         } else {
+            console.log(response)
             toastService.show("error", "E-mail address and username must be unique! Try again")
         }
     }

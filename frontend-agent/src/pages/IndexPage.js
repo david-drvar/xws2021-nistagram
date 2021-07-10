@@ -48,6 +48,11 @@ const IndexPage = () => {
                     id : response.data.userId,
                     jwt: response.data.accessToken,
                 });
+                if (responseToken.data.token === "") {
+                    history.push({ pathname: '/' });
+                    return;
+                }
+
                 let responseUser = await userService.getUserById({id : store.apiKey.id, jwt : response.data.accessToken});
                 await dispatch(userActions.submitApiToken({
                     token : responseToken.data.token,

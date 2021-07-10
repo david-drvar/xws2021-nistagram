@@ -20,7 +20,9 @@ type ProductRepository interface {
 	GetAllProductsByAgentId(ctx context.Context, id string) ([]persistence.Product, error)
 	GetAllProducts(ctx context.Context) ([]persistence.Product, error)
 	GetProductById(ctx context.Context, id string) (persistence.Product, error)
+	GetProductByIdAndInActive(ctx context.Context, id string) (persistence.Product, error)
 	GetProductByAgentId(ctx context.Context, id string) ([]persistence.Product, error)
+	GetProductByAgentIdAndInActive(ctx context.Context, id string) ([]persistence.Product, error)
 	DeleteProduct(ctx context.Context, id string) error
 	UpdateProduct(ctx context.Context, product *persistence.Product) error
 	OrderProduct(ctx context.Context, order *persistence.Order) error
@@ -92,6 +94,20 @@ func (repository *productRepository) GetProductById(ctx context.Context, id stri
 	return product, nil
 }
 
+func (repository *productRepository) GetProductByIdAndInActive(ctx context.Context, id string) (persistence.Product, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "GetProductById")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	var product persistence.Product
+	resultUser := repository.DB.Where("id = ?", id).Find(&product)
+	if resultUser.Error != nil {
+		return persistence.Product{}, resultUser.Error
+	}
+
+	return product, nil
+}
+
 func (repository *productRepository) GetProductByAgentId(ctx context.Context, id string) ([]persistence.Product, error) {
 	span := tracer.StartSpanFromContextMetadata(ctx, "GetProductById")
 	defer span.Finish()
@@ -99,6 +115,20 @@ func (repository *productRepository) GetProductByAgentId(ctx context.Context, id
 
 	var products []persistence.Product
 	resultUser := repository.DB.Where("agent_id = ? AND is_active = true", id).Find(&products)
+	if resultUser.Error != nil {
+		return nil, resultUser.Error
+	}
+
+	return products, nil
+}
+
+func (repository *productRepository) GetProductByAgentIdAndInActive(ctx context.Context, id string) ([]persistence.Product, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "GetProductById")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	var products []persistence.Product
+	resultUser := repository.DB.Where("agent_id = ?", id).Find(&products)
 	if resultUser.Error != nil {
 		return nil, resultUser.Error
 	}
@@ -204,6 +234,12 @@ func (repository *productRepository) OrderProduct(ctx context.Context, order *pe
 		return errors.New("Order quantity cannot exceed product quantity")
 	}
 
+	product.Quantity = product.Quantity - order.Quantity
+	result := repository.DB.Model(&product).Updates(persistence.Product{Quantity: product.Quantity})
+	if result.Error != nil {
+		return result.Error
+	}
+
 	order.Id = uuid.New().String()
 	order.DateCreated = time.Now()
 	order.TotalPrice = float32(order.Quantity) * product.Price
@@ -224,7 +260,7 @@ func (repository *productRepository) GetOrdersByUser(ctx context.Context, userId
 
 	var finalOrders []domain.Order
 	for _, order := range orders {
-		product, err := repository.GetProductById(ctx, order.ProductId)
+		product, err := repository.GetProductByIdAndInActive(ctx, order.ProductId)
 		if err != nil {
 			return nil, err
 		}
@@ -268,7 +304,7 @@ func (repository *productRepository) GetOrdersByAgent(ctx context.Context, agent
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
-	products, err := repository.GetProductByAgentId(ctx, agentId)
+	products, err := repository.GetProductByAgentIdAndInActive(ctx, agentId)
 	if err != nil {
 		return nil, err
 	}

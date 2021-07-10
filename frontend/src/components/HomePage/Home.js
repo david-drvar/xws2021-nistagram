@@ -165,11 +165,15 @@ const Home = () => {
         <div className="App">
             <Navigation/>
             <main>
-                <div className="container">
-                <Feed />
-                { /*showModalDialog()*/ }
-                <Sidebar/>
-                </div>
+                {store.user.role !== 'Admin' ?
+                    <div  style={{display:'flex', marginLeft:'10%'}}>
+                        <Feed/>
+                        {store.user.role !== 'Admin' && <Sidebar/>}
+                    </div>
+                    :
+                    <Feed/>
+
+                }
             </main>
         </div>
     );

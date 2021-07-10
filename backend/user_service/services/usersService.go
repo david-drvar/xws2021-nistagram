@@ -114,33 +114,6 @@ func (service *UserService) CreateUserWithAdditionalInfo(ctx context.Context, us
 		return nil, errors.New("cannot create user")
 	}
 
-	//create user node in graph database
-
-	//todo ovde pozivas SAGA-u
-	//todo popravi userId
-	//m := saga.Message{Service: saga.ServiceRecommendation, SenderService: saga.ServiceUser, Action: saga.ActionStart, UserId: user.Id}
-	//service.redisServer.Orchestrator.Next(saga.RecommendationChannel, saga.ServiceRecommendation, m)
-
-	//var conn *grpc.ClientConn
-	//conn, err = grpc.Dial(":8095", grpc.WithInsecure())
-	//if err != nil {
-	//	log.Fatalf("did not connect: %s", err)
-	//}
-	//defer conn.Close()
-	//
-	//c := protopb.NewFollowersClient(conn)
-	//
-	//createUserRequest := protopb.CreateUserRequestFollowers{
-	//	User: &protopb.UserFollowers{
-	//		UserId: user.Id,
-	//	},
-	//}
-	//
-	//_, err = c.CreateUser(context.Background(), &createUserRequest)
-	//if err != nil {
-	//	log.Fatalf("could not create node user: %s", err)
-	//}
-
 	return userResult, nil
 }
 
@@ -374,8 +347,6 @@ func (service UserService) ChangeUserActiveStatus(ctx context.Context, id string
 
 }
 
-
-
 func (service *UserService) GetAllInfluncers(ctx context.Context) ([]domain.InfluencerSearchResult, error) {
 	span := tracer.StartSpanFromContextMetadata(ctx, "GetAllInfluncers")
 	defer span.Finish()
@@ -405,5 +376,3 @@ func (service *UserService) GetAllInfluncers(ctx context.Context) ([]domain.Infl
 
 	return finalUsers, nil
 }
-
-

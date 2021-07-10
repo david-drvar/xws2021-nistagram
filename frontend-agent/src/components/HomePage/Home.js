@@ -26,7 +26,9 @@ const Home = () => {
     const store = useSelector(state => state);
 
     useEffect(() => {
-        getAllProducts();
+        if (store.user.jwt !== "") {
+            getAllProducts();
+        }
     },[]);
 
 

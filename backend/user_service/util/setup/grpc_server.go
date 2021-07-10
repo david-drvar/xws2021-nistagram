@@ -11,7 +11,9 @@ import (
 	"github.com/david-drvar/xws2021-nistagram/common/tracer"
 	"github.com/david-drvar/xws2021-nistagram/user_service/controllers"
 	"github.com/david-drvar/xws2021-nistagram/user_service/saga"
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 	"gorm.io/gorm"
 	"log"
@@ -38,9 +40,12 @@ func GRPCServer(db *gorm.DB) {
 
 	// Create a gRPC server object
 	s := grpc.NewServer(
-		grpc.UnaryInterceptor(rbacInterceptor.Authorize()),
-		grpc.MaxSendMsgSize(4<<30), // Default: 1024 * 1024 * 4 = 4MB -> Override to 4GBs
-		grpc.MaxRecvMsgSize(4<<30), // Default: 1024 * 1024 * 4 = 4MB -> Override to 4GBs
+		grpc.ChainUnaryInterceptor(
+			rbacInterceptor.Authorize(),
+			grpc_prometheus.UnaryServerInterceptor),
+		grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
+		grpc.MaxSendMsgSize(4 << 30), // Default: 1024 * 1024 * 4 = 4MB -> Override to 4GBs
+		grpc.MaxRecvMsgSize(4 << 30), // Default: 1024 * 1024 * 4 = 4MB -> Override to 4GBs
 	)
 
 	server, err := controllers.NewServer(db, jwtManager, customLogger, redisServer)
@@ -71,7 +76,10 @@ func GRPCServer(db *gorm.DB) {
 		customLogger.ToStdoutAndFile("Users GRPC Server", "Failed to register gateway", logger.Fatal)
 		return
 	}
-
+	grpc_prometheus.Register(s)
+	gatewayMux.HandlePath("GET", "/metrics", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string){
+		promhttp.Handler().ServeHTTP(w, r)
+	})
 	c := common.SetupCors()
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 

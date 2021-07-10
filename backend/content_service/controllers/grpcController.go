@@ -39,7 +39,7 @@ func NewServer(db *gorm.DB, manager *common.JWTManager, logger *logger.Logger) (
 	complaintController, _ := NewComplaintController(db, manager)
 	adController, _ := NewAdController(db, manager)
 	campaignController, _ := NewCampaignController(db, manager)
-	tracer, closer := tracer.Init("global_ContentGrpcController")
+	tracer, closer := tracer.Init("content_service")
 	otgo.SetGlobalTracer(tracer)
 	return &Server{
 		postController:      postController,

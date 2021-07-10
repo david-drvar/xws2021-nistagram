@@ -17,4 +17,4 @@ scrape_configs:
   metrics_path: /metrics
   scheme: http
   static_configs:
-  - targets: ['localhost:9090', 'chat_service:8003']
+  - targets: ['localhost:9090', 'chat_service:8003', 'recommendation_service:8005', 'agent_application:8004', 'user_service:8001', 'content_service:8002']

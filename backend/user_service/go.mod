@@ -10,11 +10,13 @@ require (
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/google/uuid v1.2.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
+	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.4.0
 	github.com/jackc/pgconn v1.8.1
 	github.com/jackc/pgproto3/v2 v2.0.7 // indirect
 	github.com/lytics/confl v0.0.0-20200313154245-08c6aed5f53f
 	github.com/opentracing/opentracing-go v1.2.0
+	github.com/prometheus/client_golang v1.11.0 // indirect
 	github.com/satori/go.uuid v1.2.0
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
 	golang.org/x/net v0.0.0-20210525063256-abc453219eb5 // indirect

@@ -72,7 +72,7 @@ services:
     environment: 
       REACT_APP_CHECK: docker-compose
       REACT_APP_USER_SERVICE: http://localhost:8080/api/users
-      REACT_APP_CONTENT_SERVICE: http://localhost:8003
+      REACT_APP_CONTENT_SERVICE: http://localhost:8080/api/content
       REACT_APP_CHAT_SERVICE: http://localhost:8080/api/chat
       REACT_APP_AGENT_SERVICE: http://localhost:8080/api/agent
       REACT_APP_RECOMMENDATION_SERVICE: http://localhost:8080/api/followers

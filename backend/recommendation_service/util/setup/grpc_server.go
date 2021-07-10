@@ -12,8 +12,10 @@ import (
 	"github.com/david-drvar/xws2021-nistagram/common/tracer"
 	"github.com/david-drvar/xws2021-nistagram/recommendation_service/controllers"
 	"github.com/david-drvar/xws2021-nistagram/recommendation_service/saga"
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 	"io/ioutil"
 	"log"
@@ -32,7 +34,13 @@ func GRPCServer(driver neo4j.Driver) {
 	}
 
 	// Create a gRPC server object
-	s := grpc.NewServer()
+	s := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			grpc_prometheus.UnaryServerInterceptor),
+		grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
+		grpc.MaxSendMsgSize(4 << 30), // Default: 1024 * 1024 * 4 = 4MB -> Override to 4GBs
+		grpc.MaxRecvMsgSize(4 << 30), // Default: 1024 * 1024 * 4 = 4MB -> Override to 4GBs
+	)
 	redisServer := saga.NewRedisServer(driver)
 	go redisServer.RedisConnection()
 
@@ -61,6 +69,10 @@ func GRPCServer(driver neo4j.Driver) {
 	if err != nil {
 		customLogger.ToStdoutAndFile("Recommendation GRPC Server", "Couldn't register gateway", logger.Fatal)
 	}
+	grpc_prometheus.Register(s)
+	gatewayMux.HandlePath("GET", "/metrics", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string){
+		promhttp.Handler().ServeHTTP(w, r)
+	})
 
 	c := common.SetupCors()
 	pool := x509.NewCertPool()

@@ -83,8 +83,6 @@ func (repository *notificationRepository) ReadAllNotifications(ctx context.Conte
 	result := repository.DB.Model(&persistence.UserNotification{}).Where("user_id = ?", userId ).Updates(persistence.UserNotification{IsRead: true})
 	if result.Error != nil {
 		return errors.New("Could not read notifications!")
-	}else if result.RowsAffected == 0 {
-		return errors.New("Could not read notifications!")
 	}
 
 	return nil

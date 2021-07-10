@@ -3,18 +3,18 @@ import { Modal } from 'react-bootstrap';
 import Post from './Post';
 import "./../../style/PostPreviewModal.css"
 
-const PostPreviewModal = (props) => {
+const PostPreviewNotifications = (props) => {
     const { post, showModal, setShowModal, shouldReload, setPosts } = props;
 
     return (
-        <Modal 
+        <Modal
             className="PostPreviewModal__Wrapper"
-            contentClassName="content" 
-            show={showModal} 
+            contentClassName="content"
+            show={showModal}
             onHide={() => setShowModal(false)}>
-            <Post className="Post" shouldReload={shouldReload} post={post} setPosts={setPosts} isAd={post.link !== ""} />
+            <Post className="Post" shouldReload={shouldReload} post={post} setPosts={setPosts}  />
         </Modal>
     )
 }
 
-export default PostPreviewModal;
+export default PostPreviewNotifications;

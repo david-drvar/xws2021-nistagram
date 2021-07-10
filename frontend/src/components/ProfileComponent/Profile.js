@@ -23,6 +23,7 @@ import highlightsService from './../../services/highlights.service';
 import toastService from './../../services/toast.service';
 
 import '../../style/Profile.css';
+import adsService from "../../services/ads.service";
 
 
 const Profile = () => {
@@ -51,7 +52,7 @@ const Profile = () => {
     })
 
     const [posts, setPosts] = useState([]);
-    const [stories, setStories] = useState([]);
+    const [stories, setStories] = useState({ username: "", userPhoto: "", stories: [] });
     const [highlights, setHighlights] = useState([]);
 
     const dispatch = useDispatch()
@@ -61,21 +62,25 @@ const Profile = () => {
         (async function () {
             const tempUser = await getUserByUsername(); // Since it doesn't get saved in time for other requests
             if (tempUser) {
-                getUserPrivacy(tempUser.id);
-                getFollowers(tempUser.id)
-                getFollowing(tempUser.id)
-                checkUser(tempUser.id);
-                getUserPrivacy(tempUser.id);
-                getFollowers(tempUser.id);
-                getFollowing(tempUser.id);
-                getPosts(tempUser.id);
-                getStories(tempUser);
-                getHighlights(tempUser.id);
+                await getUserPrivacy(tempUser.id);
+                await getFollowers(tempUser.id)
+                await getFollowing(tempUser.id)
+                await checkUser(tempUser.id);
+                await getUserPrivacy(tempUser.id);
+                await getFollowers(tempUser.id);
+                await getFollowing(tempUser.id);
+                await getPosts(tempUser.id, tempUser.role);
+                let storyAds = [];
+                if(tempUser.role === "Agent" || tempUser.role === "Verified") {
+                   storyAds = await getAds(tempUser.id)
+                }
+                await getStories(tempUser, storyAds);
+                await getHighlights(tempUser.id);
             }
         })();
     }, [username]);
 
-    const getPosts = async (userId) => {
+    const getPosts = async (userId, role) => {
         const response = await postService.getPostsForUser({
             jwt: store.user.jwt,
             userId: userId
@@ -83,14 +88,38 @@ const Profile = () => {
 
         if (response.status === 200) {
             setPosts([...response.data.posts])
-            setLoadingPosts(false);
+            if(role !== "Agent" && role !== "Verified") setLoadingPosts(false);
         } else {
             console.log(response);
             toastService.show("error", "Could not retrieve user's posts.")
         }
     }
 
-    const getStories = async (user) => {
+    const getAds = async (userId) => {
+        const response = await adsService.getAdsFromInfluencer({
+            jwt: store.user.jwt,
+            userId: userId
+        })
+
+        if (response.status === 200) {
+            let postAds = [];
+            let storyAds = [];
+            response.data.ads.forEach(ad => {
+                if(ad.post.type === "Post") postAds.push(ad)
+                if(ad.post.type === "Story") storyAds.push(ad)
+            })
+            
+            setPosts([...posts, ...postAds])
+            setLoadingPosts(false);
+            return storyAds
+        } else {
+            console.log(response);
+            toastService.show("error", "Could not retrieve user's posts.")
+            return []
+        }
+    }
+
+    const getStories = async (user, storyAds) => {
         const response = await storyService.getUsersStories({
             jwt: store.user.jwt,
             userId: user.id
@@ -100,7 +129,7 @@ const Profile = () => {
             setStories({
                 username: user.username,
                 userPhoto: user.profilePhoto,
-                stories: [...response.data.stories]
+                stories: [...response.data.stories, ...storyAds]
             })
         }
         else{
@@ -114,8 +143,6 @@ const Profile = () => {
             jwt: store.user.jwt,
             userId: userId
         })
-
-        console.log(response);
 
         if (response.status === 200) {
             setHighlights([...response.data.highlights])
@@ -134,7 +161,6 @@ const Profile = () => {
 
         if (response.status === 200) {
             setUser(response.data)
-            console.log(response.data)
             return response.data
         } else {
             console.log("getuserbyusername error")
@@ -170,7 +196,6 @@ const Profile = () => {
                 isStoryNotificationEnabled: response.data.isStoryNotificationEnabled,
                 isCommentNotificationEnabled: response.data.isCommentNotificationEnabled
             });
-
         } else {
             console.log("followings ne radi")
         }

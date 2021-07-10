@@ -11,6 +11,8 @@ import campaignsService from '../../services/nistagram api/campaigns.service';
 
 const CampaignUpdateModal = (props) => {
     const { showModal, setShowModal, campaign } = props;
+    const [newStartTime, setNewStartTime] = useState(0)
+    const [newEndTime, setNewEndTime] = useState(0)
     const [newStartDate, setNewStartDate] = useState(new Date())
     const [newEndDate, setNewEndDate] = useState(new Date())
     const [newName, setNewName] = useState("")
@@ -24,6 +26,8 @@ const CampaignUpdateModal = (props) => {
         setNewEndDate(campaign.endDate.split("T")[0])
         setNewName(campaign.name ? campaign.name : "")
         setNewCategory(campaign.category ? campaign.category : {})
+        setNewStartTime(campaign.startTime ? campaign.startTime : 0)
+        setNewEndTime(campaign.endTime ? campaign.endTime : 0)
 
         getCategories()
     }, [])
@@ -41,9 +45,12 @@ const CampaignUpdateModal = (props) => {
         const updateData = {
             id: campaign.id,
             name: newName,
+            startTime: newStartTime,
+            endTime: newEndTime,
             startDate: newStartDate + "T00:02:00.010Z",
             endDate: newEndDate + "T00:02:00.010Z",
             category: newCategory,
+            agentId: campaign.agentId
         }
 
         const response = await campaignsService.updateCampaign({
@@ -59,7 +66,7 @@ const CampaignUpdateModal = (props) => {
             toastService.show("error", "Could not update your campaign.")
         }
     }
-    
+
     return(
         <Modal className="saveModal" size="lg" show={showModal} onHide={() => setShowModal(!showModal)} animation={true} centered>
             <Modal.Header closeButton>
@@ -70,31 +77,53 @@ const CampaignUpdateModal = (props) => {
                     <label for="name">Name</label>
                     <input
                         type="text" name="name"
-                        value={newName} 
-                        onChange={(e) => setNewName(e.target.value) } 
+                        value={newName}
+                        onChange={(e) => setNewName(e.target.value) }
                         className="form-control" id="name" />
+                </div>
+                <div className="exposureDates">
+                    <div className="updateInput">
+                        <label for="startTime">Start Time</label>
+                        <input
+                            type="number" name="startTime"
+                            placeholder={"Time when campaign starts to be shown (e.g. at 13h)..."}
+                            value={newStartTime}
+                            min={0} max={23}
+                            onChange={(e) => setNewStartTime(Number(e.target.value))}
+                            className="form-control" id="startTime" />
+                    </div>
+                    <div className="updateInput">
+                        <label for="endTime">End Time</label>
+                        <input
+                            type="number" name="endTime"
+                            placeholder={"Time when campaign stops being shown (e.g. at 20h)..."}
+                            value={newEndTime}
+                            min={newStartTime} max={23}
+                            onChange={(e) => setNewEndTime(Number(e.target.value))}
+                            className="form-control" id="endTime" />
+                    </div>
                 </div>
                 <div className="updateInput">
                     <label for="startDate">Start Date</label>
-                    <input 
-                        min={moment(new Date()).add(1, 'd')} 
-                        max={moment(new Date()).add(365, 'd')} 
+                    <input
+                        min={moment(new Date()).add(1, 'd')}
+                        max={moment(new Date()).add(365, 'd')}
                         type="date" name="startDate"
-                        value={newStartDate} 
-                        onChange={(e) => setNewStartDate(e.target.value) } 
+                        value={newStartDate}
+                        onChange={(e) => setNewStartDate(e.target.value) }
                         className="form-control" id="startDate" />
                 </div>
                 {!campaign.isOneTime &&
                 (<div className="updateInput">
-                    <label for="endDate">End Date</label>
-                    <input 
-                        min={moment(new Date()).add(1, 'd')} 
-                        max={moment(new Date()).add(365, 'd')} 
-                        type="date" name="endDate"
-                        value={newEndDate} 
-                        onChange={(e) => setNewEndDate(e.target.value) } 
-                        className="form-control" id="endDate" />
-                </div>
+                        <label for="endDate">End Date</label>
+                        <input
+                            min={moment(new Date()).add(1, 'd')}
+                            max={moment(new Date()).add(365, 'd')}
+                            type="date" name="endDate"
+                            value={newEndDate}
+                            onChange={(e) => setNewEndDate(e.target.value) }
+                            className="form-control" id="endDate" />
+                    </div>
                 )}
                 <div className="dropdown">
                     <label for="category">Category</label>

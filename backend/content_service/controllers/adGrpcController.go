@@ -44,6 +44,25 @@ func (controller *AdGrpcController) GetAds(ctx context.Context, in *protopb.Empt
 	}, nil
 }
 
+func (controller *AdGrpcController) GetAdsFromInfluencer(ctx context.Context, in *protopb.RequestId) (*protopb.AdArray, error){
+	span := tracer.StartSpanFromContextMetadata(ctx, "GetAdsFromInfluencer")
+	defer span.Finish()
+	// claims, _ := controller.jwtManager.ExtractClaimsFromMetadata(ctx)
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	ads, err := controller.service.GetAdsFromInfluencer(ctx, in.Id)
+	if err != nil { return &protopb.AdArray{}, err }
+
+	response := []*protopb.Ad{}
+	for _, ad := range ads{
+		response = append(response, ad.ConvertToGrpc())
+	}
+
+	return &protopb.AdArray{
+		Ads: response,
+	}, nil
+}
+
 func (controller *AdGrpcController) CreateAd(ctx context.Context, in *protopb.Ad) (*protopb.EmptyResponseContent, error){
 	span := tracer.StartSpanFromContextMetadata(ctx, "CreateAd")
 	defer span.Finish()

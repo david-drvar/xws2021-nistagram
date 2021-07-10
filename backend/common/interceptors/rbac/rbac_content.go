@@ -27,7 +27,7 @@ func SetupContentRBAC(db *gorm.DB) error {
 			createHashtag, getAllHashtags,
 			getAllHighlights, getHighlight, createHighlight, removeHighlight, createHighlightStory, removeHighlightStory, getUserLikedOrDislikedPosts,
 			createContentComplaint, getAllContentComplaints, rejectById, deleteComplaintByUserId,
-			getAds, createAd, incrementLinkClicks,
+			getAds, getAdsFromInfluencer, createAd, incrementLinkClicks,
 			getCampaigns, getCampaign, getCampaignStats, createCampaign, updateCampaign, deleteCampaign,
 			getAdCategories, getAdCategory, createAdCategory, createUserAdCategories, getUsersAdCategories, updateUsersAdCategories,
 			createCampaignRequest,getCampaignRequestsByAgent,
@@ -80,6 +80,7 @@ func SetupContentRBAC(db *gorm.DB) error {
 			adminRejectById,
 			adminDeleteComplaintByUserId,nonregisteredDeleteComplaintByUserId,basicDeleteComplaintByUserId, verifiedDeleteComplaintByUserId, agentDeleteComplaintByUserId,
 			basicGetAds, agentGetAds, nonregisteredGetAds, verifiedGetAds, adminGetAds,
+			basicGetAdsFromInfluencer, agentGetAdsFromInfluencer, nonregisteredGetAdsFromInfluencer, verifiedGetAdsFromInfluencer, adminGetAdsFromInfluencer,
 			agentCreateAd,
 			agentCreateCampaign, agentGetCampaigns, agentGetCampaign, agentGetCampaignStats, agentUpdateCampaign, agentDeleteCampaign,
 			basicGetAdCategories, nonregisteredGetAdCategories, verifiedGetAdCategories, agentGetAdCategories, adminGetAdCategories,
@@ -167,6 +168,7 @@ var (
 	deleteComplaintByUserId = Permission{Id: "3dc694f6-dcf1-11eb-ba80-0242ac130004", Name: "DeleteComplaintByUserId"}
 
 	getAds						= Permission{Id: "e1341af3-1c36-4cb8-bb26-88bd5ab2af3e", Name: "GetAds"}
+	getAdsFromInfluencer		= Permission{Id: "4c8a48c2-f065-44b4-b9a5-fc7d84f6dc0d", Name: "GetAdsFromInfluencer"}
 	createAd					= Permission{Id: "1cf92a55-a41a-425f-960d-8a94e7a3e997", Name: "CreateAd"}
 	incrementLinkClicks 		= Permission{Id: "6f915dce-dc97-486b-b912-921407e78723", Name: "IncrementLinkClicks"}
 
@@ -393,6 +395,12 @@ var (
 	adminGetAds			          = RolePermission{RoleId: admin.Id, PermissionId: getAds.Id}
 	agentGetAds			          = RolePermission{RoleId: agent.Id, PermissionId: getAds.Id}
 	nonregisteredGetAds			  = RolePermission{RoleId: nonregistered.Id, PermissionId: getAds.Id}
+
+	basicGetAdsFromInfluencer         		  = RolePermission{RoleId: basic.Id, PermissionId: getAdsFromInfluencer.Id}
+	verifiedGetAdsFromInfluencer			  = RolePermission{RoleId: verified.Id, PermissionId: getAdsFromInfluencer.Id}
+	adminGetAdsFromInfluencer			      = RolePermission{RoleId: admin.Id, PermissionId: getAdsFromInfluencer.Id}
+	agentGetAdsFromInfluencer			      = RolePermission{RoleId: agent.Id, PermissionId: getAdsFromInfluencer.Id}
+	nonregisteredGetAdsFromInfluencer		  = RolePermission{RoleId: nonregistered.Id, PermissionId: getAdsFromInfluencer.Id}
 
 	agentCreateAd 				  = RolePermission{RoleId: agent.Id, PermissionId: createAd.Id}
 

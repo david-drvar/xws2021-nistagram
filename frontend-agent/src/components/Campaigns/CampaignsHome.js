@@ -40,6 +40,7 @@ const CampaignsHome = (props) => {
     const displayDate = (campaign) => {
         let date = moment(campaign.startDate).format("DD/MM/YY")
         !campaign.isOneTime ? date += ` - ${moment(campaign.endDate).format("DD/MM/YY")}` : date += ""
+        date += `, being placed ${campaign.isOneTime ? "" : "every day"} from ${campaign.startTime < 10 ? "0" + campaign.startTime : campaign.startTime}h - ${campaign.endTime}h`
         return date;
     }
 
@@ -60,23 +61,24 @@ const CampaignsHome = (props) => {
                             <Button variant="primary" onClick={() => createCampaign()}>Create New Campaign</Button>
                         </div>
                     </div>
-                    { loading ? <Spinner/> : 
-                    (<ListGroup className="list" >
-                        { campaigns.map(campaign => {
-                            return (
-                                <ListGroup.Item 
-                                    action
-                                    onClick={() => previewCampaign(campaign.id)}
-                                    className="campaignCard">
+                    { loading ? <Spinner/> :
+                        (<ListGroup className="list" >
+                            { campaigns.map(campaign => {
+                                return (
+                                    <ListGroup.Item
+                                        action
+                                        onClick={() => previewCampaign(campaign.id)}
+                                        className="campaignCard">
                                         <div className="name">{ campaign.name }</div>
                                         <div className="info">
                                             <div>{ displayDate(campaign) }</div>
                                             <div>{ (campaign.isOneTime ? "One time " : "Long term ") + campaign.type + " campaign" } </div>
+                                            <div>Category: {campaign.category.name ? campaign.category.name : ""}</div>
                                         </div>
-                                </ListGroup.Item>
-                            )
-                        }) }
-                    </ListGroup>)}
+                                    </ListGroup.Item>
+                                )
+                            }) }
+                        </ListGroup>)}
                 </div>
             </main>
         </div>

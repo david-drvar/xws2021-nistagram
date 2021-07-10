@@ -19,6 +19,9 @@ type AdRepository interface {
 	UpdateAd(context.Context, domain.Ad) error
 	DeleteAdsFromCampaign(context.Context, string) error
 	GetAdsFromCampaign(context.Context, string) ([]persistence.Ad, error)
+	GetAdsFromInfluencer(context.Context, string) ([]persistence.Ad, error)
+	UpdateCampaignAdDate(context.Context, string, string, time.Time) error
+	IncrementLinkClicks(context.Context, string) error
 
 	GetAdCategories(context.Context) ([]persistence.AdCategory, error)
 	GetUserAdCategories(context.Context, string) ([]persistence.AdCategory, error)
@@ -27,9 +30,6 @@ type AdRepository interface {
 	CreateUserAdCategories(context.Context, string) error
 	GetUsersAdCategories(context.Context, string) ([]persistence.AdCategory, error)
 	UpdateUsersAdCategories(context.Context, string, []domain.AdCategory) error
-
-	UpdateCampaignAdDate(context.Context, string, string, time.Time) error
-	IncrementLinkClicks(context.Context, string) error
 }
 
 type adRepository struct {
@@ -67,12 +67,38 @@ func (repository *adRepository) GetAds(ctx context.Context, userId string) ([]pe
 	if userId == "" {
 		result := repository.DB.Raw("SELECT * FROM ads ORDER BY random() LIMIT 3").Scan(&ads)
 		if result.Error != nil { return []persistence.Ad{}, result.Error }
-	}else{
-		// TODO Determine retrieving mechanism
 	}
 
 	return ads, nil
 }
+
+func (repository *adRepository) GetAdsFromInfluencer(ctx context.Context, userId string) ([]persistence.Ad, error){
+	span := tracer.StartSpanFromContextMetadata(ctx, "GetAds")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	now := time.Now()
+	var postAds []persistence.Ad
+	result := repository.DB.Model(&persistence.Ad{}).
+		Joins("left join posts on ads.post_id = posts.id").
+		Where("posts.user_id = ? AND posts.created_at <= ?", userId, now).
+		Find(&postAds)
+	if result.Error != nil { return []persistence.Ad{}, result.Error }
+
+	var storyAds []persistence.Ad
+	result = repository.DB.Model(&persistence.Ad{}).
+		Joins("left join stories on ads.post_id = stories.id").
+		Where("stories.user_id = ? AND stories.created_at <= ?", userId, now).
+		Find(&storyAds)
+	if result.Error != nil { return []persistence.Ad{}, result.Error }
+
+	ads := []persistence.Ad{}
+	for _, storyAd := range storyAds{ ads = append(ads, storyAd) }
+	for _, postAd := range postAds{ ads = append(ads, postAd) }
+
+	return ads, nil
+}
+
 
 func (repository *adRepository) CreateAd(ctx context.Context, ad domain.Ad) error{
 	span := tracer.StartSpanFromContextMetadata(ctx, "CreateAd")

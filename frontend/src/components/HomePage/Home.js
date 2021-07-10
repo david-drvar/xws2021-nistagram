@@ -165,6 +165,7 @@ const Home = () => {
         <div className="App">
             <Navigation/>
             <main>
+
                 {store.user.role !== 'Admin' ?
                     <div  style={{display:'flex', marginLeft:'10%'}}>
                         <Feed/>
@@ -172,7 +173,6 @@ const Home = () => {
                     </div>
                     :
                     <Feed/>
-
                 }
             </main>
         </div>

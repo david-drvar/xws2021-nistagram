@@ -12,9 +12,10 @@ import postService from "../../services/post.service";
 import PostPreviewModal from "../Post/PostPreviewModal";
 import campaignsService from "../../services/campaigns.service";
 import chatService from "../../services/chat.service";
+import PostPreviewNotifications from "../Post/PostPreviewNotifications";
 
 function Notification(props) {
-    const {id, creatorId, userId, text, type, createdAt, contentId} = props;
+    const {id, creatorId, userId, text, type, createdAt, contentId, isRead} = props;
     const [user, setUser] = useState({});
     const [privateFollow, setPrivateFollow] = useState(false);
     const [contentType, setContentType] = useState(false);
@@ -50,7 +51,7 @@ function Notification(props) {
         if (type === "FollowPrivate") {
             setPrivateFollow(true)
         }
-        if (type === "Like" || type === "Dislike" || type === "Comment") {
+        if (type === "Like" || type === "Dislike" || type === "Comment" || type==="Post" ) {
             setContentType(true)
         }
 
@@ -133,6 +134,7 @@ function Notification(props) {
             jwt: store.user.jwt,
         })
         if (response.status === 200) {
+            console.log(response.data)
             setPost(response.data)
             setShowModal(true);
         } else {
@@ -245,10 +247,7 @@ function Notification(props) {
                         onClick={() => declineMessageRequest()}>Reject</Button>
             </div>
             }
-
-
-
-            <PostPreviewModal
+            <PostPreviewNotifications
                 post={post}
                 postUser={{id: post.userId}}
                 showModal={showModal}

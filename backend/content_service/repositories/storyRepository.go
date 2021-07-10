@@ -60,7 +60,7 @@ func (repository *storyRepository) GetAllHomeStories(ctx context.Context, userId
 
 	stories := []persistence.Story{}
 	result := repository.DB.Order("created_at desc").
-		Where(storyDurationQuery + "AND is_ad = false AND user_id IN ? AND is_close_friends = ?", userIds, isCloseFriends).
+		Where(storyDurationQuery + "AND is_ad = false AND user_id IN ? AND is_close_friends = ? AND created_at <= ?", userIds, isCloseFriends, time.Now()).
 		Find(&stories)
 	if result.Error != nil {
 		return stories, result.Error
@@ -76,7 +76,7 @@ func (repository *storyRepository) GetUsersStories(ctx context.Context, userId s
 
 	stories := []persistence.Story{}
 	result := repository.DB.Order("created_at desc").
-		Where(storyDurationQuery + " AND user_id = ? AND is_close_friends = ?", userId, isCloseFriends).
+		Where(storyDurationQuery + " AND user_id = ? AND is_ad = ? AND is_close_friends = ? AND created_at <= ?", userId, false, isCloseFriends, time.Now()).
 		Find(&stories)
 	if result.Error != nil {
 		return stories, result.Error
@@ -93,7 +93,7 @@ func (repository *storyRepository) GetMyStories(ctx context.Context, userId stri
 
 	stories := []persistence.Story{}
 	result := repository.DB.Order("created_at desc").
-		Where("user_id = ?", userId).
+		Where("user_id = ? AND is_ad = ?", userId, false).
 		Find(&stories)
 	if result.Error != nil {
 		return stories, result.Error
@@ -109,7 +109,7 @@ func (repository *storyRepository) GetStoryById(ctx context.Context, id string) 
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	story := &persistence.Story{}
-	result := repository.DB.Where("id = ?", id).First(&story)
+	result := repository.DB.Where("id = ? AND created_at <= ?", id, time.Now()).First(&story)
 	if result.Error != nil {
 		return story, result.Error
 	}
@@ -125,7 +125,9 @@ func (repository *storyRepository) CreateStory(ctx context.Context, story *domai
 
 	var storyToSave persistence.Story
 	storyToSave = storyToSave.ConvertToPersistence(*story)
-	storyToSave.CreatedAt = time.Now()
+	if storyToSave.CreatedAt.IsZero() || (storyToSave.CreatedAt.Year()==1970 && storyToSave.CreatedAt.Month()==1 &&  storyToSave.CreatedAt.Day()==1){
+		storyToSave.CreatedAt = time.Now()
+	}
 
 	err := repository.DB.Transaction(func (tx *gorm.DB) error {
 		result := repository.DB.Create(&storyToSave)

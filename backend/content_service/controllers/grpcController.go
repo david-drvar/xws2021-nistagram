@@ -39,7 +39,7 @@ func NewServer(db *gorm.DB, manager *common.JWTManager, logger *logger.Logger) (
 	complaintController, _ := NewComplaintController(db, manager)
 	adController, _ := NewAdController(db, manager)
 	campaignController, _ := NewCampaignController(db, manager)
-	tracer, closer := tracer.Init("global_ContentGrpcController")
+	tracer, closer := tracer.Init("contentService")
 	otgo.SetGlobalTracer(tracer)
 	return &Server{
 		postController:      postController,
@@ -231,6 +231,10 @@ func (c *Server) DeleteComplaintByUserId(ctx context.Context, in *protopb.Reques
 /* Ads */
 func (s *Server) GetAds(ctx context.Context, in *protopb.EmptyRequestContent) (*protopb.AdArray, error) {
 	return s.adController.GetAds(ctx, in)
+}
+
+func (s *Server) GetAdsFromInfluencer(ctx context.Context, in *protopb.RequestId) (*protopb.AdArray, error) {
+	return s.adController.GetAdsFromInfluencer(ctx, in)
 }
 
 func (s *Server) CreateAd(ctx context.Context, in *protopb.Ad) (*protopb.EmptyResponseContent, error) {

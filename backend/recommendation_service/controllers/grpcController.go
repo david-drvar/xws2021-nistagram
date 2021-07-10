@@ -75,6 +75,10 @@ func (s *Server) GetCloseFriends(ctx context.Context, in *protopb.RequestIdFollo
 	return s.followerController.GetCloseFriends(ctx, in)
 }
 
+func (s *Server) GetCloseFriendsReversed(ctx context.Context, in *protopb.RequestIdFollowers) (*protopb.CreateUserResponse, error) {
+	return s.followerController.GetCloseFriendsReversed(ctx, in)
+}
+
 func (s *Server) GetFollowersConnection(ctx context.Context, in *protopb.Follower) (*protopb.Follower, error) {
 	return s.followerController.GetFollowersConnection(ctx, in)
 }

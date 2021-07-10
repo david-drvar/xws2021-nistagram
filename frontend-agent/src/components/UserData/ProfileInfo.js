@@ -23,9 +23,9 @@ function  ProfileInfo(){
                 <ProSidebar >
                     <Menu iconShape="square">
                         <MenuItem icon={<MdBookmarkBorder/>} style={store.user.role !== 'Admin' ? {display : 'block'} : {display: 'none'}}>My orders<Link to="/my-orders" /> </MenuItem>
-                        <MenuItem icon={<IoMdSettings/>}>Edit profile info  <Link to="/edit_profile" /> </MenuItem>
-                        <MenuItem icon={<RiLockPasswordLine/>}>Edit password  <Link to="/password" /> </MenuItem>
-                        <MenuItem icon={<HiOutlinePhotograph/>}>Edit profile photo  <Link to="/edit_photo" /> </MenuItem>
+                        {/*<MenuItem icon={<IoMdSettings/>}>Edit profile info  <Link to="/edit_profile" /> </MenuItem>*/}
+                        {/*<MenuItem icon={<RiLockPasswordLine/>}>Edit password  <Link to="/password" /> </MenuItem>*/}
+                        {/*<MenuItem icon={<HiOutlinePhotograph/>}>Edit profile photo  <Link to="/edit_photo" /> </MenuItem>*/}
                         {store.user.role === "Agent" &&
                             <MenuItem icon={<HiOutlinePhotograph/>}>API key <Link to="/api-key"/> </MenuItem>
                         }

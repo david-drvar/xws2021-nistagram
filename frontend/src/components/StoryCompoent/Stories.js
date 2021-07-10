@@ -51,6 +51,7 @@ const Stories = () => {
                     }
                 })
                 
+                console.log(allStoriesTemp)
                 setStories(convertToComponentArray([...allStoriesTemp]));
                 setLoading(false);
             })

@@ -62,6 +62,20 @@ class AdsService extends RootService {
         return response
     }
 
+    async getAdsFromInfluencer(data){
+        const { jwt, userId } = data;
+        const headers = this.setupHeaders(jwt);
+        
+        const response = this.apiClient.get(`/user/${userId}`, { headers })
+            .then(res => {
+                return res
+            }).catch(err => {
+                console.error(err)
+                return err
+            })
+        return response
+    }
+
     async incrementLinkClicks(data){
         const { jwt, adId } = data;
         const headers = this.setupHeaders(jwt);

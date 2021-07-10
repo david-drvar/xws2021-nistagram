@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { ReactComponent as FilledComments } from './../../images/icons/comments-filled.svg'
 import { ReactComponent as FilledHeart } from './../../images/icons/heart-filled.svg'
 import { ReactComponent as FilledBrokenHeart } from './../../images/icons/broken-heart-filled.svg'
@@ -9,7 +9,7 @@ const PostPreviewThumbnail = (props) => {
     const { post, openPost } = props;
 
     return (
-        <div className="postPreviewThumbnail__Wrapper" onClick={() => openPost(post.id)}>
+        <div className="postPreviewThumbnail__Wrapper" onClick={() => openPost(post)}>
             <img src={post.media[0].content} className="thumbnail" alt="" />
             <div className="hover-overlay hover-overlay--blur">
                 <div className="single-statistic">

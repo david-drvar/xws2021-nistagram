@@ -18,12 +18,13 @@ import userService from '../../services/nistagram api/user.service';
 
 const CreateCampaign = (props) => {
     const [newCampaign, setNewCampaign] = useState({
-        name: "", isOneTime: false, startDate: new Date(), endDate: new Date(), agentId: "", category: { id: "", name: "" }, type: "", ads: []
+        name: "", isOneTime: false, startTime: 0, endTime: 23, startDate: new Date(), endDate: new Date(),
+        agentId: "", category: { id: "", name: "" }, type: "", ads: []
     });
     const [newPost, setNewPost] = useState({
         type: "", description: "", location: "", media: [], hashtags: [], isAd: true, userId: "",
     })
-    const [newAd, setNewAd] = useState({ link: "", post: {...newPost} })
+    const [newAd, setNewAd] = useState({ link: "", post: { ...newPost } })
     const [newMedia, setNewMedia] = useState({
         tags: [], type: "", content: "", orderNum: ""
     })
@@ -62,7 +63,7 @@ const CreateCampaign = (props) => {
 
     function handleHashtagAutocompleteClick(tag) {
         if (newPost.hashtags.some((someTag) => someTag.id === tag.id)) return;
-        setNewPost({ ...newPost, hashtags: [...newPost.hashtags, {  id: tag.id, text: tag.text }] });
+        setNewPost({ ...newPost, hashtags: [...newPost.hashtags, { id: tag.id, text: tag.text }] });
     }
 
     function handleHashtagAutocompleteNewSuggestion(newTag) {
@@ -75,14 +76,14 @@ const CreateCampaign = (props) => {
         var file = evt.target.files[0];
 
         reader.onload = function (upload) {
-            setNewMedia({...newMedia, content: upload.target.result})
+            setNewMedia({ ...newMedia, content: upload.target.result })
         };
         reader.readAsDataURL(file);
     }
 
     function handleTagAutocompleteClick(tag) {
         if (newMedia.tags.some((someTag) => someTag.id === tag.id)) return;
-        setNewMedia({...newMedia, tags: [...newMedia.tags, { userId: tag.id, mediaId: "1", username: tag.username }]});
+        setNewMedia({ ...newMedia, tags: [...newMedia.tags, { userId: tag.id, mediaId: "1", username: tag.username }] });
     }
 
     async function saveMediaModal() {
@@ -91,21 +92,21 @@ const CreateCampaign = (props) => {
             type: "Image",
             orderNum: newPost.media.length + 1
         };
-        setNewPost({...newPost, media: [...newPost.media, media]});
+        setNewPost({ ...newPost, media: [...newPost.media, media] });
         setNewMedia({ tags: [], type: "", content: "", orderNum: "" })
         setShowFilesModal(false)
     }
 
     const saveAdToCampaign = () => {
-        if(newPost.media.length === 0) return
+        if (newPost.media.length === 0) return
         setNewCampaign({
-                ...newCampaign, 
-                ads: [
-                    ...newCampaign.ads, 
-                    {...newAd, post: {...newPost, userId: store.apiKey.id, isAd: true, type: newCampaign.type}}
-                ]
-            })
-        setNewPost({type: "", description: "", location: "", media: [], hashtags: [], tags: [], userId: "", isAd: true})
+            ...newCampaign,
+            ads: [
+                ...newCampaign.ads,
+                { ...newAd, post: { ...newPost, userId: store.apiKey.id, isAd: true, type: newCampaign.type } }
+            ]
+        })
+        setNewPost({ type: "", description: "", location: "", media: [], hashtags: [], tags: [], userId: "", isAd: true })
         setNewAd({ link: "" })
     }
 
@@ -126,13 +127,12 @@ const CreateCampaign = (props) => {
 
     const createCampaign = async () => {
         console.log(newCampaign)
-        if(newCampaign.ads.length === 0) return;
-        console.log("store.apiKey");
-        console.log(store.apiKey);
+        if (newCampaign.ads.length === 0) return;
+
         const response = await campaignsService.createCampaign({
-            campaign: { 
+            campaign: {
                 id: "",
-                ...newCampaign, 
+                ...newCampaign,
                 agentId: store.apiKey.id,
                 startDate: newCampaign.startDate + "T02:00:00.00Z",
                 endDate: (newCampaign.isOneTime ? newCampaign.startDate : newCampaign.endDate) + "T02:00:00.00Z",
@@ -168,8 +168,8 @@ const CreateCampaign = (props) => {
                 <div className="dropdown">
                     <label for="category">Campaign Duration</label>
                     <DropdownButton id="dropdown-basic-button" variant="outline-primary" title={newCampaign.isOneTime ? "One time" : "Long term"} style={{ width: "10em" }}>
-                        <Dropdown.Item onClick={() => setNewCampaign({...newCampaign, isOneTime: true})}>One time</Dropdown.Item>
-                        <Dropdown.Item onClick={() => setNewCampaign({...newCampaign, isOneTime: false})}>Long term</Dropdown.Item>
+                        <Dropdown.Item onClick={() => setNewCampaign({ ...newCampaign, isOneTime: true })}>One time</Dropdown.Item>
+                        <Dropdown.Item onClick={() => setNewCampaign({ ...newCampaign, isOneTime: false })}>Long term</Dropdown.Item>
                     </DropdownButton>
                 </div>
                 <div className="updateInput">
@@ -192,6 +192,28 @@ const CreateCampaign = (props) => {
                         onChange={(e) => setNewCampaign({ ...newCampaign, endDate: e.target.value })}
                         className="form-control" id="endDate" />
                 </div>}
+                <div className="exposureDates">
+                    <div className="updateInput">
+                        <label for="startTime">Start Time</label>
+                        <input
+                            type="number" name="startTime"
+                            placeholder={"Time when campaign starts to be shown (e.g. at 13h)..."}
+                            value={newCampaign.startTime}
+                            min={0} max={23}
+                            onChange={(e) => setNewCampaign({ ...newCampaign, startTime: Number(e.target.value) })}
+                            className="form-control" id="startTime" />
+                    </div>
+                    <div className="updateInput">
+                        <label for="endTime">End Time</label>
+                        <input
+                            type="number" name="endTime"
+                            placeholder={"Time when campaign stops being shown (e.g. at 20h)..."}
+                            value={newCampaign.endTime}
+                            min={newCampaign.startTime} max={23}
+                            onChange={(e) => setNewCampaign({ ...newCampaign, endTime: Number(e.target.value) })}
+                            className="form-control" id="endtTime" />
+                    </div>
+                </div>
                 <div className="dropdown">
                     <label for="category">Category</label>
                     <DropdownButton id="dropdown-basic-button" variant="outline-primary" title={newCampaign.category.name + " "} style={{ width: "10em" }}>
@@ -207,7 +229,7 @@ const CreateCampaign = (props) => {
                 </div>
                 <div className="updateInput">
                     <label>Currently {newCampaign.ads.length} ads.</label>
-                    <Button 
+                    <Button
                         disabled={newCampaign.ads.length === 0}
                         onClick={() => createCampaign()}>Create Campaign</Button>
                 </div>
@@ -262,11 +284,11 @@ const CreateCampaign = (props) => {
                             </Modal.Header>
                             <Modal.Body style={{ 'background': 'silver' }}>
                                 <input type="file" name="file"
-                                    className="upload-file"
-                                    id="file"
-                                    onChange={handleChangeImage}
-                                    formEncType="multipart/form-data"
-                                    required />
+                                       className="upload-file"
+                                       id="file"
+                                       onChange={handleChangeImage}
+                                       formEncType="multipart/form-data"
+                                       required />
                                 <br /><br />
                                 <UserAutocomplete addToTaglist={handleTagAutocompleteClick} suggestions={allUsers} />
                                 <h3>Tags:</h3>
@@ -276,7 +298,7 @@ const CreateCampaign = (props) => {
                                             return (
                                                 <li>
                                                     <ProfileForAutocomplete username={tag.username} firstName={tag.firstName} lastName={tag.lastName}
-                                                        caption={tag.biography} urlText="Follow" iconSize="medium" captionSize="small" storyBorder={true} />
+                                                                            caption={tag.biography} urlText="Follow" iconSize="medium" captionSize="small" storyBorder={true} />
                                                 </li>
                                             );
                                         })}
@@ -289,7 +311,7 @@ const CreateCampaign = (props) => {
                     </div>
                     <div className="updateInput">
                         <label for="files">You have {newPost.media.length} media in this post.</label>
-                        <Button onClick={() => saveAdToCampaign()}>Save {newCampaign.type} Ad </Button> 
+                        <Button onClick={() => saveAdToCampaign()}>Save {newCampaign.type} Ad </Button>
                     </div>
                 </div>
             </div>

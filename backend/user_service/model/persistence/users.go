@@ -130,6 +130,7 @@ type VerificationRequest struct {
 	DocumentPhoto string
 	Status        model.RequestStatus
 	CreatedAt     time.Time
+	Category      model.UserCategory
 }
 
 type CampaignRequest struct {
@@ -140,7 +141,6 @@ type CampaignRequest struct {
 	Status       model.RequestStatus
 	PostAt       time.Time
 }
-
 
 type APIKeys struct {
 	UserId string `gorm:"primaryKey"`

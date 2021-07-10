@@ -103,7 +103,8 @@ class StoryService extends RootService {
         }]
         
         if(story.link && story.post.media.length === 1) return [{
-            ...story,
+            ...story.post,
+            link: story.link,
             orderNum: 1, // Important for our custom slider component 
         }]
 
@@ -126,20 +127,6 @@ class StoryService extends RootService {
         })
 
         return stories;
-    }
-
-    async getStoryById(data){
-        const { id, jwt } = data;
-        const headers = this.setupHeaders(jwt)
-
-        const response = this.apiClient.get(`/${id}`, { headers })
-            .then(res => {
-                return res
-            }).catch(err => {
-                console.error(err)
-                return err
-            })
-        return response
     }
 }
 

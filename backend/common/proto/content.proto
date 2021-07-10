@@ -289,6 +289,12 @@ service Content {
     };
   }
 
+  rpc GetAdsFromInfluencer (RequestId) returns (AdArray) {
+    option(google.api.http) = {
+      get: "/ads/user/{id}"
+    };
+  }
+
   rpc CreateAd (Ad) returns (EmptyResponseContent) {
     option(google.api.http) = {
       post: "/ads",

@@ -87,39 +87,18 @@ func (service *CampaignService) CreateCampaign(ctx context.Context, campaign dom
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
-	if campaign.Name == "" {
-		return errors.New("no name provided")
-	}
-	if campaign.StartDate.Equal(time.Time{}) {
-		return errors.New("no start date provided")
-	}
-	if campaign.EndDate.Equal(time.Time{}) {
-		return errors.New("no start date provided")
-	}
-	if campaign.Category.Id == "" {
-		return errors.New("no ad category")
-	}
-	if campaign.StartDate.After(campaign.EndDate) {
-		return errors.New("start date cannot be after end date")
-	}
-	if campaign.IsOneTime && !campaign.StartDate.Equal(campaign.EndDate) {
-		campaign.EndDate = campaign.StartDate.Add(24 * time.Hour)
-	}
-	if campaign.StartDate.Before(time.Now()) {
-		return errors.New("you cannot create campaigns in past")
-	}
-	if campaign.EndDate.Before(time.Now()) {
-		return errors.New("you cannot create campaigns in past")
-	}
-	if len(campaign.Ads) == 0 {
-		return errors.New("no ads provided")
-	}
-	if campaign.StartTime < 0 || campaign.StartTime > 23 || campaign.StartTime >= campaign.EndTime {
-		return errors.New("invalid start time")
-	}
-	if campaign.EndTime < 0 || campaign.EndTime > 23 || campaign.EndTime <= campaign.StartTime {
-		return errors.New("invalid end time")
-	}
+	if campaign.Name == "" { return errors.New("no name provided") }
+	if campaign.StartDate.Equal(time.Time{}) { return errors.New("no start date provided") }
+	if campaign.EndDate.Equal(time.Time{}) { return errors.New("no start date provided") }
+	if campaign.Category.Id == "" { return errors.New("no ad category") }
+	if campaign.StartDate.After(campaign.EndDate) { return errors.New("start date cannot be after end date") }
+	if campaign.IsOneTime && !campaign.StartDate.Equal(campaign.EndDate){ campaign.EndDate = campaign.StartDate.Add(24 * time.Hour) }
+	if campaign.StartDate.Before(time.Now()) { return errors.New("you cannot create campaigns in past") }
+	if campaign.EndDate.Before(time.Now()) { return errors.New("you cannot create campaigns in past") }
+	if len(campaign.Ads) == 0 { return errors.New("no ads provided") }
+	if campaign.StartTime < 0 || campaign.StartTime > 23 ||  campaign.StartTime >= campaign.EndTime{ return errors.New("invalid start time") }
+	if campaign.EndTime < 0 || campaign.EndTime > 23 ||  campaign.EndTime <= campaign.StartTime{ return errors.New("invalid end time") }
+	if campaign.IsOneTime { campaign.EndDate = campaign.StartDate.Add(24 * time.Hour) }
 
 	return service.campaignRepository.CreateCampaign(ctx, campaign)
 }
@@ -130,36 +109,17 @@ func (service *CampaignService) UpdateCampaign(ctx context.Context, campaign dom
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
-	if campaign.Name == "" {
-		return errors.New("no name provided")
-	}
-	if campaign.StartDate.Equal(time.Time{}) {
-		return errors.New("no start date provided")
-	}
-	if campaign.EndDate.Equal(time.Time{}) {
-		return errors.New("no end date provided")
-	}
-	if campaign.Category.Id == "" {
-		return errors.New("no ad category")
-	}
-	if campaign.StartDate.After(campaign.EndDate) {
-		return errors.New("start date cannot be after end date")
-	}
-	if campaign.IsOneTime && campaign.StartDate.Before(time.Now()) {
-		return errors.New("you cannot update already started one time campaign")
-	}
-	if campaign.EndDate.Before(time.Now()) {
-		return errors.New("you cannot update past campaigns")
-	}
-	if campaign.StartDate.Before(time.Now()) {
-		return errors.New("you cannot update ongoing campaigns")
-	}
-	if campaign.StartTime < 0 || campaign.StartTime > 23 || campaign.StartTime >= campaign.EndTime {
-		return errors.New("invalid start time")
-	}
-	if campaign.EndTime < 0 || campaign.EndTime > 23 || campaign.EndTime <= campaign.StartTime {
-		return errors.New("invalid end time")
-	}
+	if campaign.Name == "" { return errors.New("no name provided") }
+	if campaign.StartDate.Equal(time.Time{}) { return errors.New("no start date provided") }
+	if campaign.EndDate.Equal(time.Time{}) { return errors.New("no end date provided") }
+	if campaign.Category.Id == "" { return errors.New("no ad category") }
+	if campaign.StartDate.After(campaign.EndDate) { return errors.New("start date cannot be after end date") }
+	if campaign.IsOneTime && campaign.StartDate.Before(time.Now()) { return errors.New("you cannot update already started one time campaign") }
+	if campaign.EndDate.Before(time.Now()) { return errors.New("you cannot update past campaigns") }
+	if campaign.StartDate.Before(time.Now()) { return errors.New("you cannot update ongoing campaigns") }
+	if campaign.StartTime < 0 || campaign.StartTime > 23 ||  campaign.StartTime >= campaign.EndTime{ return errors.New("invalid start time") }
+	if campaign.EndTime < 0 || campaign.EndTime > 23 ||  campaign.EndTime <= campaign.StartTime{ return errors.New("invalid end time") }
+	if campaign.IsOneTime { campaign.EndDate = campaign.StartDate.Add(24 * time.Hour) }
 
 	return service.campaignRepository.UpdateCampaign(ctx, campaign)
 }

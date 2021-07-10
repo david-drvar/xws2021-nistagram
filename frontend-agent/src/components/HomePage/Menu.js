@@ -7,6 +7,7 @@ import { ReactComponent as Bookmark } from "../../images/icons/bookmark.svg";
 import { ReactComponent as StoryArchive } from "../../images/icons/story-archive.svg";
 import { ReactComponent as Plus } from "../../images/icons/plus.svg";
 import { ReactComponent as Explore } from "../../images/icons/more.svg";
+import { ReactComponent as Star } from "../../images/icons/star.svg";
 import { ReactComponent as VerificationSymbol } from "../../images/icons/verification-symbol.svg";
 import { ReactComponent as Ad } from "../../images/icons/ad.svg";
 
@@ -49,7 +50,22 @@ function Menu() {
             </NavLink>
 
             {store.user.role === 'Agent' && store.user.jwt !== "" && (<NavLink to={{pathname: "/newproduct"}}> <Plus className="icon" />  </NavLink>) }
-            <NavLink to={{pathname: "/info"}}> <Explore className="icon"/> </NavLink>
+            {store.user.jwt !== "" && <NavLink to={{pathname: "/info"}}> <Explore className="icon"/> </NavLink>
+            }
+            {store.user.role === 'Agent' && store.user.jwt !== "" && (
+                <Dropdown>
+                    <Dropdown.Toggle variant="link" id="dropdown-basic">
+                        <Star className="icon"/>
+                    </Dropdown.Toggle>
+
+                    <Dropdown.Menu>
+                        {<Dropdown.Item onClick={() => history.push({pathname: '/influencers'})}>Influencers</Dropdown.Item>}
+                        {<Dropdown.Item onClick={() => history.push({pathname: '/campaign-requests'})}>Campaign
+                            requests</Dropdown.Item>}
+                    </Dropdown.Menu>
+                </Dropdown>
+
+            )}
 
             {
                 store.user.jwt !== "" && store.user.role === "Agent" &&

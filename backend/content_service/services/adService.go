@@ -73,6 +73,32 @@ func (service *AdService) GetAdsFromCampaign(ctx context.Context, campaignId str
 	return ads, nil
 }
 
+func (service *AdService) GetAdsFromInfluencer(ctx context.Context, userId string) ([]domain.Ad, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "GetAdsFromInfluencer")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	dbAds, err := service.adRepository.GetAdsFromInfluencer(ctx, userId)
+	if err != nil { return []domain.Ad{}, err }
+
+	ads := []domain.Ad{}
+	for _, dbAd := range dbAds {
+		if dbAd.Type == model.TypePost.String(){
+			post, err := service.postService.GetPostById(ctx, dbAd.PostId)
+			if err != nil { return []domain.Ad{}, err }
+			ads = append(ads, dbAd.ConvertToDomain(post.Comments, post.Likes, post.Dislikes, post.Objava))
+		}else if dbAd.Type == model.TypeStory.String() {
+			story, err := service.storyService.GetStoryById(ctx, dbAd.PostId)
+			if err != nil {
+				return []domain.Ad{}, err
+			}
+			ads = append(ads, dbAd.ConvertToDomain([]domain.Comment{}, []domain.Like{}, []domain.Like{}, story.Objava))
+		}
+	}
+
+	return ads, nil
+}
+
 func (service *AdService) GetAdCategories(ctx context.Context) ([]domain.AdCategory, error) {
 	span := tracer.StartSpanFromContextMetadata(ctx, "GetAdCategories")
 	defer span.Finish()
@@ -134,7 +160,7 @@ func (service *AdService) CreateUserAdCategories(ctx context.Context, id string)
 
 	err := service.adRepository.CreateUserAdCategories(ctx, id)
 	if err != nil {
-		return err
+		return nil
 	}
 
 	return nil

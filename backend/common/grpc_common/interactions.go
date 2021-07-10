@@ -115,35 +115,49 @@ func CheckIfBlocked(ctx context.Context, requestedUserId string, requestingUserI
 	return blockedResponse.Response, nil
 }
 
-func GetHomepageUsers(ctx context.Context, userId string) ([]string, error){
+func GetHomepageUsers(ctx context.Context, userId string) ([]string, error) {
 	conn, err := CreateGrpcConnection(Recommendation_service_address)
-	if err != nil{
+	if err != nil {
 		return []string{}, status.Errorf(codes.Unknown, err.Error())
 	}
 	defer conn.Close()
 
 	followerClient := GetFollowersClient(conn)
 	followingResponse, err := followerClient.GetAllFollowingsForHomepage(ctx, &protopb.CreateUserRequestFollowers{
-		User: &protopb.UserFollowers{ UserId: userId },
+		User: &protopb.UserFollowers{UserId: userId},
 	})
-	if err != nil{ return []string{}, status.Errorf(codes.Unknown, err.Error()) }
+	if err != nil {
+		return []string{}, status.Errorf(codes.Unknown, err.Error())
+	}
 
 	userIds := []string{}
-	for _, following := range followingResponse.Users{
+	for _, following := range followingResponse.Users {
+		blocked, err := CheckIfBlocked(ctx, following.UserId, userId)
+		if err != nil || blocked {
+			continue
+		}
+
+		active, err := CheckIsActive(ctx, following.UserId)
+		if err != nil || !active {
+			continue
+		}
+
 		userIds = append(userIds, following.UserId)
 	}
 
 	privacyConn, err := CreateGrpcConnection(Users_service_address)
-	if err != nil{
+	if err != nil {
 		return []string{}, status.Errorf(codes.Unknown, err.Error())
 	}
 	defer privacyConn.Close()
 
 	privacyClient := GetPrivacyClient(privacyConn)
 	publicResponse, err := privacyClient.GetAllPublicUsers(ctx, &protopb.RequestIdPrivacy{Id: userId})
-	if err != nil{ return []string{}, status.Errorf(codes.Unknown, err.Error()) }
+	if err != nil {
+		return []string{}, status.Errorf(codes.Unknown, err.Error())
+	}
 
-	userType, _ := GetTypeById(ctx,userId )
+	userType, _ := GetTypeById(ctx, userId)
 	if userType != "Admin" {
 		for _, publicUser := range publicResponse.Ids {
 			found := false
@@ -155,34 +169,63 @@ func GetHomepageUsers(ctx context.Context, userId string) ([]string, error){
 			}
 
 			if !found {
+				blocked, err := CheckIfBlocked(ctx, publicUser, userId)
+				if err != nil || blocked {
+					continue
+				}
+
+				active, err := CheckIsActive(ctx, publicUser)
+				if err != nil || !active {
+					continue
+				}
+
+				muted, err := CheckIsMuted(ctx, publicUser, userId)
+				if err != nil || muted {
+					continue
+				}
+
 				userIds = append(userIds, publicUser)
 			}
 		}
+
 	}else {
 		return publicResponse.Ids, nil
 	}
-
 	return userIds, nil
 }
 
 func GetTypeById(ctx context.Context, userId string) (string, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "GetTypeById")
-	defer span.Finish()
-	ctx = tracer.ContextWithSpan(context.Background(), span)
+		span := tracer.StartSpanFromContextMetadata(ctx, "GetTypeById")
+		defer span.Finish()
+		ctx = tracer.ContextWithSpan(context.Background(), span)
 
-	conn, err := GetClientConnection(Users_service_address)
-	if err != nil{
-		return "", status.Errorf(codes.Unknown, err.Error())
+		conn, err := GetClientConnection(Users_service_address)
+		if err != nil {
+			return "", status.Errorf(codes.Unknown, err.Error())
+		}
+		defer conn.Close()
+
+		userClient := GetUsersClient(conn)
+
+		user, err := userClient.GetUserById(ctx, &protopb.RequestIdUsers{Id: userId})
+		if err != nil {
+			return "", err
+		}
+		return user.Role, err
 	}
+func CheckIsMuted(ctx context.Context, requestedUserId string, requestingUserId string) (bool, error) {
+	conn, err := CreateGrpcConnection(Recommendation_service_address)
+	if err != nil{ return true, status.Errorf(codes.Unknown, err.Error()) }
 	defer conn.Close()
 
-	userClient := GetUsersClient(conn)
+	followerClient := GetFollowersClient(conn)
+	isMuted, err := followerClient.CheckIfMuted(ctx, &protopb.Follower{
+		UserId: requestingUserId,
+		FollowerId: requestedUserId,
+	})
+	if err != nil{ return true, status.Errorf(codes.Unknown, err.Error()) }
 
-	user, err := userClient.GetUserById(ctx, &protopb.RequestIdUsers{Id:  userId})
-	if err != nil {
-		return "", err
-	}
-	return user.Role, err
+	return isMuted.Response, nil
 }
 
 func GetCloseFriends(ctx context.Context, userId string) ([]string, error){
@@ -194,6 +237,27 @@ func GetCloseFriends(ctx context.Context, userId string) ([]string, error){
 
 	followerClient := GetFollowersClient(conn)
 	closeFriends, err := followerClient.GetCloseFriends(ctx, &protopb.RequestIdFollowers{
+		Id: userId,
+	})
+	if err != nil{ return []string{}, status.Errorf(codes.Unknown, err.Error()) }
+
+	userIds := []string{}
+	for _, closeFriend := range closeFriends.Users{
+		userIds = append(userIds, closeFriend.UserId)
+	}
+
+	return userIds, nil
+}
+
+func GetCloseFriendsReversed(ctx context.Context, userId string) ([]string, error){
+	conn, err := CreateGrpcConnection(Recommendation_service_address)
+	if err != nil{
+		return []string{}, status.Errorf(codes.Unknown, err.Error())
+	}
+	defer conn.Close()
+
+	followerClient := GetFollowersClient(conn)
+	closeFriends, err := followerClient.GetCloseFriendsReversed(ctx, &protopb.RequestIdFollowers{
 		Id: userId,
 	})
 	if err != nil{ return []string{}, status.Errorf(codes.Unknown, err.Error()) }
@@ -360,7 +424,7 @@ func CreateUserAdCategories(ctx context.Context, userId string) error {
 	contentClient := GetContentClient(conn)
 
 	_, err = contentClient.CreateUserAdCategories(ctx, &protopb.RequestId{Id: userId})
-	if err != nil { return err }
+	if err != nil { return nil }
 
 	return nil
 }

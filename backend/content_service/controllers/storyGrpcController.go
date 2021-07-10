@@ -118,7 +118,7 @@ func (c *StoryGrpcController) GetMyStories(ctx context.Context, in *protopb.Requ
 }
 
 func (c *StoryGrpcController) GetAllStories(ctx context.Context, in *protopb.EmptyRequestContent) (*protopb.StoriesHome, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "GetAllHomeStories")
+	span := tracer.StartSpanFromContextMetadata(ctx, "GetAllStories")
 	defer span.Finish()
 	claims, _ := c.jwtManager.ExtractClaimsFromMetadata(ctx)
 	ctx = tracer.ContextWithSpan(context.Background(), span)
@@ -140,7 +140,7 @@ func (c *StoryGrpcController) GetAllStories(ctx context.Context, in *protopb.Emp
 			return &protopb.StoriesHome{}, status.Errorf(codes.Unknown, err.Error())
 		}
 
-		closeFriends, err := grpc_common.GetCloseFriends(ctx, claims.UserId)
+		closeFriends, err := grpc_common.GetCloseFriendsReversed(ctx, claims.UserId)
 		nonCloseFriends := []string{}
 		for _, userId := range publicUserIds {
 			found := false

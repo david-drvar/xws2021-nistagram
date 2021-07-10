@@ -69,6 +69,7 @@ type ContentClient interface {
 	RejectById(ctx context.Context, in *RequestId, opts ...grpc.CallOption) (*EmptyResponseContent, error)
 	//   Ads
 	GetAds(ctx context.Context, in *EmptyRequestContent, opts ...grpc.CallOption) (*AdArray, error)
+	GetAdsFromInfluencer(ctx context.Context, in *RequestId, opts ...grpc.CallOption) (*AdArray, error)
 	CreateAd(ctx context.Context, in *Ad, opts ...grpc.CallOption) (*EmptyResponseContent, error)
 	IncrementLinkClicks(ctx context.Context, in *RequestId, opts ...grpc.CallOption) (*EmptyResponseContent, error)
 	//   Campaigns
@@ -466,6 +467,15 @@ func (c *contentClient) GetAds(ctx context.Context, in *EmptyRequestContent, opt
 	return out, nil
 }
 
+func (c *contentClient) GetAdsFromInfluencer(ctx context.Context, in *RequestId, opts ...grpc.CallOption) (*AdArray, error) {
+	out := new(AdArray)
+	err := c.cc.Invoke(ctx, "/proto.Content/GetAdsFromInfluencer", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *contentClient) CreateAd(ctx context.Context, in *Ad, opts ...grpc.CallOption) (*EmptyResponseContent, error) {
 	out := new(EmptyResponseContent)
 	err := c.cc.Invoke(ctx, "/proto.Content/CreateAd", in, out, opts...)
@@ -665,6 +675,7 @@ type ContentServer interface {
 	RejectById(context.Context, *RequestId) (*EmptyResponseContent, error)
 	//   Ads
 	GetAds(context.Context, *EmptyRequestContent) (*AdArray, error)
+	GetAdsFromInfluencer(context.Context, *RequestId) (*AdArray, error)
 	CreateAd(context.Context, *Ad) (*EmptyResponseContent, error)
 	IncrementLinkClicks(context.Context, *RequestId) (*EmptyResponseContent, error)
 	//   Campaigns
@@ -812,6 +823,9 @@ func (UnimplementedContentServer) RejectById(context.Context, *RequestId) (*Empt
 }
 func (UnimplementedContentServer) GetAds(context.Context, *EmptyRequestContent) (*AdArray, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAds not implemented")
+}
+func (UnimplementedContentServer) GetAdsFromInfluencer(context.Context, *RequestId) (*AdArray, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAdsFromInfluencer not implemented")
 }
 func (UnimplementedContentServer) CreateAd(context.Context, *Ad) (*EmptyResponseContent, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateAd not implemented")
@@ -1612,6 +1626,24 @@ func _Content_GetAds_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Content_GetAdsFromInfluencer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestId)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContentServer).GetAdsFromInfluencer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Content/GetAdsFromInfluencer",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContentServer).GetAdsFromInfluencer(ctx, req.(*RequestId))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Content_CreateAd_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Ad)
 	if err := dec(in); err != nil {
@@ -2070,6 +2102,10 @@ var Content_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAds",
 			Handler:    _Content_GetAds_Handler,
+		},
+		{
+			MethodName: "GetAdsFromInfluencer",
+			Handler:    _Content_GetAdsFromInfluencer_Handler,
 		},
 		{
 			MethodName: "CreateAd",

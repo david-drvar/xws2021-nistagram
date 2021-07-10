@@ -143,21 +143,46 @@ func GetHomepageUsers(ctx context.Context, userId string) ([]string, error){
 	publicResponse, err := privacyClient.GetAllPublicUsers(ctx, &protopb.RequestIdPrivacy{Id: userId})
 	if err != nil{ return []string{}, status.Errorf(codes.Unknown, err.Error()) }
 
-	for _, publicUser := range publicResponse.Ids {
-		found := false
-		for _, userId := range userIds{
-			if userId == publicUser {
-				found = true
-				break
+	userType, _ := GetTypeById(ctx,userId )
+	if userType != "Admin" {
+		for _, publicUser := range publicResponse.Ids {
+			found := false
+			for _, userId := range userIds {
+				if userId == publicUser {
+					found = true
+					break
+				}
+			}
+
+			if !found {
+				userIds = append(userIds, publicUser)
 			}
 		}
-
-		if !found {
-			userIds = append(userIds, publicUser)
-		}
+	}else {
+		return publicResponse.Ids, nil
 	}
 
 	return userIds, nil
+}
+
+func GetTypeById(ctx context.Context, userId string) (string, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "GetTypeById")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	conn, err := GetClientConnection(Users_service_address)
+	if err != nil{
+		return "", status.Errorf(codes.Unknown, err.Error())
+	}
+	defer conn.Close()
+
+	userClient := GetUsersClient(conn)
+
+	user, err := userClient.GetUserById(ctx, &protopb.RequestIdUsers{Id:  userId})
+	if err != nil {
+		return "", err
+	}
+	return user.Role, err
 }
 
 func GetCloseFriends(ctx context.Context, userId string) ([]string, error){

@@ -7,6 +7,7 @@ import (
 	"github.com/david-drvar/xws2021-nistagram/content_service/model/domain"
 	"github.com/david-drvar/xws2021-nistagram/content_service/model/persistence"
 	"github.com/david-drvar/xws2021-nistagram/content_service/util/images"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"time"
 )
@@ -100,8 +101,9 @@ func (repository *postRepository) CreatePost(ctx context.Context, post *domain.P
 
 	var postToSave persistence.Post
 	postToSave = postToSave.ConvertToPersistence(*post)
+	postToSave.Id = uuid.New().String()
 
-	if postToSave.CreatedAt.IsZero()  {
+	if postToSave.CreatedAt.IsZero() || (postToSave.CreatedAt.Year()==1970 && postToSave.CreatedAt.Month()==1 &&  postToSave.CreatedAt.Day()==1){
 		postToSave.CreatedAt = time.Now()
 	}
 	err := repository.DB.Transaction(func(tx *gorm.DB) error {

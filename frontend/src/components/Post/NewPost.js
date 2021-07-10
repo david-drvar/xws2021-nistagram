@@ -90,7 +90,6 @@ function NewPost(props) {
         }
 
         const contentRequest = {
-            id: "1",
             userId: user.id,
             isAd: false,
             type: isStory ? "Story" : "Post",

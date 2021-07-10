@@ -13,7 +13,6 @@ const PostPreviewGrid = (props) => {
 
     useEffect(() => {
         setLocalPosts([...props.posts])
-        console.log(props.posts)
     }, [props.posts])
 
     const openPost = (selectPost) => {

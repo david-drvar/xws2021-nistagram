@@ -160,7 +160,7 @@ func (service *AdService) CreateUserAdCategories(ctx context.Context, id string)
 
 	err := service.adRepository.CreateUserAdCategories(ctx, id)
 	if err != nil {
-		return err
+		return nil
 	}
 
 	return nil

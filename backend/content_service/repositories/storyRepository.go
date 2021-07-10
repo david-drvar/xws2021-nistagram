@@ -125,7 +125,7 @@ func (repository *storyRepository) CreateStory(ctx context.Context, story *domai
 
 	var storyToSave persistence.Story
 	storyToSave = storyToSave.ConvertToPersistence(*story)
-	if storyToSave.CreatedAt == *new(time.Time) {
+	if storyToSave.CreatedAt.IsZero() || (storyToSave.CreatedAt.Year()==1970 && storyToSave.CreatedAt.Month()==1 &&  storyToSave.CreatedAt.Day()==1){
 		storyToSave.CreatedAt = time.Now()
 	}
 

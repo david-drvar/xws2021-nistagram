@@ -12,7 +12,6 @@ import CollectionsModal from './CollectionsModal';
 import {Button, Dropdown, Modal} from "react-bootstrap";
 import { ReactComponent as CardButton } from './../../images/icons/cardButton.svg' 
 import PostMenu from "./PostMenu";
-
 import userService from './../../services/user.service';
 import toastService from './../../services/toast.service';
 import likeService from './../../services/like.service';
@@ -265,8 +264,6 @@ function Post (props) {
     }
 
     const sendReport = async () => {
-        console.log("JUUUU")
-        console.log(post)
         if(store.user.jwt === "") return;
 
         if (reportCategory === "") {
@@ -291,7 +288,6 @@ function Post (props) {
         }
         handleReportModal();
     }
-
 
     return(
         <div className="Post">

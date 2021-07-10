@@ -122,6 +122,7 @@ func GetHomepageUsers(ctx context.Context, userId string) ([]string, error){
 	}
 	defer conn.Close()
 
+
 	followerClient := GetFollowersClient(conn)
 	followingResponse, err := followerClient.GetAllFollowingsForHomepage(ctx, &protopb.CreateUserRequestFollowers{
 		User: &protopb.UserFollowers{ UserId: userId },
@@ -386,7 +387,7 @@ func CreateUserAdCategories(ctx context.Context, userId string) error {
 	contentClient := GetContentClient(conn)
 
 	_, err = contentClient.CreateUserAdCategories(ctx, &protopb.RequestId{Id: userId})
-	if err != nil { return err }
+	if err != nil { return nil }
 
 	return nil
 }
